@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+.env
+
+# Virtual environments
+bin/
+lib/
+include/
+share/
+pyvenv.cfg
+
+# UV
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# Build
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Project specific
+*.html
+!docs/*.html
+
+# Proprietary CSV files
+*.csv
+"All Work with Sprints (JIRA).csv"
+"All Work (JIRA).csv"
+
+# Configuration
+.jira-monte-carlo/
+~/.jira-monte-carlo/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+.~*

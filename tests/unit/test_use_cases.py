@@ -43,6 +43,7 @@ class TestCalculateVelocityUseCase:
         ]
         
         sprint_repo.get_last_n_sprints.return_value = sprints
+        sprint_repo.get_all.return_value = sprints
         
         # Execute
         use_case = CalculateVelocityUseCase(issue_repo, sprint_repo)
@@ -59,6 +60,7 @@ class TestCalculateVelocityUseCase:
         issue_repo = Mock()
         sprint_repo = Mock()
         sprint_repo.get_last_n_sprints.return_value = []
+        sprint_repo.get_all.return_value = []
         
         use_case = CalculateVelocityUseCase(issue_repo, sprint_repo)
         metrics = use_case.execute()
@@ -100,9 +102,9 @@ class TestRunMonteCarloSimulationUseCase:
         assert 0.85 in results.percentiles
         assert 0.95 in results.percentiles
         
-        # Assert logical ordering
-        assert results.percentiles[0.5] < results.percentiles[0.85]
-        assert results.percentiles[0.85] < results.percentiles[0.95]
+        # Assert logical ordering (with sprints, values might be equal)
+        assert results.percentiles[0.5] <= results.percentiles[0.85]
+        assert results.percentiles[0.85] <= results.percentiles[0.95]
         
         # Assert reasonable values
         assert results.mean_completion_date > datetime.now()

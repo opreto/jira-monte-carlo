@@ -102,3 +102,32 @@ class TestTeam:
         )
         
         assert team.velocity_std_dev == 0.0
+
+
+class TestSimulationResult:
+    def test_simulation_result_creation(self):
+        """Test that SimulationResult holds all necessary data"""
+        from src.domain.entities import SimulationResult
+        
+        percentiles = {0.5: 6.0, 0.85: 8.0, 0.95: 9.0}
+        completion_dates = [
+            datetime.now() + timedelta(days=84),
+            datetime.now() + timedelta(days=98),
+            datetime.now() + timedelta(days=112)
+        ]
+        
+        result = SimulationResult(
+            percentiles=percentiles,
+            mean_completion_date=datetime.now() + timedelta(days=91),
+            std_dev_days=14.0,
+            probability_distribution=[0.1, 0.3, 0.4, 0.2],
+            completion_dates=completion_dates,
+            confidence_intervals={(0.5, (5, 7)), (0.85, (7, 9))},
+            completion_sprints=[6, 7, 8]
+        )
+        
+        assert result.percentiles[0.5] == 6.0
+        assert result.percentiles[0.85] == 8.0
+        assert len(result.completion_dates) == 3
+        assert len(result.completion_sprints) == 3
+        assert result.std_dev_days == 14.0

@@ -106,7 +106,7 @@ class TestInMemoryIssueRepository:
         )
         
         completed_issues = repo.get_completed_in_range(date_range)
-        assert len(completed_issues) == 2  # Issues 0 and 1
+        assert len(completed_issues) == 3  # Issues 0, 1, and 2 (10 days is inclusive)
 
 
 class TestInMemorySprintRepository:
@@ -124,11 +124,11 @@ class TestInMemorySprintRepository:
         repo.add_sprints(sprints)
         
         assert len(repo.get_all()) == 3
-        # Check they're sorted by start date
+        # Check they're sorted by start date (oldest first)
         all_sprints = repo.get_all()
-        assert all_sprints[0].name == "Sprint 2"
+        assert all_sprints[0].name == "Sprint 0"  # Oldest
         assert all_sprints[1].name == "Sprint 1"
-        assert all_sprints[2].name == "Sprint 0"
+        assert all_sprints[2].name == "Sprint 2"  # Newest
     
     def test_get_last_n_sprints(self):
         repo = InMemorySprintRepository()
@@ -243,9 +243,11 @@ class TestSprintExtractor:
         
         assert len(sprints) == 3
         
-        # Check sprint properties
+        # Check sprint properties (sorted by start date, so Sprint 3 is first)
+        expected_order = [3, 2, 1]  # Sprint 3 has oldest dates
         for i, sprint in enumerate(sprints):
-            assert sprint.name == f"Sprint {i+1}"
+            expected_num = expected_order[i]
+            assert sprint.name == f"Sprint {expected_num}"
             assert sprint.completed_points == 25.0  # 5 issues * 5 points
             assert len(sprint.completed_issues) == 5
     

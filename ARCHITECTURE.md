@@ -9,60 +9,92 @@ This project follows **Clean Architecture** principles (also known as Hexagonal 
 The architecture is organized in concentric layers, with dependencies pointing inward:
 
 ```mermaid
-graph TB
-    subgraph "External World"
-        CLI[CLI Interface]
-        CSV[CSV Files]
-        HTML[HTML Reports]
-        FS[File System]
-    end
-    
-    subgraph "Presentation Layer"
-        CLIHandler[CLI Handler]
-        ReportGen[Report Generator]
-    end
-    
-    subgraph "Infrastructure Layer"
-        CSVParser[CSV Parser]
-        CSVAnalyzer[CSV Analyzer]
-        FileRepo[File Repositories]
-    end
-    
-    subgraph "Application Layer"
-        UC1[Calculate Velocity Use Case]
-        UC2[Run Monte Carlo Use Case]
-        UC3[Analyze CSV Structure Use Case]
-        UC4[Analyze Velocity Use Case]
-    end
-    
-    subgraph "Domain Layer"
-        E1[Issue Entity]
-        E2[Sprint Entity]
-        E3[SimulationResult Entity]
-        VO1[FieldMapping Value Object]
-        VO2[VelocityMetrics Value Object]
-        R1[Repository Interfaces]
-    end
-    
-    CLI --> CLIHandler
-    CLIHandler --> UC1
-    CLIHandler --> UC2
-    CLIHandler --> UC3
-    CLIHandler --> UC4
-    
-    UC1 --> R1
-    UC2 --> R1
-    UC3 --> E1
-    UC4 --> VO2
-    
-    CSVParser --> E1
-    CSVAnalyzer --> E2
-    FileRepo -.-> R1
-    
-    ReportGen --> E3
-    HTML --> ReportGen
-    CSV --> CSVParser
-    FS --> FileRepo
+%%{init: { 'flowchart': { 'curve': 'basis', 'htmlLabels': false }}}%%
+flowchart TB
+
+%% EXTERNAL WORLD
+subgraph "External World"
+  CLI([CLI Interface])
+  CSV[CSV Files]
+  HTML[HTML Reports]
+  FS[File System]
+end
+
+%% PRESENTATION
+subgraph "Presentation Layer"
+  CLIHandler([CLI Handler])
+  ReportGen([Report Generator])
+end
+
+%% INFRASTRUCTURE
+subgraph "Infrastructure Layer"
+  CSVParser([CSV Parser])
+  CSVAnalyzer([CSV Analyzer])
+  FileRepo([File Repositories])
+end
+
+%% APPLICATION
+subgraph "Application Layer"
+  UC1([Calculate Velocity Use Case])
+  UC2([Run Monte Carlo Use Case])
+  UC3([Analyze CSV Structure Use Case])
+  UC4([Analyze Velocity Use Case])
+end
+
+%% DOMAIN
+subgraph "Domain Layer"
+  E1([Issue Entity])
+  E2([Sprint Entity])
+  E3([SimulationResult Entity])
+  VO1([FieldMapping Value Object])
+  VO2([VelocityMetrics Value Object])
+  R1([Repository Interfaces])
+end
+
+CLI --> CLIHandler
+CLIHandler --> UC1
+CLIHandler --> UC2
+CLIHandler --> UC3
+CLIHandler --> UC4
+
+UC1 --> R1
+UC2 --> R1
+UC3 --> E1
+UC4 --> VO2
+
+CSVParser --> E1
+CSVAnalyzer --> E2
+FileRepo -.-> R1
+
+ReportGen --> E3
+HTML --> ReportGen
+CSV --> CSVParser
+FS --> FileRepo
+
+%% LAYER COLOR STYLES (applied directly to nodes for accessibility)
+style CLI fill:#ecf2f8,stroke:#2456A3,stroke-width:2px,color:#111
+style CSV fill:#ecf2f8,stroke:#2456A3,stroke-width:2px,color:#111
+style HTML fill:#ecf2f8,stroke:#2456A3,stroke-width:2px,color:#111
+style FS fill:#ecf2f8,stroke:#2456A3,stroke-width:2px,color:#111
+
+style CLIHandler fill:#FFFAD0,stroke:#D1A800,stroke-width:2px,color:#111
+style ReportGen fill:#FFFAD0,stroke:#D1A800,stroke-width:2px,color:#111
+
+style CSVParser fill:#B9ECE4,stroke:#33846A,stroke-width:2px,color:#111
+style CSVAnalyzer fill:#B9ECE4,stroke:#33846A,stroke-width:2px,color:#111
+style FileRepo fill:#CAE6FB,stroke:#2456A3,stroke-width:2px
+
+style UC1 fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+style UC2 fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+style UC3 fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+style UC4 fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+
+style E1 fill:#FFF,stroke:#222,stroke-width:2px
+style E2 fill:#FFF,stroke:#222,stroke-width:2px
+style E3 fill:#FFF,stroke:#222,stroke-width:2px
+style VO1 fill:#F7EFE3,stroke:#A1793B,stroke-width:2px
+style VO2 fill:#F7EFE3,stroke:#A1793B,stroke-width:2px
+style R1 fill:#FBE7D4,stroke:#A05121,stroke-width:2px
 ```
 
 ### Key Principles

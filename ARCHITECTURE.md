@@ -111,6 +111,7 @@ style R1 fill:#FBE7D4,stroke:#A05121,stroke-width:2px
 The innermost layer contains enterprise business rules and domain models.
 
 ```mermaid
+%%{init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#fff', 'primaryTextColor': '#111', 'primaryBorderColor': '#222', 'lineColor': '#333', 'secondaryColor': '#f7efe3', 'tertiaryColor': '#fbe7d4', 'background': '#fff' }}}%%
 classDiagram
     class Issue {
         +key: str
@@ -161,6 +162,13 @@ classDiagram
         +get_recent(limit: int): List[Sprint]
         +get_all(): List[Sprint]
     }
+
+    style Issue fill:#FFF,stroke:#222,stroke-width:2px
+    style Sprint fill:#FFF,stroke:#222,stroke-width:2px
+    style SimulationResult fill:#FFF,stroke:#222,stroke-width:2px
+    style VelocityMetrics fill:#F7EFE3,stroke:#A1793B,stroke-width:2px
+    style IssueRepository fill:#FBE7D4,stroke:#A05121,stroke-width:2px
+    style SprintRepository fill:#FBE7D4,stroke:#A05121,stroke-width:2px
 ```
 
 **Key Components:**
@@ -173,21 +181,22 @@ classDiagram
 Contains application-specific business rules and orchestrates the flow of data.
 
 ```mermaid
-graph LR
-    subgraph "Use Cases"
-        CV[CalculateVelocityUseCase]
-        MC[RunMonteCarloSimulationUseCase]
-        RW[CalculateRemainingWorkUseCase]
-        HD[AnalyzeHistoricalDataUseCase]
-        CS[AnalyzeCSVStructureUseCase]
-        AV[AnalyzeVelocityUseCase]
+%%{init: { 'flowchart': { 'curve': 'basis', 'htmlLabels': false }}}%%
+flowchart LR
+    subgraph UC["Use Cases"]
+        CV([CalculateVelocityUseCase])
+        MC([RunMonteCarloSimulationUseCase])
+        RW([CalculateRemainingWorkUseCase])
+        HD([AnalyzeHistoricalDataUseCase])
+        CS([AnalyzeCSVStructureUseCase])
+        AV([AnalyzeVelocityUseCase])
     end
     
-    subgraph "Domain"
-        IR[IssueRepository]
-        SR[SprintRepository]
-        VM[VelocityMetrics]
-        SR2[SimulationResult]
+    subgraph Domain
+        IR([IssueRepository])
+        SR([SprintRepository])
+        VM([VelocityMetrics])
+        SR2([SimulationResult])
     end
     
     CV --> IR
@@ -205,6 +214,20 @@ graph LR
     
     AV --> SR
     AV --> VM
+
+    %% Style use cases
+    style CV fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+    style MC fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+    style RW fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+    style HD fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+    style CS fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+    style AV fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+
+    %% Style domain components
+    style IR fill:#FBE7D4,stroke:#A05121,stroke-width:2px
+    style SR fill:#FBE7D4,stroke:#A05121,stroke-width:2px
+    style VM fill:#F7EFE3,stroke:#A1793B,stroke-width:2px
+    style SR2 fill:#FFF,stroke:#222,stroke-width:2px
 ```
 
 **Use Case Examples:**
@@ -229,6 +252,7 @@ class RunMonteCarloSimulationUseCase:
 Implements the interfaces defined in the domain layer and handles external concerns.
 
 ```mermaid
+%%{init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#B9ECE4', 'primaryTextColor': '#111', 'primaryBorderColor': '#33846A', 'lineColor': '#333' }}}%%
 classDiagram
     class JiraCSVParser {
         +parse_file(file_path): List[Issue]
@@ -261,6 +285,11 @@ classDiagram
     
     IssueRepository <|.. InMemoryIssueRepository
     ConfigRepository <|.. FileConfigRepository
+
+    style JiraCSVParser fill:#B9ECE4,stroke:#33846A,stroke-width:2px
+    style SmartCSVParser fill:#B9ECE4,stroke:#33846A,stroke-width:2px
+    style InMemoryIssueRepository fill:#CAE6FB,stroke:#2456A3,stroke-width:2px
+    style FileConfigRepository fill:#CAE6FB,stroke:#2456A3,stroke-width:2px
 ```
 
 **Key Features:**
@@ -273,23 +302,24 @@ classDiagram
 Handles user interaction and report generation.
 
 ```mermaid
-graph TB
-    subgraph "CLI Module"
-        CLI[Click CLI]
-        IV[Input Validation]
-        OP[Output Formatting]
+%%{init: { 'flowchart': { 'curve': 'basis', 'htmlLabels': false }}}%%
+flowchart TB
+    subgraph CLIModule["CLI Module"]
+        CLI([Click CLI])
+        IV([Input Validation])
+        OP([Output Formatting])
     end
     
-    subgraph "Report Generator"
-        RG[HTMLReportGenerator]
-        PC[Probability Chart]
-        VT[Velocity Trend]
-        FT[Forecast Timeline]
-        CI[Confidence Intervals]
+    subgraph ReportGen["Report Generator"]
+        RG([HTMLReportGenerator])
+        PC([Probability Chart])
+        VT([Velocity Trend])
+        FT([Forecast Timeline])
+        CI([Confidence Intervals])
     end
     
-    subgraph "Application Layer"
-        UC[Use Cases]
+    subgraph AppLayer["Application Layer"]
+        UC([Use Cases])
     end
     
     CLI --> IV
@@ -302,6 +332,21 @@ graph TB
     RG --> VT
     RG --> FT
     RG --> CI
+
+    %% Style CLI components
+    style CLI fill:#FFFAD0,stroke:#D1A800,stroke-width:2px
+    style IV fill:#FFFAD0,stroke:#D1A800,stroke-width:2px
+    style OP fill:#FFFAD0,stroke:#D1A800,stroke-width:2px
+
+    %% Style Report components
+    style RG fill:#FFFAD0,stroke:#D1A800,stroke-width:2px
+    style PC fill:#FFF4B3,stroke:#D1A800,stroke-width:2px
+    style VT fill:#FFF4B3,stroke:#D1A800,stroke-width:2px
+    style FT fill:#FFF4B3,stroke:#D1A800,stroke-width:2px
+    style CI fill:#FFF4B3,stroke:#D1A800,stroke-width:2px
+
+    %% Style Application layer
+    style UC fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
 ```
 
 **Responsibilities:**
@@ -315,33 +360,56 @@ graph TB
 Here's how data flows through the system during a typical simulation:
 
 ```mermaid
+%%{init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#fff', 'primaryTextColor': '#111', 'primaryBorderColor': '#222', 'lineColor': '#333', 'fontFamily': 'Arial', 'fontSize': '14px' }}}%%
 sequenceDiagram
     participant User
     participant CLI
     participant UseCase
-    participant Repository
+    participant Repository  
     participant Domain
     participant Infrastructure
     
     User->>CLI: Run simulation command
+    activate CLI
     CLI->>CLI: Parse arguments
     CLI->>Infrastructure: Load CSV file
+    activate Infrastructure
     Infrastructure->>Domain: Create Issue entities
+    activate Domain
     Domain->>Repository: Store issues
+    activate Repository
+    Repository-->>Domain: Confirm storage
+    deactivate Repository
+    deactivate Domain
+    deactivate Infrastructure
     
     CLI->>UseCase: Calculate velocity
+    activate UseCase
     UseCase->>Repository: Get historical data
-    Repository->>UseCase: Return sprints/issues
+    activate Repository
+    Repository-->>UseCase: Return sprints/issues
+    deactivate Repository
     UseCase->>Domain: Calculate metrics
-    Domain->>UseCase: Return VelocityMetrics
+    activate Domain
+    Domain-->>UseCase: Return VelocityMetrics
+    deactivate Domain
+    deactivate UseCase
     
     CLI->>UseCase: Run Monte Carlo
+    activate UseCase
     UseCase->>Domain: Simulate with metrics
-    Domain->>UseCase: Return SimulationResult
+    activate Domain
+    Domain-->>UseCase: Return SimulationResult
+    deactivate Domain
+    deactivate UseCase
     
-    UseCase->>CLI: Return results
+    UseCase-->>CLI: Return results
     CLI->>Infrastructure: Generate HTML report
-    CLI->>User: Display summary
+    activate Infrastructure
+    Infrastructure-->>CLI: Report generated
+    deactivate Infrastructure
+    CLI-->>User: Display summary
+    deactivate CLI
 ```
 
 ## Key Design Patterns
@@ -363,33 +431,41 @@ Dependencies are injected rather than created, improving testability and flexibi
 The Clean Architecture enables comprehensive testing at each layer:
 
 ```mermaid
-graph TB
-    subgraph "Test Pyramid"
-        UT[Unit Tests<br/>Domain & Use Cases]
-        IT[Integration Tests<br/>Infrastructure]
-        E2E[End-to-End Tests<br/>CLI & Reports]
+%%{init: { 'flowchart': { 'curve': 'basis', 'htmlLabels': false }}}%%
+flowchart TB
+    subgraph TestPyramid["Test Pyramid"]
+        UT(["Unit Tests<br/>Domain & Use Cases<br/>~70% coverage"])
+        IT(["Integration Tests<br/>Infrastructure<br/>~20% coverage"])
+        E2E(["End-to-End Tests<br/>CLI & Reports<br/>~10% coverage"])
     end
     
     UT --> IT
     IT --> E2E
     
-    style UT fill:#90EE90
-    style IT fill:#FFD700
-    style E2E fill:#FF6B6B
+    %% Style for test levels
+    style UT fill:#D4EDDA,stroke:#28A745,stroke-width:2px,color:#155724
+    style IT fill:#FFF3CD,stroke:#FFC107,stroke-width:2px,color:#856404
+    style E2E fill:#F8D7DA,stroke:#DC3545,stroke-width:2px,color:#721C24
+    
+    %% Style the container
+    style TestPyramid fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#111
 ```
 
 ### Unit Tests (Domain & Application)
+
 - Test business logic in isolation
 - No external dependencies
 - Fast and deterministic
 - Focus on behavior, not implementation
 
 ### Integration Tests (Infrastructure)
+
 - Test CSV parsing with real file structures
 - Test repository implementations
 - Verify configuration persistence
 
 ### End-to-End Tests (Presentation)
+
 - Test CLI commands
 - Verify report generation
 - Ensure proper error handling

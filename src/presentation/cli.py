@@ -1,5 +1,4 @@
 import click
-import questionary
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
@@ -10,7 +9,7 @@ from typing import Dict, List, Optional
 from ..domain.entities import SimulationConfig
 from ..domain.value_objects import FieldMapping
 from ..domain.analysis import VelocityAnalysisConfig, CSVAnalysisResult
-from ..infrastructure.csv_parser import JiraCSVParser, CSVFieldAnalyzer
+from ..infrastructure.csv_parser import JiraCSVParser
 from ..infrastructure.csv_analyzer import SmartCSVParser, EnhancedSprintExtractor, VelocityExtractor
 from ..infrastructure.repositories import (
     InMemoryIssueRepository, 
@@ -37,7 +36,6 @@ logger = logging.getLogger(__name__)
 @click.option('--csv-file', '-f', type=click.Path(exists=True), help='Path to Jira CSV export')
 @click.option('--num-simulations', '-n', default=10000, help='Number of Monte Carlo simulations')
 @click.option('--output', '-o', default='test-report.html', help='Output HTML report filename (default: test-report.html)')
-@click.option('--configure', '-c', is_flag=True, help='Configure field mappings interactively')
 # Field mapping options
 @click.option('--key-field', default='Issue key', help='CSV column for issue key (default: Issue key)')
 @click.option('--summary-field', default='Summary', help='CSV column for issue summary (default: Summary)')
@@ -58,7 +56,7 @@ logger = logging.getLogger(__name__)
 @click.option('--max-velocity-age', type=int, default=240, help='Maximum age of velocity data in days (default: 240 = 8 months)')
 @click.option('--outlier-std-devs', type=float, default=2.0, help='Standard deviations for outlier detection')
 @click.option('--min-velocity', type=float, default=10.0, help='Minimum velocity threshold (default: 10.0)')
-def main(csv_file: str, num_simulations: int, output: str, configure: bool,
+def main(csv_file: str, num_simulations: int, output: str,
          key_field: str, summary_field: str, status_field: str, created_field: str,
          resolved_field: str, story_points_field: str, sprint_field: str,
          done_statuses: str, in_progress_statuses: str, todo_statuses: str,
@@ -73,7 +71,8 @@ def main(csv_file: str, num_simulations: int, output: str, configure: bool,
     
     # Get CSV file
     if not csv_file:
-        csv_file = questionary.path("Enter path to Jira CSV file:").ask()
+        console.print("[red]Error: CSV file path is required. Use --csv-file option.[/red]")
+        return
     
     csv_path = Path(csv_file)
     
@@ -85,52 +84,39 @@ def main(csv_file: str, num_simulations: int, output: str, configure: bool,
         display_analysis_results(analysis_result)
         return
     
-    # With defaults, we always have CLI mappings now
-    # Only check if configure flag is set
-    has_cli_field_mapping = not configure
-    has_cli_status_mapping = not configure
-    
     # Configure field mappings
-    if has_cli_field_mapping:
-        # Use CLI-provided field mapping (with defaults)
-        field_mapping = FieldMapping(
-            key_field=key_field,
-            summary_field=summary_field,
-            issue_type_field="Issue Type",  # Default
-            status_field=status_field,
-            created_field=created_field,
-            updated_field="Updated",  # Default
-            resolved_field=resolved_field,
-            story_points_field=story_points_field,
-            time_estimate_field="Original estimate",  # Default
-            time_spent_field="Time Spent",  # Default
-            assignee_field="Assignee",  # Default
-            reporter_field="Reporter",  # Default
-            labels_field="Labels",  # Default
-            sprint_field=sprint_field
-        )
-        # Save for future use
-        config_repo.save_field_mapping(field_mapping)
-    else:
-        # Use interactive configuration
-        field_mapping = configure_field_mapping(csv_path, config_repo, force_configure=configure)
+    # Use CLI-provided field mapping (with defaults)
+    field_mapping = FieldMapping(
+        key_field=key_field,
+        summary_field=summary_field,
+        issue_type_field="Issue Type",  # Default
+        status_field=status_field,
+        created_field=created_field,
+        updated_field="Updated",  # Default
+        resolved_field=resolved_field,
+        story_points_field=story_points_field,
+        time_estimate_field="Original estimate",  # Default
+        time_spent_field="Time Spent",  # Default
+        assignee_field="Assignee",  # Default
+        reporter_field="Reporter",  # Default
+        labels_field="Labels",  # Default
+        sprint_field=sprint_field
+    )
+    # Save for future use
+    config_repo.save_field_mapping(field_mapping)
     
     # Configure status mappings
-    if has_cli_status_mapping:
-        # Use CLI-provided status mapping
-        status_mapping = {
-            "done": done_statuses.split(",") if done_statuses else ["Done", "Closed", "Resolved"],
-            "in_progress": in_progress_statuses.split(",") if in_progress_statuses else ["In Progress"],
-            "todo": todo_statuses.split(",") if todo_statuses else ["To Do", "Open"]
-        }
-        # Clean up whitespace
-        for key in status_mapping:
-            status_mapping[key] = [s.strip() for s in status_mapping[key]]
-        # Save for future use
-        config_repo.save_status_mapping(status_mapping)
-    else:
-        # Use interactive configuration
-        status_mapping = configure_status_mapping(config_repo, force_configure=configure)
+    # Use CLI-provided status mapping
+    status_mapping = {
+        "done": done_statuses.split(",") if done_statuses else ["Done", "Closed", "Resolved"],
+        "in_progress": in_progress_statuses.split(",") if in_progress_statuses else ["In Progress"],
+        "todo": todo_statuses.split(",") if todo_statuses else ["To Do", "Open"]
+    }
+    # Clean up whitespace
+    for key in status_mapping:
+        status_mapping[key] = [s.strip() for s in status_mapping[key]]  
+    # Save for future use
+    config_repo.save_status_mapping(status_mapping)
     
     # Parse CSV with smart parser if we have analysis results
     console.print("\n[yellow]Parsing CSV file...[/yellow]")
@@ -202,18 +188,7 @@ def main(csv_file: str, num_simulations: int, output: str, configure: bool,
     # Show issue status distribution
     show_status_distribution(issues)
     
-    # Configure simulation parameters if not provided via CLI
-    if not has_cli_field_mapping and not has_cli_status_mapping:
-        velocity_field = questionary.select(
-            "Select velocity metric:",
-            choices=["story_points", "time_estimate", "count"]
-        ).ask()
-        
-        lookback_sprints_str = questionary.text(
-            "Number of sprints to analyze for velocity (default: 6):",
-            default="6"
-        ).ask()
-        lookback_sprints = int(lookback_sprints_str)
+    # Simulation parameters are always provided via CLI now
     
     # Calculate velocity
     console.print("\n[yellow]Calculating historical velocity...[/yellow]")
@@ -288,125 +263,6 @@ def main(csv_file: str, num_simulations: int, output: str, configure: bool,
     # Show summary
     show_simulation_summary(results)
 
-
-def configure_field_mapping(csv_path: Path, 
-                          config_repo: FileConfigRepository,
-                          force_configure: bool = False) -> FieldMapping:
-    # Try to load existing mapping
-    if not force_configure:
-        existing_mapping = config_repo.load_field_mapping()
-        if existing_mapping:
-            use_existing = questionary.confirm(
-                "Found existing field mapping. Use it?"
-            ).ask()
-            if use_existing:
-                return existing_mapping
-    
-    console.print("\n[yellow]Analyzing CSV headers...[/yellow]")
-    categorized = CSVFieldAnalyzer.analyze_headers(csv_path)
-    
-    # Interactive field selection
-    console.print("\n[bold]Configure field mappings:[/bold]")
-    
-    mapping_dict = {}
-    
-    # Key field
-    mapping_dict["key_field"] = questionary.select(
-        "Select issue key field:",
-        choices=categorized["key_candidates"] + ["[Skip]"]
-    ).ask()
-    
-    # Summary field
-    mapping_dict["summary_field"] = questionary.select(
-        "Select summary field:",
-        choices=categorized["summary_candidates"] + ["[Skip]"]
-    ).ask()
-    
-    # Status field
-    mapping_dict["status_field"] = questionary.select(
-        "Select status field:",
-        choices=categorized["status_candidates"] + ["[Skip]"]
-    ).ask()
-    
-    # Date fields
-    mapping_dict["created_field"] = questionary.select(
-        "Select created date field:",
-        choices=categorized["date_candidates"] + ["[Skip]"]
-    ).ask()
-    
-    mapping_dict["resolved_field"] = questionary.select(
-        "Select resolved date field:",
-        choices=categorized["date_candidates"] + ["[Skip]"]
-    ).ask()
-    
-    # Velocity field
-    mapping_dict["story_points_field"] = questionary.select(
-        "Select story points field:",
-        choices=categorized["numeric_candidates"] + categorized["custom_fields"] + ["[Skip]"]
-    ).ask()
-    
-    # Sprint field
-    mapping_dict["sprint_field"] = questionary.select(
-        "Select sprint field:",
-        choices=categorized["sprint_candidates"] + categorized["custom_fields"] + ["[Skip]"]
-    ).ask()
-    
-    # Clean up [Skip] values
-    for key, value in list(mapping_dict.items()):
-        if value == "[Skip]":
-            mapping_dict[key] = None
-    
-    field_mapping = FieldMapping(**mapping_dict)
-    config_repo.save_field_mapping(field_mapping)
-    
-    return field_mapping
-
-
-def configure_status_mapping(config_repo: FileConfigRepository,
-                           force_configure: bool = False) -> Dict[str, List[str]]:
-    # Try to load existing mapping
-    if not force_configure:
-        existing_mapping = config_repo.load_status_mapping()
-        if existing_mapping:
-            use_existing = questionary.confirm(
-                "Found existing status mapping. Use it?"
-            ).ask()
-            if use_existing:
-                return existing_mapping
-    
-    console.print("\n[bold]Configure status categories:[/bold]")
-    
-    # Get common status values
-    default_done = ["Done", "Closed", "Resolved", "Complete"]
-    default_in_progress = ["In Progress", "In Development", "In Review"]
-    default_todo = ["To Do", "Open", "Backlog", "Ready"]
-    
-    status_mapping = {}
-    
-    # Done statuses
-    done_input = questionary.text(
-        "Enter 'Done' statuses (comma-separated):",
-        default=", ".join(default_done)
-    ).ask()
-    status_mapping["done"] = [s.strip() for s in done_input.split(",")]
-    
-    # In Progress statuses
-    progress_input = questionary.text(
-        "Enter 'In Progress' statuses (comma-separated):",
-        default=", ".join(default_in_progress)
-    ).ask()
-    status_mapping["in_progress"] = [s.strip() for s in progress_input.split(",")]
-    
-    # Todo statuses
-    todo_input = questionary.text(
-        "Enter 'To Do' statuses (comma-separated):",
-        default=", ".join(default_todo)
-    ).ask()
-    status_mapping["todo"] = [s.strip() for s in todo_input.split(",")]
-    
-    config_repo.save_status_mapping(status_mapping)
-    
-    return status_mapping
 
 
 def show_status_distribution(issues: List):

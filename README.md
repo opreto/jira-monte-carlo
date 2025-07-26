@@ -8,7 +8,7 @@ A high-performance Monte Carlo simulation tool for Jira project forecasting. Thi
 - **Smart Column Aggregation**: Automatically handles Jira's duplicate Sprint columns (Sprint, Sprint.1, Sprint.2, etc.)
 - **Sprint-Based Forecasting**: Predictions in sprints rather than days for clearer planning
 - **Velocity Outlier Detection**: Filters outliers using z-score and time-based analysis
-- **Configurable Field Mapping**: Interactive CLI or command-line options to map Jira's customizable fields
+- **Configurable Field Mapping**: Command-line options with sensible defaults to map Jira's customizable fields
 - **Monte Carlo Simulations**: Run thousands of simulations to predict project completion dates
 - **Beautiful HTML Reports**: Visual charts showing probability distributions, velocity trends, and forecasts
 - **Clean Architecture**: Follows Domain-Driven Design principles for maintainability
@@ -63,7 +63,6 @@ Basic Options:
   -f, --csv-file PATH            Path to Jira CSV export [required]
   -n, --num-simulations INT      Number of Monte Carlo simulations (default: 10000)
   -o, --output TEXT              Output HTML report filename (default: test-report.html)
-  -c, --configure                Configure field mappings interactively
   --analyze-only                 Only run CSV analysis without simulation
   --help                         Show help message and exit
 
@@ -89,26 +88,6 @@ Analysis Options:
   --min-velocity FLOAT           Minimum velocity threshold (default: 10.0)
 ```
 
-### Interactive Configuration
-
-On first run, the tool will guide you through configuring:
-
-1. **Field Mappings**: Map your Jira fields to the tool's expected fields
-   - Issue key, summary, status fields
-   - Date fields (created, resolved)
-   - Velocity metrics (story points, time estimates)
-   - Sprint information
-
-2. **Status Categories**: Define which statuses represent:
-   - Done (completed work)
-   - In Progress (work in flight)
-   - To Do (remaining work)
-
-3. **Simulation Parameters**:
-   - Velocity metric to use (story points, time estimate, or count)
-   - Number of historical sprints to analyze
-   - Number of simulations to run
-
 ### Example
 
 ```bash
@@ -133,10 +112,6 @@ uv run python -m src.presentation.cli \
   --csv-file jira-export.csv \
   --analyze-only
 
-# Interactive configuration
-uv run python -m src.presentation.cli \
-  --csv-file jira-export.csv \
-  --configure
 ```
 
 ## Architecture

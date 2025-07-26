@@ -258,7 +258,9 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(gh repo create:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(pytest:*)",
+      "Bash(uv pip:*)"
     ],
     "deny": []
   }

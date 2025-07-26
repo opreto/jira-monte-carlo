@@ -14,6 +14,12 @@ A high-performance Monte Carlo simulation tool for Jira project forecasting. Thi
 - **Clean Architecture**: Follows Domain-Driven Design principles for maintainability
 - **Sprint Duration Detection**: Automatically detects sprint length from data
 - **Multiple Status Support**: Handles custom Jira workflows with configurable status mappings
+- **Multi-Project Support**: Process multiple CSV files to generate a combined dashboard with drill-down to individual reports
+
+## TODO
+
+* Linear CSV format support
+* Jira XML format support
 
 ## Installation
 
@@ -87,6 +93,34 @@ Analysis Options:
   --outlier-std-devs FLOAT       Standard deviations for outlier detection (default: 2.0)
   --min-velocity FLOAT           Minimum velocity threshold (default: 10.0)
 ```
+
+### Multi-Project Analysis
+
+Process multiple CSV files (e.g., different epics or teams) to get a combined view:
+
+```bash
+# Process multiple CSV files
+uv run python -m src.presentation.cli \
+  -f epic1_export.csv \
+  -f epic2_export.csv \
+  -f epic3_export.csv \
+  -o combined_report.html
+```
+
+This generates:
+- `combined_report.html` - Dashboard with aggregated metrics and comparisons
+- `epic1_export_report.html` - Individual report for epic 1
+- `epic2_export_report.html` - Individual report for epic 2
+- `epic3_export_report.html` - Individual report for epic 3
+
+The dashboard includes:
+- Total remaining work across all projects
+- Combined team velocity
+- Project comparison charts
+- Velocity distribution analysis
+- Timeline comparisons
+- Workload distribution pie chart
+- Links to drill down into individual project reports
 
 ### Example
 

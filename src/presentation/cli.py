@@ -17,6 +17,7 @@ from ..infrastructure.repositories import (
     FileConfigRepository,
     SprintExtractor
 )
+from ..application.multi_project_use_cases import ProcessMultipleCSVsUseCase
 from ..application.use_cases import (
     CalculateVelocityUseCase,
     RunMonteCarloSimulationUseCase,
@@ -25,6 +26,7 @@ from ..application.use_cases import (
 )
 from ..application.csv_analysis import AnalyzeCSVStructureUseCase, AnalyzeVelocityUseCase
 from .report_generator import HTMLReportGenerator
+from .multi_report_generator import MultiProjectReportGenerator
 import polars as pl
 
 console = Console()
@@ -33,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 @click.command()
-@click.option('--csv-file', '-f', type=click.Path(exists=True), help='Path to Jira CSV export')
+@click.option('--csv-file', '-f', 'csv_files', multiple=True, type=click.Path(exists=True), help='Path to Jira CSV export (can be specified multiple times)')
 @click.option('--num-simulations', '-n', default=10000, help='Number of Monte Carlo simulations')
 @click.option('--output', '-o', default='test-report.html', help='Output HTML report filename (default: test-report.html)')
 # Field mapping options
@@ -56,7 +58,7 @@ logger = logging.getLogger(__name__)
 @click.option('--max-velocity-age', type=int, default=240, help='Maximum age of velocity data in days (default: 240 = 8 months)')
 @click.option('--outlier-std-devs', type=float, default=2.0, help='Standard deviations for outlier detection')
 @click.option('--min-velocity', type=float, default=10.0, help='Minimum velocity threshold (default: 10.0)')
-def main(csv_file: str, num_simulations: int, output: str,
+def main(csv_files: tuple, num_simulations: int, output: str,
          key_field: str, summary_field: str, status_field: str, created_field: str,
          resolved_field: str, story_points_field: str, sprint_field: str,
          done_statuses: str, in_progress_statuses: str, todo_statuses: str,
@@ -69,20 +71,12 @@ def main(csv_file: str, num_simulations: int, output: str,
     issue_repo = InMemoryIssueRepository()
     sprint_repo = InMemorySprintRepository()
     
-    # Get CSV file
-    if not csv_file:
-        console.print("[red]Error: CSV file path is required. Use --csv-file option.[/red]")
+    # Get CSV files
+    if not csv_files:
+        console.print("[red]Error: At least one CSV file path is required. Use --csv-file option.[/red]")
         return
     
-    csv_path = Path(csv_file)
-    
-    # Run CSV analysis first
-    console.print("\n[yellow]Analyzing CSV structure...[/yellow]")
-    analysis_result = analyze_csv_structure(csv_path)
-    
-    if analyze_only:
-        display_analysis_results(analysis_result)
-        return
+    csv_paths = [Path(csv_file) for csv_file in csv_files]
     
     # Configure field mappings
     # Use CLI-provided field mapping (with defaults)
@@ -117,6 +111,27 @@ def main(csv_file: str, num_simulations: int, output: str,
         status_mapping[key] = [s.strip() for s in status_mapping[key]]  
     # Save for future use
     config_repo.save_status_mapping(status_mapping)
+    
+    # Check if we have multiple files
+    if len(csv_paths) > 1:
+        console.print(f"\n[cyan]Processing {len(csv_paths)} CSV files...[/cyan]")
+        # Use multi-project processing
+        process_multiple_csvs(csv_paths, field_mapping, status_mapping, 
+                            num_simulations, output, velocity_field, 
+                            lookback_sprints, max_velocity_age, 
+                            outlier_std_devs, min_velocity)
+        return
+    
+    # Single file processing (existing logic)
+    csv_path = csv_paths[0]
+    
+    # Run CSV analysis first
+    console.print("\n[yellow]Analyzing CSV structure...[/yellow]")
+    analysis_result = analyze_csv_structure(csv_path)
+    
+    if analyze_only:
+        display_analysis_results(analysis_result)
+        return
     
     # Parse CSV with smart parser if we have analysis results
     console.print("\n[yellow]Parsing CSV file...[/yellow]")
@@ -263,6 +278,107 @@ def main(csv_file: str, num_simulations: int, output: str,
     # Show summary
     show_simulation_summary(results)
 
+
+def process_multiple_csvs(csv_paths: List[Path], 
+                         field_mapping: FieldMapping,
+                         status_mapping: Dict[str, List[str]],
+                         num_simulations: int,
+                         output: str,
+                         velocity_field: str,
+                         lookback_sprints: int,
+                         max_velocity_age: int,
+                         outlier_std_devs: float,
+                         min_velocity: float):
+    """Process multiple CSV files and generate multi-project report"""
+    
+    # Create simulation config
+    config = SimulationConfig(
+        num_simulations=num_simulations,
+        velocity_field=velocity_field,
+        done_statuses=status_mapping.get("done", []),
+        in_progress_statuses=status_mapping.get("in_progress", []),
+        todo_statuses=status_mapping.get("todo", []),
+        confidence_levels=[0.5, 0.7, 0.85, 0.95],
+        sprint_duration_days=14  # Will be detected per project
+    )
+    
+    # Create velocity config
+    velocity_config = {
+        'lookback_sprints': lookback_sprints,
+        'velocity_field': velocity_field,
+        'max_velocity_age': max_velocity_age,
+        'outlier_std_devs': outlier_std_devs,
+        'min_velocity': min_velocity
+    }
+    
+    # Process all CSVs
+    use_case = ProcessMultipleCSVsUseCase(
+        issue_repo_factory=InMemoryIssueRepository,
+        sprint_repo_factory=InMemorySprintRepository
+    )
+    
+    multi_report = use_case.execute(
+        csv_paths=csv_paths,
+        field_mapping=field_mapping,
+        status_mapping=status_mapping,
+        simulation_config=config,
+        velocity_config=velocity_config
+    )
+    
+    # Generate multi-project report
+    console.print("\n[yellow]Generating multi-project HTML report...[/yellow]")
+    report_generator = MultiProjectReportGenerator()
+    report_path = report_generator.generate(
+        multi_report=multi_report,
+        output_dir=Path(output).parent,
+        output_filename=Path(output).name
+    )
+    
+    console.print(f"\n[green]✓ Multi-project report generated: {report_path}[/green]")
+    
+    # Show summary
+    show_multi_project_summary(multi_report)
+
+
+def show_multi_project_summary(multi_report):
+    """Display summary of multi-project simulation results"""
+    
+    # Overall summary table
+    summary_table = Table(title="Multi-Project Summary")
+    summary_table.add_column("Metric", style="cyan")
+    summary_table.add_column("Value", style="magenta")
+    
+    metrics = multi_report.aggregated_metrics
+    summary_table.add_row("Total Projects", str(metrics.total_projects))
+    summary_table.add_row("Total Issues", str(metrics.total_issues))
+    summary_table.add_row("Completion %", f"{metrics.overall_completion_percentage:.1f}%")
+    summary_table.add_row("Remaining Work", f"{metrics.total_remaining_work:.1f}")
+    summary_table.add_row("Combined Velocity", f"{metrics.combined_velocity:.1f}")
+    
+    console.print(summary_table)
+    
+    # Individual project table
+    project_table = Table(title="Individual Project Results")
+    project_table.add_column("Project", style="cyan")
+    project_table.add_column("Issues", style="green")
+    project_table.add_column("Done %", style="green")
+    project_table.add_column("Remaining", style="yellow")
+    project_table.add_column("Velocity", style="magenta")
+    project_table.add_column("85% Confidence", style="blue")
+    
+    for project in multi_report.projects:
+        if project.simulation_result and project.velocity_metrics:
+            confidence_85 = project.simulation_result.percentiles.get(85, 0)
+            project_table.add_row(
+                project.name,
+                str(project.total_issues),
+                f"{project.completion_percentage:.1f}%",
+                f"{project.remaining_work:.1f}",
+                f"{project.velocity_metrics.average:.1f}",
+                f"{confidence_85} sprints"
+            )
+    
+    console.print(project_table)
 
 
 def show_status_distribution(issues: List):

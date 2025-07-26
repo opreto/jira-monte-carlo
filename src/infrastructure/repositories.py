@@ -25,6 +25,10 @@ class InMemoryIssueRepository(IssueRepository):
                 self._issues_by_status[issue.status] = []
             self._issues_by_status[issue.status].append(issue)
     
+    def save_all(self, issues: List[Issue]) -> None:
+        """Alias for add_issues to match the use case expectations"""
+        self.add_issues(issues)
+    
     def get_all(self) -> List[Issue]:
         return self.issues
     

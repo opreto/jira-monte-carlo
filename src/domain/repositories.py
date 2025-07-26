@@ -22,6 +22,11 @@ class IssueRepository(ABC):
     @abstractmethod
     def get_completed_in_range(self, date_range: DateRange) -> List[Issue]:
         pass
+    
+    @abstractmethod
+    def save_all(self, issues: List[Issue]) -> None:
+        """Save/add multiple issues to the repository"""
+        pass
 
 
 class SprintRepository(ABC):
@@ -35,6 +40,11 @@ class SprintRepository(ABC):
     
     @abstractmethod
     def get_last_n_sprints(self, n: int) -> List[Sprint]:
+        pass
+    
+    @abstractmethod
+    def add_sprints(self, sprints: List[Sprint]) -> None:
+        """Add multiple sprints to the repository"""
         pass
 
 

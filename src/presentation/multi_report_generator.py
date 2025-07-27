@@ -80,7 +80,8 @@ class MultiProjectReportGenerator:
                 historical_data=historical_data,
                 remaining_work=project.remaining_work,
                 config=config,
-                output_path=project_path
+                output_path=project_path,
+                project_name=project.name
             )
             
             project_links[project.name] = project_filename

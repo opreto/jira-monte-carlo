@@ -30,7 +30,8 @@ class HTMLReportGenerator:
                 historical_data: HistoricalData,
                 remaining_work: float,
                 config: SimulationConfig,
-                output_path: Path) -> Path:
+                output_path: Path,
+                project_name: Optional[str] = None) -> Path:
         
         # Generate charts
         charts = {
@@ -43,6 +44,7 @@ class HTMLReportGenerator:
         # Prepare data for template
         context = {
             "generation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "project_name": project_name,
             "remaining_work": remaining_work,
             "velocity_field": config.velocity_field,
             "num_simulations": config.num_simulations,

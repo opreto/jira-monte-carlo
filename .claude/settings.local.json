@@ -261,7 +261,8 @@
       "Bash(git push:*)",
       "Bash(pytest:*)",
       "Bash(uv pip:*)",
-      "Bash(open multi_report.html)"
+      "Bash(open multi_report.html)",
+      "Bash(open:*)"
     ],
     "deny": []
   }

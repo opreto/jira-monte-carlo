@@ -267,13 +267,17 @@ def main(csv_files: tuple, num_simulations: int, output: str, theme: str,
     console.print("\n[yellow]Generating HTML report...[/yellow]")
     style_service = StyleService()
     report_generator = HTMLReportGenerator(style_service, theme)
+    # Extract project name from CSV filename
+    project_name = Path(csv_path).stem
+    
     report_path = report_generator.generate(
         simulation_results=results,
         velocity_metrics=velocity_metrics,
         historical_data=historical_data,
         remaining_work=remaining_work,
         config=config,
-        output_path=Path(output)
+        output_path=Path(output),
+        project_name=project_name
     )
     
     console.print(f"\n[green]✓ Report generated: {report_path}[/green]")

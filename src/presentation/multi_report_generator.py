@@ -132,32 +132,43 @@ class MultiProjectReportGenerator:
     
     def _create_project_comparison_chart(self, names, remaining, velocities, completion):
         """Create project comparison bar chart"""
+        # Calculate completed work for each project
+        completed_work = []
+        for i, comp_pct in enumerate(completion):
+            # Convert percentage to decimal (56.6% -> 0.566)
+            comp_decimal = comp_pct / 100.0
+            if comp_decimal > 0 and comp_decimal < 1:
+                # If we know X% is complete and Y points remain, total = Y / (1 - X%)
+                total_work = remaining[i] / (1 - comp_decimal)
+                completed_work.append(total_work - remaining[i])  # Completed = Total - Remaining
+            else:
+                completed_work.append(0)
+        
         return {
             "data": [{
+                "x": names,
+                "y": completed_work,
+                "name": "Completed Work",
+                "type": "bar",
+                "marker": {"color": self.chart_colors['high_confidence']},  # Green for completed
+                "text": [f"{c:.1f}%" for c in completion],
+                "textposition": "inside"
+            }, {
                 "x": names,
                 "y": remaining,
                 "name": "Remaining Work",
                 "type": "bar",
-                "marker": {"color": self.chart_colors['accent']}
-            }, {
-                "x": names,
-                "y": velocities,
-                "name": "Average Velocity",
-                "type": "bar",
-                "marker": {"color": self.chart_colors['secondary']},
-                "yaxis": "y2"
+                "marker": {"color": self.chart_colors['low_confidence']},  # Red for remaining
+                "text": [f"{100-c:.1f}%" for c in completion],
+                "textposition": "inside"
             }],
             "layout": {
-                "title": "Project Comparison",
+                "title": "Project Progress Overview",
                 "xaxis": {"title": "Projects"},
-                "yaxis": {"title": "Remaining Work (Story Points)"},
-                "yaxis2": {
-                    "title": "Average Velocity",
-                    "overlaying": "y",
-                    "side": "right"
-                },
-                "barmode": "group",
-                "hovermode": "x unified"
+                "yaxis": {"title": "Story Points"},
+                "barmode": "stack",
+                "hovermode": "x unified",
+                "showlegend": True
             }
         }
     
@@ -244,9 +255,14 @@ class MultiProjectReportGenerator:
             "layout": {
                 "title": "Sprint Completion Timeline Comparison",
                 "xaxis": {"title": "Sprints to Complete"},
-                "yaxis": {"title": "Projects"},
+                "yaxis": {
+                    "title": "Projects",
+                    "automargin": True,  # Automatically adjust margin for long labels
+                    "tickmode": "linear"
+                },
                 "barmode": "overlay",
-                "hovermode": "y unified"
+                "hovermode": "y unified",
+                "margin": {"l": 150}  # More left margin for project names
             }
         }
     

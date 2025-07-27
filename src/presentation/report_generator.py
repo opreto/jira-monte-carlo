@@ -130,7 +130,7 @@ class HTMLReportGenerator:
             xaxis_title="Sprints to Complete",
             yaxis_title="Probability",
             showlegend=False,
-            height=400,
+            height=450,  # Increased height
             xaxis=dict(
                 tickmode='linear',
                 tick0=min(sprints_sorted) if sprints_sorted else 0,
@@ -138,9 +138,11 @@ class HTMLReportGenerator:
                 range=[min(sprints_sorted) - 0.5, max(sprints_sorted) + 0.5] if sprints_sorted else [0, 10]
             ),
             yaxis=dict(
-                tickformat='.1%'
+                tickformat='.1%',
+                range=[0, max(probabilities) * 1.15] if probabilities else [0, 1]  # Add 15% padding at top
             ),
-            bargap=0.1
+            bargap=0.1,
+            margin=dict(t=80)  # More top margin for title and labels
         )
         
         return fig.to_json()

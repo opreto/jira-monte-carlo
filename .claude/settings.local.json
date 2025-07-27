@@ -260,7 +260,8 @@
       "Bash(gh repo create:*)",
       "Bash(git push:*)",
       "Bash(pytest:*)",
-      "Bash(uv pip:*)"
+      "Bash(uv pip:*)",
+      "Bash(open multi_report.html)"
     ],
     "deny": []
   }

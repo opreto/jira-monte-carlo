@@ -15,7 +15,7 @@ A high-performance Monte Carlo simulation tool for Jira project forecasting. Thi
 - **Sprint Duration Detection**: Automatically detects sprint length from data
 - **Multiple Status Support**: Handles custom Jira workflows with configurable status mappings
 - **Multi-Project Support**: Process multiple CSV files to generate a combined dashboard with drill-down to individual reports
-- **Themeable Reports**: Built-in themes (default and Opreto) with clean architecture for styling
+- **Themeable Reports**: Built-in themes (Opreto and generic) with clean architecture for styling
 
 ## TODO
 

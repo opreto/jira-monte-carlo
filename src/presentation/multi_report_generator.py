@@ -197,12 +197,35 @@ class MultiProjectReportGenerator:
                 
                 # Create a horizontal bar for each confidence level
                 # Use different colors for each project
-                project_colors = self.chart_colors['palette']
-                base_color = project_colors[i % len(project_colors)]
+                data_colors = [
+                    self.chart_colors['data1'],
+                    self.chart_colors['data2'],
+                    self.chart_colors['data3'],
+                    self.chart_colors['data4'],
+                    self.chart_colors['data5']
+                ]
+                base_color = data_colors[i % len(data_colors)]
+                
+                # Get the project's base color
+                if self.style_generator.theme.colors.chart_colors:
+                    chart_colors = self.style_generator.theme.colors.chart_colors
+                    project_colors = [
+                        chart_colors.data1,
+                        chart_colors.data2,
+                        chart_colors.data3,
+                        chart_colors.data4,
+                        chart_colors.data5
+                    ]
+                    project_color = project_colors[i % len(project_colors)]
+                else:
+                    # Fallback
+                    project_color = self.style_generator.theme.colors.primary
                 
                 for conf_level, sprints in percentiles.items():
-                    # Higher confidence = lighter color
-                    opacity = 1.0 - (conf_level - 0.5) * 0.8  # Scale from 1.0 to 0.6
+                    # Vary opacity based on confidence level
+                    # Higher confidence = more opaque
+                    opacity = 0.3 + (0.7 * (1 - conf_level))  # 0.3 to 1.0
+                    
                     conf_percentage = int(conf_level * 100)
                     data.append({
                         "x": [sprints],
@@ -211,7 +234,7 @@ class MultiProjectReportGenerator:
                         "type": "bar",
                         "orientation": "h",
                         "marker": {
-                            "color": f"rgba({base_color}, {opacity})"
+                            "color": project_color.to_rgba(opacity)
                         },
                         "showlegend": i == 0  # Only show legend for first project
                     })

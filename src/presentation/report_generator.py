@@ -100,14 +100,14 @@ class HTMLReportGenerator:
         total_simulations = len(completion_sprints)
         probabilities = [c / total_simulations for c in counts]
         
-        # Create simple bar chart
+        # Create simple bar chart with gradient colors
         fig = go.Figure(data=[
             go.Bar(
                 x=sprints_sorted,
                 y=probabilities,
                 name='Probability Distribution',
-                marker_color=self.chart_colors['primary_rgba'](0.7),
-                marker_line_color=self.chart_colors['primary'],
+                marker_color=self.chart_colors['neutral_rgba'](0.7),
+                marker_line_color=self.chart_colors['neutral'],
                 marker_line_width=1,
                 text=[f'{p:.1%}' for p in probabilities],
                 textposition='outside'
@@ -157,7 +157,7 @@ class HTMLReportGenerator:
             y=historical.velocities,
             mode='lines+markers',
             name='Historical Velocity',
-            line=dict(color=self.chart_colors['primary'], width=2),
+            line=dict(color=self.chart_colors['data1'], width=2),
             marker=dict(size=8)
         ))
         
@@ -291,12 +291,13 @@ class HTMLReportGenerator:
             days = sprints * sprint_duration
             date = today + timedelta(days=int(days))
             
+            # Use semantic colors for timeline markers
             if confidence <= 0.5:
-                color = self.chart_colors['success']
+                color = self.chart_colors['high_confidence']
             elif confidence <= 0.85:
-                color = self.chart_colors['warning']
+                color = self.chart_colors['medium_confidence']
             else:
-                color = self.chart_colors['error']
+                color = self.chart_colors['low_confidence']
                 
             fig.add_trace(go.Scatter(
                 x=[date],
@@ -344,14 +345,15 @@ class HTMLReportGenerator:
         colors = []
         for c, s in zip(confidences, sprints):
             labels.append(f"{c*100:.0f}%")
+            # Use semantic colors based on confidence levels
             if c <= 0.5:
-                colors.append(self.chart_colors['success'])
+                colors.append(self.chart_colors['high_confidence'])  # Green - High confidence
             elif c <= 0.7:
-                colors.append(self.chart_colors['success'])
+                colors.append(self.chart_colors['high_confidence'])  # Still green for 70%
             elif c <= 0.85:
-                colors.append(self.chart_colors['warning'])
+                colors.append(self.chart_colors['medium_confidence'])  # Amber - Medium confidence
             else:
-                colors.append(self.chart_colors['error'])
+                colors.append(self.chart_colors['low_confidence'])  # Red - Low confidence
         
         fig = go.Figure(data=[
             go.Bar(

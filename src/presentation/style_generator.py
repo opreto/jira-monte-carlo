@@ -322,25 +322,59 @@ a:hover {
 }"""
     
     def get_chart_colors(self) -> dict:
-        """Get chart color configuration"""
-        return {
-            "primary": self.theme.colors.primary.hex,
-            "primary_rgba": lambda alpha: self.theme.colors.primary.to_rgba(alpha),
-            "secondary": self.theme.colors.secondary.hex,
-            "secondary_rgba": lambda alpha: self.theme.colors.secondary.to_rgba(alpha),
-            "accent": self.theme.colors.accent.hex,
-            "accent_rgba": lambda alpha: self.theme.colors.accent.to_rgba(alpha),
-            "success": self.theme.colors.success.hex,
-            "warning": self.theme.colors.warning.hex,
-            "error": self.theme.colors.error.hex,
-            "palette": [
-                self.theme.colors.primary.rgb or "102, 126, 234",
-                self.theme.colors.secondary.rgb or "78, 205, 196",
-                self.theme.colors.accent.rgb or "255, 107, 107",
-                "103, 126, 234",  # Additional colors
-                "255, 193, 7",
-                "255, 87, 34",
-                "76, 175, 80",
-                "156, 39, 176"
-            ]
-        }
+        """Get chart color configuration with BI best practices"""
+        if self.theme.colors.chart_colors:
+            cc = self.theme.colors.chart_colors
+            return {
+                # Semantic colors for confidence levels (RGB convention)
+                "high_confidence": cc.high_confidence.hex,  # Green = Good/Safe
+                "medium_confidence": cc.medium_confidence.hex,  # Amber = Caution
+                "low_confidence": cc.low_confidence.hex,  # Red = Risk/Warning
+                "neutral": cc.neutral.hex,  # Blue/Gray = Neutral info
+                
+                # RGBA functions for transparency
+                "high_confidence_rgba": lambda alpha: cc.high_confidence.to_rgba(alpha),
+                "medium_confidence_rgba": lambda alpha: cc.medium_confidence.to_rgba(alpha),
+                "low_confidence_rgba": lambda alpha: cc.low_confidence.to_rgba(alpha),
+                "neutral_rgba": lambda alpha: cc.neutral.to_rgba(alpha),
+                
+                # Data visualization colors
+                "data1": cc.data1.hex,
+                "data2": cc.data2.hex,
+                "data3": cc.data3.hex,
+                "data4": cc.data4.hex,
+                "data5": cc.data5.hex,
+                
+                # Gradient colors for distributions
+                "gradient_start": cc.gradient_start.hex,
+                "gradient_mid": cc.gradient_mid.hex,
+                "gradient_end": cc.gradient_end.hex,
+                
+                # Legacy compatibility
+                "primary": cc.data1.hex,
+                "primary_rgba": lambda alpha: cc.data1.to_rgba(alpha),
+                "secondary": cc.data2.hex,
+                "secondary_rgba": lambda alpha: cc.data2.to_rgba(alpha),
+                "accent": cc.data3.hex,
+                "accent_rgba": lambda alpha: cc.data3.to_rgba(alpha),
+                "success": cc.high_confidence.hex,
+                "warning": cc.medium_confidence.hex,
+                "error": cc.low_confidence.hex
+            }
+        else:
+            # Fallback for themes without chart colors
+            return {
+                "primary": self.theme.colors.primary.hex,
+                "primary_rgba": lambda alpha: self.theme.colors.primary.to_rgba(alpha),
+                "secondary": self.theme.colors.secondary.hex,
+                "secondary_rgba": lambda alpha: self.theme.colors.secondary.to_rgba(alpha),
+                "accent": self.theme.colors.accent.hex,
+                "accent_rgba": lambda alpha: self.theme.colors.accent.to_rgba(alpha),
+                "success": self.theme.colors.success.hex,
+                "warning": self.theme.colors.warning.hex,
+                "error": self.theme.colors.error.hex,
+                "high_confidence": self.theme.colors.success.hex,
+                "medium_confidence": self.theme.colors.warning.hex,
+                "low_confidence": self.theme.colors.error.hex,
+                "neutral": self.theme.colors.info.hex
+            }

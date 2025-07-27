@@ -33,6 +33,28 @@ class Typography:
 
 
 @dataclass(frozen=True)
+class ChartColors:
+    """Value object for chart color scheme following BI best practices"""
+    # Semantic colors for different confidence levels and metrics
+    high_confidence: Color  # Green - positive/safe/high confidence
+    medium_confidence: Color  # Amber/Yellow - caution/medium confidence  
+    low_confidence: Color  # Red - risk/low confidence
+    neutral: Color  # Blue/Gray - neutral/informational
+    
+    # Data visualization colors (colorblind-friendly palette)
+    data1: Color  # Primary data series
+    data2: Color  # Secondary data series
+    data3: Color  # Tertiary data series
+    data4: Color  # Additional series
+    data5: Color  # Additional series
+    
+    # Gradient colors for heatmaps/distributions
+    gradient_start: Color
+    gradient_mid: Color
+    gradient_end: Color
+
+
+@dataclass(frozen=True)
 class ColorPalette:
     """Value object for color palette"""
     primary: Color
@@ -47,6 +69,7 @@ class ColorPalette:
     warning: Color
     error: Color
     info: Color
+    chart_colors: Optional[ChartColors] = None
 
 
 @dataclass(frozen=True)

@@ -532,26 +532,38 @@ The styling system follows the same clean architecture principles:
 - **Theme Entity**: Complete theme configuration including colors, typography, spacing
 - **Color Value Object**: RGB/hex color representation with conversion methods
 - **Typography Value Object**: Font family, size, weight, and spacing
+- **ChartColors Value Object**: Specialized color scheme for data visualization
+  - Semantic colors for confidence levels (green/amber/red)
+  - Colorblind-friendly data series palette
+  - Gradient colors for distributions
 - **ThemeRepository Interface**: Abstraction for theme persistence
 
 ### Application Layer
 - **StyleService**: Manages theme selection and style generation
 - Provides theme management without knowledge of CSS or HTML
+- Default theme selection (Opreto)
 
 ### Infrastructure Layer
 - **FileThemeRepository**: JSON-based theme storage in `~/.jira-monte-carlo/themes.json`
-- Default themes: "default" (purple/modern) and "opreto" (teal/professional)
+- Available themes:
+  - "opreto" (default): Teal/professional with BI-standard chart colors
+  - "generic": Purple/modern with traditional chart colors
 
 ### Presentation Layer
 - **StyleGenerator**: Converts theme objects to CSS
 - **Templates**: Clean separation of HTML structure from styling
-- Chart color coordination with theme colors
+- Chart color coordination following BI best practices:
+  - Green (#00A86B) for high confidence/positive outcomes
+  - Orange (#FFA500) for medium confidence/caution
+  - Red (#DC143C) for low confidence/risk
+  - Professional data visualization palette
 
 This approach enables:
 - Easy addition of new themes
 - Consistent styling across all reports
 - Theme customization without code changes
 - Clean separation of styling concerns
+- Semantic meaning in data visualizations
 
 ## Future Extensions
 

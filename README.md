@@ -70,7 +70,7 @@ Basic Options:
   -f, --csv-file PATH            Path to Jira CSV export [required]
   -n, --num-simulations INT      Number of Monte Carlo simulations (default: 10000)
   -o, --output TEXT              Output HTML report filename (default: test-report.html)
-  --theme TEXT                   Visual theme for reports: default or opreto (default: default)
+  --theme TEXT                   Visual theme for reports: opreto or generic (default: opreto)
   --analyze-only                 Only run CSV analysis without simulation
   --help                         Show help message and exit
 
@@ -130,8 +130,8 @@ The dashboard includes:
 # Simple usage with all defaults (recommended)
 uv run python -m src.presentation.cli --csv-file "All Work with Sprints (JIRA).csv"
 
-# Use Opreto theme for reports
-uv run python -m src.presentation.cli --csv-file data.csv --theme opreto
+# Use generic theme instead of default Opreto theme
+uv run python -m src.presentation.cli --csv-file data.csv --theme generic
 
 # Override specific options while using other defaults
 uv run python -m src.presentation.cli \
@@ -245,20 +245,28 @@ The generated HTML report includes:
 The tool supports customizable themes for HTML reports:
 
 ### Available Themes
-- **default**: Clean, modern theme with purple accents
-- **opreto**: Professional theme following Opreto's brand guidelines
+- **opreto** (default): Professional theme following Opreto's brand guidelines
   - Teal primary colors (#03564c, #022d2c)
   - Sublima font for headings, Inter for body text
   - Hero archetype design elements
   - Dynamic hover effects and transitions
+  - BI best practice chart colors:
+    - Green (#00A86B) for high confidence/positive outcomes
+    - Orange (#FFA500) for medium confidence/caution
+    - Red (#DC143C) for low confidence/risk
+    - Colorblind-friendly data visualization palette
+- **generic**: Clean, modern theme with purple accents
+  - Purple/teal color scheme
+  - System fonts
+  - Traditional chart colors
 
 ### Using Themes
 ```bash
-# Use default theme (purple/modern)
+# Use Opreto theme (default)
 uv run python -m src.presentation.cli -f data.csv
 
-# Use Opreto theme (teal/professional)
-uv run python -m src.presentation.cli -f data.csv --theme opreto
+# Use generic theme
+uv run python -m src.presentation.cli -f data.csv --theme generic
 ```
 
 ### Theme Architecture

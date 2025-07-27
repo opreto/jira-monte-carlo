@@ -59,7 +59,7 @@ logger = logging.getLogger(__name__)
 @click.option('--max-velocity-age', type=int, default=240, help='Maximum age of velocity data in days (default: 240 = 8 months)')
 @click.option('--outlier-std-devs', type=float, default=2.0, help='Standard deviations for outlier detection')
 @click.option('--min-velocity', type=float, default=10.0, help='Minimum velocity threshold (default: 10.0)')
-@click.option('--theme', type=click.Choice(['default', 'opreto']), default='default', help='Visual theme for reports (default: default)')
+@click.option('--theme', type=click.Choice(['opreto', 'generic']), default='opreto', help='Visual theme for reports (default: opreto)')
 def main(csv_files: tuple, num_simulations: int, output: str, theme: str,
          key_field: str, summary_field: str, status_field: str, created_field: str,
          resolved_field: str, story_points_field: str, sprint_field: str,

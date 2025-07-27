@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from typing import Optional, Dict
 from ..domain.styles import (
-    Theme, ThemeRepository, Color, ColorPalette, 
+    Theme, ThemeRepository, Color, ColorPalette, ChartColors,
     Typography, TypographySystem, Spacing, Shadows, Borders
 )
 
@@ -25,7 +25,7 @@ class FileThemeRepository(ThemeRepository):
         """Ensure default themes exist"""
         if not self.themes_file.exists():
             default_themes = {
-                "default": self._serialize_theme(self._create_default_theme()),
+                "generic": self._serialize_theme(self._create_generic_theme()),
                 "opreto": self._serialize_theme(self._create_opreto_theme())
             }
             self._save_themes(default_themes)
@@ -40,7 +40,7 @@ class FileThemeRepository(ThemeRepository):
     
     def get_default_theme(self) -> Theme:
         """Get default theme"""
-        return self.get_theme("default") or self._create_default_theme()
+        return self.get_theme("opreto") or self._create_opreto_theme()
     
     def save_theme(self, theme: Theme) -> None:
         """Save a theme"""
@@ -60,10 +60,10 @@ class FileThemeRepository(ThemeRepository):
         with open(self.themes_file, 'w') as f:
             json.dump(themes, f, indent=2)
     
-    def _create_default_theme(self) -> Theme:
-        """Create default theme"""
+    def _create_generic_theme(self) -> Theme:
+        """Create generic theme"""
         return Theme(
-            name="default",
+            name="generic",
             colors=ColorPalette(
                 primary=Color(hex="#667eea", rgb="102, 126, 234", name="Purple"),
                 primary_dark=Color(hex="#764ba2", rgb="118, 75, 162", name="Dark Purple"),
@@ -76,7 +76,24 @@ class FileThemeRepository(ThemeRepository):
                 success=Color(hex="#d4edda", name="Light Green"),
                 warning=Color(hex="#fff3cd", name="Light Yellow"),
                 error=Color(hex="#f8d7da", name="Light Red"),
-                info=Color(hex="#d1ecf1", name="Light Blue")
+                info=Color(hex="#d1ecf1", name="Light Blue"),
+                chart_colors=ChartColors(
+                    # Semantic colors for confidence levels
+                    high_confidence=Color(hex="#28a745", rgb="40, 167, 69", name="Success Green"),
+                    medium_confidence=Color(hex="#ffc107", rgb="255, 193, 7", name="Warning Amber"),
+                    low_confidence=Color(hex="#dc3545", rgb="220, 53, 69", name="Danger Red"),
+                    neutral=Color(hex="#6c757d", rgb="108, 117, 125", name="Neutral Gray"),
+                    # Data series colors (colorblind-friendly)
+                    data1=Color(hex="#667eea", rgb="102, 126, 234", name="Purple"),
+                    data2=Color(hex="#4ecdc4", rgb="78, 205, 196", name="Teal"),
+                    data3=Color(hex="#ff6b6b", rgb="255, 107, 107", name="Red"),
+                    data4=Color(hex="#feca57", rgb="254, 202, 87", name="Yellow"),
+                    data5=Color(hex="#48dbfb", rgb="72, 219, 251", name="Light Blue"),
+                    # Gradient colors
+                    gradient_start=Color(hex="#667eea", rgb="102, 126, 234", name="Purple"),
+                    gradient_mid=Color(hex="#a855f7", rgb="168, 85, 247", name="Mid Purple"),
+                    gradient_end=Color(hex="#ec4899", rgb="236, 72, 153", name="Pink")
+                )
             ),
             typography=TypographySystem(
                 heading1=Typography(
@@ -132,7 +149,24 @@ class FileThemeRepository(ThemeRepository):
                 success=Color(hex="#D1F2D9", name="Light Green"),
                 warning=Color(hex="#FFF3CD", name="Light Yellow"),
                 error=Color(hex="#F8D7DA", name="Light Red"),
-                info=Color(hex="#D1ECF1", name="Light Blue")
+                info=Color(hex="#D1ECF1", name="Light Blue"),
+                chart_colors=ChartColors(
+                    # Semantic colors following BI best practices
+                    high_confidence=Color(hex="#00A86B", rgb="0, 168, 107", name="Jade Green"),
+                    medium_confidence=Color(hex="#FFA500", rgb="255, 165, 0", name="Orange"),
+                    low_confidence=Color(hex="#DC143C", rgb="220, 20, 60", name="Crimson"),
+                    neutral=Color(hex="#03564c", rgb="3, 86, 76", name="Teal"),
+                    # Data series colors (colorblind-friendly, professional)
+                    data1=Color(hex="#03564c", rgb="3, 86, 76", name="Primary Teal"),
+                    data2=Color(hex="#0E5473", rgb="14, 84, 115", name="Cerulean Blue"),
+                    data3=Color(hex="#6B1229", rgb="107, 18, 41", name="Burgundy"),
+                    data4=Color(hex="#FF8C00", rgb="255, 140, 0", name="Dark Orange"),
+                    data5=Color(hex="#4B0082", rgb="75, 0, 130", name="Indigo"),
+                    # Gradient colors for distributions
+                    gradient_start=Color(hex="#00A86B", rgb="0, 168, 107", name="Jade Green"),
+                    gradient_mid=Color(hex="#FFA500", rgb="255, 165, 0", name="Orange"),
+                    gradient_end=Color(hex="#DC143C", rgb="220, 20, 60", name="Crimson")
+                )
             ),
             typography=TypographySystem(
                 heading1=Typography(
@@ -275,6 +309,7 @@ class FileThemeRepository(ThemeRepository):
                 "error": {"hex": theme.colors.error.hex, "rgb": theme.colors.error.rgb, "name": theme.colors.error.name},
                 "info": {"hex": theme.colors.info.hex, "rgb": theme.colors.info.rgb, "name": theme.colors.info.name}
             },
+            "chart_colors": self._serialize_chart_colors(theme.colors.chart_colors) if theme.colors.chart_colors else None,
             "typography": {
                 "heading1": self._serialize_typography(theme.typography.heading1),
                 "heading2": self._serialize_typography(theme.typography.heading2),
@@ -318,9 +353,46 @@ class FileThemeRepository(ThemeRepository):
             "letter_spacing": typography.letter_spacing
         }
     
+    def _serialize_chart_colors(self, chart_colors: ChartColors) -> Dict:
+        """Serialize chart colors to dictionary"""
+        return {
+            "high_confidence": {"hex": chart_colors.high_confidence.hex, "rgb": chart_colors.high_confidence.rgb, "name": chart_colors.high_confidence.name},
+            "medium_confidence": {"hex": chart_colors.medium_confidence.hex, "rgb": chart_colors.medium_confidence.rgb, "name": chart_colors.medium_confidence.name},
+            "low_confidence": {"hex": chart_colors.low_confidence.hex, "rgb": chart_colors.low_confidence.rgb, "name": chart_colors.low_confidence.name},
+            "neutral": {"hex": chart_colors.neutral.hex, "rgb": chart_colors.neutral.rgb, "name": chart_colors.neutral.name},
+            "data1": {"hex": chart_colors.data1.hex, "rgb": chart_colors.data1.rgb, "name": chart_colors.data1.name},
+            "data2": {"hex": chart_colors.data2.hex, "rgb": chart_colors.data2.rgb, "name": chart_colors.data2.name},
+            "data3": {"hex": chart_colors.data3.hex, "rgb": chart_colors.data3.rgb, "name": chart_colors.data3.name},
+            "data4": {"hex": chart_colors.data4.hex, "rgb": chart_colors.data4.rgb, "name": chart_colors.data4.name},
+            "data5": {"hex": chart_colors.data5.hex, "rgb": chart_colors.data5.rgb, "name": chart_colors.data5.name},
+            "gradient_start": {"hex": chart_colors.gradient_start.hex, "rgb": chart_colors.gradient_start.rgb, "name": chart_colors.gradient_start.name},
+            "gradient_mid": {"hex": chart_colors.gradient_mid.hex, "rgb": chart_colors.gradient_mid.rgb, "name": chart_colors.gradient_mid.name},
+            "gradient_end": {"hex": chart_colors.gradient_end.hex, "rgb": chart_colors.gradient_end.rgb, "name": chart_colors.gradient_end.name}
+        }
+    
     def _deserialize_theme(self, name: str, data: Dict) -> Theme:
         """Deserialize theme from dictionary"""
         colors_data = data["colors"]
+        
+        # Deserialize chart colors if present
+        chart_colors = None
+        if "chart_colors" in data and data["chart_colors"]:
+            chart_data = data["chart_colors"]
+            chart_colors = ChartColors(
+                high_confidence=Color(**chart_data["high_confidence"]),
+                medium_confidence=Color(**chart_data["medium_confidence"]),
+                low_confidence=Color(**chart_data["low_confidence"]),
+                neutral=Color(**chart_data["neutral"]),
+                data1=Color(**chart_data["data1"]),
+                data2=Color(**chart_data["data2"]),
+                data3=Color(**chart_data["data3"]),
+                data4=Color(**chart_data["data4"]),
+                data5=Color(**chart_data["data5"]),
+                gradient_start=Color(**chart_data["gradient_start"]),
+                gradient_mid=Color(**chart_data["gradient_mid"]),
+                gradient_end=Color(**chart_data["gradient_end"])
+            )
+        
         colors = ColorPalette(
             primary=Color(**colors_data["primary"]),
             primary_dark=Color(**colors_data["primary_dark"]),
@@ -333,7 +405,8 @@ class FileThemeRepository(ThemeRepository):
             success=Color(**colors_data["success"]),
             warning=Color(**colors_data["warning"]),
             error=Color(**colors_data["error"]),
-            info=Color(**colors_data["info"])
+            info=Color(**colors_data["info"]),
+            chart_colors=chart_colors
         )
         
         typography_data = data["typography"]

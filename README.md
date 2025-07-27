@@ -1,26 +1,29 @@
-# Jira Monte Carlo Simulation
+# Monte Carlo Simulation for Agile Projects
 
-A high-performance Monte Carlo simulation tool for Jira project forecasting. This tool analyzes historical velocity data from Jira CSV exports and uses Monte Carlo simulations to predict project completion dates with confidence intervals.
+A high-performance Monte Carlo simulation tool for agile project forecasting. This tool analyzes historical velocity data from various sources (Jira, Linear, etc.) and uses Monte Carlo simulations to predict project completion dates with confidence intervals.
 
 ## Features
 
 - **High Performance**: Uses Polars for efficient CSV parsing and batch processing
+- **Multi-Source Support**: Import data from Jira CSV, Linear CSV, with extensible architecture for more formats
+- **Auto-Detection**: Automatically detects the data source format
 - **Smart Column Aggregation**: Automatically handles Jira's duplicate Sprint columns (Sprint, Sprint.1, Sprint.2, etc.)
 - **Sprint-Based Forecasting**: Predictions in sprints rather than days for clearer planning
 - **Velocity Outlier Detection**: Filters outliers using z-score and time-based analysis
-- **Configurable Field Mapping**: Command-line options with sensible defaults to map Jira's customizable fields
+- **Configurable Field Mapping**: Command-line options with sensible defaults to map customizable fields
 - **Monte Carlo Simulations**: Run thousands of simulations to predict project completion dates
 - **Beautiful HTML Reports**: Visual charts showing probability distributions, velocity trends, and forecasts
 - **Clean Architecture**: Follows Domain-Driven Design principles for maintainability
 - **Sprint Duration Detection**: Automatically detects sprint length from data
-- **Multiple Status Support**: Handles custom Jira workflows with configurable status mappings
+- **Multiple Status Support**: Handles custom workflows with configurable status mappings
 - **Multi-Project Support**: Process multiple CSV files to generate a combined dashboard with drill-down to individual reports
 - **Themeable Reports**: Built-in themes (Opreto and generic) with clean architecture for styling
 
-## TODO
+## Supported Data Sources
 
-* Linear CSV format support
-* Jira XML format support
+- **Jira CSV**: Export from Jira with all issue fields and sprint data
+- **Linear CSV**: Export from Linear with cycle and estimate data
+- **Extensible**: Clean architecture allows adding new data sources easily
 
 ## Installation
 
@@ -53,21 +56,26 @@ uv pip install -e ".[dev]"
 
 ### Basic Usage
 
-Run the Monte Carlo simulation on a Jira CSV export:
+Run the Monte Carlo simulation on your project data:
 
 ```bash
-# Simplest usage with defaults for standard Jira exports
-uv run python -m src.presentation.cli --csv-file jira-export.csv
+# Simplest usage - auto-detects format
+jira-monte-carlo -f export.csv
 
-# Or if installed as package
-jira-monte-carlo -f jira-export.csv
+# Specify format explicitly
+jira-monte-carlo -f linear-export.csv --format linear
+jira-monte-carlo -f jira-export.csv --format jira
+
+# Process multiple files (can be different formats)
+jira-monte-carlo -f jira-export.csv -f linear-export.csv
 ```
 
 ### Command Line Options
 
 ```
 Basic Options:
-  -f, --csv-file PATH            Path to Jira CSV export [required]
+  -f, --csv-file PATH            Path to CSV export (can be specified multiple times) [required]
+  -F, --format TEXT              Data source format: auto, jira, or linear (default: auto)
   -n, --num-simulations INT      Number of Monte Carlo simulations (default: 10000)
   -o, --output TEXT              Output HTML report filename (default: test-report.html)
   --theme TEXT                   Visual theme for reports: opreto or generic (default: opreto)

@@ -567,9 +567,58 @@ This approach enables:
 
 ## Future Extensions
 
+## Data Source Abstraction
+
+The system implements a flexible data source abstraction that supports multiple input formats:
+
+### Domain Layer
+- **DataSource Interface**: Abstract interface for all data sources
+  - `parse_file()`: Extract issues and sprints from a file
+  - `detect_format()`: Auto-detect if a file matches this format
+  - `get_info()`: Return metadata about the data source
+  - `analyze_structure()`: Analyze file structure and contents
+- **DataSourceFactory Interface**: Factory for creating data sources
+- **DataSourceType Enum**: Supported types (JIRA_CSV, LINEAR_CSV, etc.)
+- **FieldMapping Value Object**: Maps source fields to domain fields
+
+### Infrastructure Layer
+- **JiraCSVDataSource**: Parses Jira CSV exports
+  - Smart column aggregation for duplicate sprint columns
+  - Automatic field mapping detection
+  - Sprint velocity extraction
+- **LinearCSVDataSource**: Parses Linear CSV exports  
+  - Maps Linear cycles to sprints
+  - Handles T-shirt size estimates
+  - Status mapping for Linear workflows
+- **DefaultDataSourceFactory**: Implementation with auto-detection
+  - Analyzes file headers to determine format
+  - Registry of available data sources
+
+### Application Layer
+- **ImportDataUseCase**: Orchestrates data import
+  - Auto-detects format if not specified
+  - Uses appropriate data source
+  - Saves to repositories
+- **AnalyzeDataSourceUseCase**: Analyzes file structure
+  - Returns format-specific insights
+  - Helps with field mapping configuration
+
+### Benefits
+- **Extensibility**: Easy to add new data sources
+- **Auto-detection**: Users don't need to specify format
+- **Consistent interface**: All sources provide same data model
+- **Format-specific features**: Each source can handle unique aspects
+- **Multi-format support**: Can process different formats in same session
+
+## Future Extensions
+
 The architecture supports these potential enhancements without major refactoring:
 
-- **Different Data Sources**: Add Jira API integration alongside CSV
+- **Additional Data Sources**: 
+  - Jira API integration
+  - Linear API integration
+  - Azure DevOps export support
+  - GitHub Projects export support
 - **Different Storage**: Replace in-memory with database persistence
 - **Different UIs**: Add web interface alongside CLI
 - **Different Analytics**: Add new simulation algorithms

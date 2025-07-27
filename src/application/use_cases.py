@@ -2,11 +2,14 @@ from typing import List, Dict, Optional, Tuple
 from datetime import datetime, timedelta
 import random
 import statistics
+import logging
 from dataclasses import dataclass
 
 from ..domain.entities import Issue, Sprint, Team, SimulationConfig, SimulationResult
 from ..domain.repositories import IssueRepository, SprintRepository
 from ..domain.value_objects import DateRange, VelocityMetrics, HistoricalData
+
+logger = logging.getLogger(__name__)
 
 
 class CalculateVelocityUseCase:
@@ -23,6 +26,11 @@ class CalculateVelocityUseCase:
         # Collect velocities from sprints with completed points
         velocities = []
         for sprint in all_sprints:
+            # Skip if sprint is not a Sprint object (safety check)
+            if isinstance(sprint, dict):
+                logger.warning(f"Found dict instead of Sprint object: {sprint}")
+                continue
+            
             # Use the sprint's velocity directly if available
             if hasattr(sprint, 'velocity') and sprint.velocity > 0:
                 velocities.append(sprint.velocity)

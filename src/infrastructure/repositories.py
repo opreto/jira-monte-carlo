@@ -53,9 +53,11 @@ class InMemorySprintRepository(SprintRepository):
         self.sprints: List[Sprint] = []
     
     def add_sprints(self, sprints: List[Sprint]) -> None:
+        # Add new sprints to existing ones
+        self.sprints.extend(sprints)
         # Sort by start_date, handling None values
         self.sprints = sorted(
-            sprints, 
+            self.sprints, 
             key=lambda s: s.start_date if s.start_date else datetime.min
         )
     

@@ -12,40 +12,51 @@ from .value_objects import VelocityMetrics, FieldMapping
 class ProjectData:
     """Data from a single CSV file/project"""
     name: str  # Derived from filename or explicitly provided
-    source_path: Path
-    issues: List[Issue] = field(default_factory=list)
-    sprints: List[Sprint] = field(default_factory=list)
+    file_path: Path  # Standardize on file_path
+    total_issues: int = 0
+    completed_issues: int = 0
+    remaining_work: float = 0.0
+    completion_percentage: float = 0.0
     velocity_metrics: Optional[VelocityMetrics] = None
     simulation_result: Optional[SimulationResult] = None
-    remaining_work: float = 0.0
+    historical_data: Optional[object] = None  # HistoricalData type
+    sprints: List[Sprint] = field(default_factory=list)
+    # Legacy support
+    issues: List[Issue] = field(default_factory=list)
+    source_path: Optional[Path] = None  # Backward compatibility
     
-    @property
-    def total_issues(self) -> int:
-        return len(self.issues)
+    def __post_init__(self):
+        # Support legacy initialization with issues list
+        if self.issues and not self.total_issues:
+            self.total_issues = len(self.issues)
+            done_statuses = {'Done', 'Released', 'Closed', 'Resolved', 'Complete'}
+            self.completed_issues = len([i for i in self.issues if i.status in done_statuses])
+            if self.total_issues > 0:
+                self.completion_percentage = (self.completed_issues / self.total_issues) * 100
+        # Support legacy source_path
+        if self.source_path and not self.file_path:
+            self.file_path = self.source_path
     
     @property
     def done_issues(self) -> int:
-        # Check common done statuses
-        done_statuses = {'Done', 'Released', 'Closed', 'Resolved', 'Complete'}
-        return len([i for i in self.issues if i.status in done_statuses])
+        # Legacy property for backward compatibility
+        return self.completed_issues
     
     @property
     def todo_issues(self) -> int:
         # Check common todo statuses
-        todo_statuses = {'To Do', 'Open', 'Backlog', 'Ready'}
-        return len([i for i in self.issues if i.status in todo_statuses])
+        if self.issues:
+            todo_statuses = {'To Do', 'Open', 'Backlog', 'Ready'}
+            return len([i for i in self.issues if i.status in todo_statuses])
+        return self.total_issues - self.completed_issues
     
     @property
     def in_progress_issues(self) -> int:
         # Check common in-progress statuses
-        progress_statuses = {'In Progress', 'In Development', 'In Review', 'Analysis'}
-        return len([i for i in self.issues if i.status in progress_statuses])
-    
-    @property
-    def completion_percentage(self) -> float:
-        if self.total_issues == 0:
-            return 0.0
-        return (self.done_issues / self.total_issues) * 100
+        if self.issues:
+            progress_statuses = {'In Progress', 'In Development', 'In Review', 'Analysis'}
+            return len([i for i in self.issues if i.status in progress_statuses])
+        return 0
 
 
 @dataclass
@@ -53,19 +64,16 @@ class AggregatedMetrics:
     """Aggregated metrics across multiple projects"""
     total_projects: int
     total_issues: int
-    total_done_issues: int
+    total_completed_issues: int
     total_remaining_work: float
-    average_velocity: float
     combined_velocity: float  # Sum of all team velocities
-    earliest_completion_date: datetime
-    latest_completion_date: datetime
-    confidence_intervals: Dict[float, int]  # confidence level -> sprints
+    combined_simulation_result: Optional[SimulationResult] = None
     
     @property
     def overall_completion_percentage(self) -> float:
         if self.total_issues == 0:
             return 0.0
-        return (self.total_done_issues / self.total_issues) * 100
+        return (self.total_completed_issues / self.total_issues) * 100
 
 
 @dataclass

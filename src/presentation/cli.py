@@ -17,13 +17,17 @@ from ..infrastructure.repositories import (
     FileConfigRepository,
     SprintExtractor
 )
+from ..infrastructure.data_source_factory import DefaultDataSourceFactory
+from ..domain.data_sources import DataSourceType
 from ..application.multi_project_use_cases import ProcessMultipleCSVsUseCase
+from ..application.multi_project_import import ProcessMultipleDataSourcesUseCase
 from ..application.use_cases import (
     CalculateVelocityUseCase,
     RunMonteCarloSimulationUseCase,
     AnalyzeHistoricalDataUseCase,
     CalculateRemainingWorkUseCase
 )
+from ..application.import_data import ImportDataUseCase, AnalyzeDataSourceUseCase
 from ..application.csv_analysis import AnalyzeCSVStructureUseCase, AnalyzeVelocityUseCase
 from ..application.style_service import StyleService
 from .report_generator import HTMLReportGenerator
@@ -36,7 +40,8 @@ logger = logging.getLogger(__name__)
 
 
 @click.command()
-@click.option('--csv-file', '-f', 'csv_files', multiple=True, type=click.Path(exists=True), help='Path to Jira CSV export (can be specified multiple times)')
+@click.option('--csv-file', '-f', 'csv_files', multiple=True, type=click.Path(exists=True), help='Path to CSV export (can be specified multiple times)')
+@click.option('--format', '-F', 'data_format', type=click.Choice(['auto', 'jira', 'linear']), default='auto', help='Data source format (default: auto-detect)')
 @click.option('--num-simulations', '-n', default=10000, help='Number of Monte Carlo simulations')
 @click.option('--output', '-o', default='test-report.html', help='Output HTML report filename (default: test-report.html)')
 # Field mapping options
@@ -45,7 +50,7 @@ logger = logging.getLogger(__name__)
 @click.option('--status-field', default='Status', help='CSV column for issue status (default: Status)')
 @click.option('--created-field', default='Created', help='CSV column for created date (default: Created)')
 @click.option('--resolved-field', default='Resolved', help='CSV column for resolved date (default: Resolved)')
-@click.option('--story-points-field', default='Custom field (Story point estimate)', help='CSV column for story points (default: Custom field (Story point estimate))')
+@click.option('--story-points-field', help='CSV column for story points (default: varies by format)')
 @click.option('--sprint-field', default='Sprint', help='CSV column for sprint (default: Sprint)')
 # Status mapping options
 @click.option('--done-statuses', default='Done,Released,Awaiting Release,Closed,Resolved', help='Comma-separated list of done statuses (default: Done,Released,Awaiting Release,Closed,Resolved)')
@@ -60,13 +65,13 @@ logger = logging.getLogger(__name__)
 @click.option('--outlier-std-devs', type=float, default=2.0, help='Standard deviations for outlier detection')
 @click.option('--min-velocity', type=float, default=10.0, help='Minimum velocity threshold (default: 10.0)')
 @click.option('--theme', type=click.Choice(['opreto', 'generic']), default='opreto', help='Visual theme for reports (default: opreto)')
-def main(csv_files: tuple, num_simulations: int, output: str, theme: str,
+def main(csv_files: tuple, num_simulations: int, output: str, theme: str, data_format: str,
          key_field: str, summary_field: str, status_field: str, created_field: str,
          resolved_field: str, story_points_field: str, sprint_field: str,
          done_statuses: str, in_progress_statuses: str, todo_statuses: str,
          velocity_field: str, lookback_sprints: int, analyze_only: bool,
          max_velocity_age: int, outlier_std_devs: float, min_velocity: float):
-    console.print("[bold blue]Jira Monte Carlo Simulation[/bold blue]")
+    console.print("[bold blue]Monte Carlo Simulation[/bold blue]")
     
     # Initialize repositories
     config_repo = FileConfigRepository()
@@ -80,26 +85,39 @@ def main(csv_files: tuple, num_simulations: int, output: str, theme: str,
     
     csv_paths = [Path(csv_file) for csv_file in csv_files]
     
-    # Configure field mappings
-    # Use CLI-provided field mapping (with defaults)
-    field_mapping = FieldMapping(
-        key_field=key_field,
-        summary_field=summary_field,
-        issue_type_field="Issue Type",  # Default
-        status_field=status_field,
-        created_field=created_field,
-        updated_field="Updated",  # Default
-        resolved_field=resolved_field,
-        story_points_field=story_points_field,
-        time_estimate_field="Original estimate",  # Default
-        time_spent_field="Time Spent",  # Default
-        assignee_field="Assignee",  # Default
-        reporter_field="Reporter",  # Default
-        labels_field="Labels",  # Default
-        sprint_field=sprint_field
-    )
-    # Save for future use
-    config_repo.save_field_mapping(field_mapping)
+    # Initialize data source factory
+    data_source_factory = DefaultDataSourceFactory()
+    
+    # Convert format string to enum
+    source_type = None
+    if data_format != 'auto':
+        source_type = DataSourceType.JIRA_CSV if data_format == 'jira' else DataSourceType.LINEAR_CSV
+    
+    # Configure field mappings - only if explicitly provided
+    field_mapping = None
+    if any([key_field != 'Issue key', summary_field != 'Summary', status_field != 'Status',
+            created_field != 'Created', resolved_field != 'Resolved', story_points_field is not None,
+            sprint_field != 'Sprint']):
+        # User provided custom field mapping
+        field_mapping = FieldMapping(
+            key_field=key_field,
+            summary_field=summary_field,
+            issue_type_field="Issue Type",  # Default
+            status_field=status_field,
+            created_field=created_field,
+            updated_field="Updated",  # Default
+            resolved_field=resolved_field,
+            story_points_field=story_points_field or "Custom field (Story point estimate)",
+            time_estimate_field="Original estimate",  # Default
+            time_spent_field="Time Spent",  # Default
+            assignee_field="Assignee",  # Default
+            reporter_field="Reporter",  # Default
+            labels_field="Labels",  # Default
+            sprint_field=sprint_field
+        )
+    # Save for future use only if field mapping was provided
+    if field_mapping:
+        config_repo.save_field_mapping(field_mapping)
     
     # Configure status mappings
     # Use CLI-provided status mapping
@@ -121,86 +139,43 @@ def main(csv_files: tuple, num_simulations: int, output: str, theme: str,
         process_multiple_csvs(csv_paths, field_mapping, status_mapping, 
                             num_simulations, output, velocity_field, 
                             lookback_sprints, max_velocity_age, 
-                            outlier_std_devs, min_velocity, theme)
+                            outlier_std_devs, min_velocity, theme, 
+                            data_format, data_source_factory)
         return
     
-    # Single file processing (existing logic)
+    # Single file processing using new data source abstraction
     csv_path = csv_paths[0]
     
-    # Run CSV analysis first
-    console.print("\n[yellow]Analyzing CSV structure...[/yellow]")
-    analysis_result = analyze_csv_structure(csv_path)
+    # Import data using the new abstraction
+    import_use_case = ImportDataUseCase(
+        data_source_factory=data_source_factory,
+        issue_repo=issue_repo,
+        sprint_repo=sprint_repo,
+        config_repo=config_repo
+    )
+    
+    try:
+        console.print("\n[yellow]Importing data...[/yellow]")
+        issues, sprints = import_use_case.execute(
+            file_path=csv_path,
+            source_type=source_type,
+            field_mapping=field_mapping
+        )
+        console.print(f"[green]✓ Loaded {len(issues)} issues and {len(sprints)} sprints[/green]")
+        
+    except ValueError as e:
+        console.print(f"[red]Error: {str(e)}[/red]")
+        return
     
     if analyze_only:
+        # Run analysis on the data source
+        analyze_use_case = AnalyzeDataSourceUseCase(data_source_factory)
+        analysis_result = analyze_use_case.execute(csv_path, source_type)
         display_analysis_results(analysis_result)
         return
     
-    # Parse CSV with smart parser if we have analysis results
-    console.print("\n[yellow]Parsing CSV file...[/yellow]")
-    
-    # Use smart parser with column aggregation
-    from ..infrastructure.csv_analyzer import SmartCSVParser
-    
-    smart_parser = SmartCSVParser(field_mapping, analysis_result.column_groups)
-    df = smart_parser.parse_file(csv_path)
-    
-    # Convert DataFrame to issues using regular parser
-    parser = JiraCSVParser(field_mapping)
-    issues = parser.parse_dataframe(df)
-    issue_repo.add_issues(issues)
-    
-    console.print(f"[green]✓ Loaded {len(issues)} issues[/green]")
-    
-    # Extract sprints using enhanced extractor that supports aggregated columns
+    # Velocity analysis will be done by the use cases using the imported sprint data
     velocity_analysis = None  # Initialize for later use
-    if field_mapping.sprint_field:
-        from ..infrastructure.csv_analyzer import EnhancedSprintExtractor, VelocityExtractor
-        from ..domain.analysis import VelocityAnalysisConfig
-        
-        sprint_velocities = EnhancedSprintExtractor.extract_from_dataframe(
-            df,
-            field_mapping.sprint_field,
-            field_mapping.status_field,
-            status_mapping.get("done", []),
-            field_mapping.story_points_field or "Story Points"
-        )
-        
-        # Extract velocity data points with dates for filtering
-        velocity_data = VelocityExtractor.extract_velocity_data(
-            df,
-            sprint_velocities,
-            field_mapping.resolved_field or "Resolved"
-        )
-        
-        # Apply velocity analysis with outlier filtering
-        velocity_config = VelocityAnalysisConfig(
-            lookback_sprints=lookback_sprints,
-            outlier_std_devs=outlier_std_devs,
-            max_age_days=max_velocity_age,
-            min_velocity=min_velocity,
-            max_velocity=200.0
-        )
-        
-        velocity_analyzer = AnalyzeVelocityUseCase()
-        velocity_analysis = velocity_analyzer.execute(velocity_data, velocity_config)
-        
-        console.print(f"[green]✓ Extracted {len(sprint_velocities)} sprints[/green]")
-        console.print(f"[yellow]  - Filtered to {len(velocity_analysis.filtered_velocities)} sprints after outlier removal[/yellow]")
-        console.print(f"[yellow]  - Removed {len(velocity_analysis.outliers_removed)} outliers[/yellow]")
-        
-        # Convert filtered velocities to Sprint entities
-        from ..domain.entities import Sprint
-        sprints = []
-        for vdp in velocity_analysis.filtered_velocities:
-            sprint = Sprint(
-                name=vdp.sprint_name,
-                completed_points=vdp.completed_points,
-                start_date=vdp.sprint_date,
-                end_date=vdp.sprint_date  # Use same date for both
-            )
-            sprints.append(sprint)
-        
-        sprint_repo.add_sprints(sprints)
     
     # Show issue status distribution
     show_status_distribution(issues)
@@ -227,11 +202,8 @@ def main(csv_files: tuple, num_simulations: int, output: str, theme: str,
     # Run simulation
     console.print(f"\n[yellow]Running {num_simulations:,} Monte Carlo simulations...[/yellow]")
     
-    # Get sprint duration from velocity analysis if available
+    # Get sprint duration - default to 14 days (2 weeks)
     sprint_duration = 14  # Default
-    if velocity_analysis and hasattr(velocity_analysis, 'sprint_duration_days'):
-        sprint_duration = velocity_analysis.sprint_duration_days
-        console.print(f"[cyan]Detected sprint duration: {sprint_duration} days ({sprint_duration // 7} weeks)[/cyan]")
     
     config = SimulationConfig(
         num_simulations=num_simulations,
@@ -287,7 +259,7 @@ def main(csv_files: tuple, num_simulations: int, output: str, theme: str,
 
 
 def process_multiple_csvs(csv_paths: List[Path], 
-                         field_mapping: FieldMapping,
+                         field_mapping: Optional[FieldMapping],
                          status_mapping: Dict[str, List[str]],
                          num_simulations: int,
                          output: str,
@@ -296,7 +268,9 @@ def process_multiple_csvs(csv_paths: List[Path],
                          max_velocity_age: int,
                          outlier_std_devs: float,
                          min_velocity: float,
-                         theme: str):
+                         theme: str,
+                         data_format: str,
+                         data_source_factory):
     """Process multiple CSV files and generate multi-project report"""
     
     # Create simulation config
@@ -319,14 +293,22 @@ def process_multiple_csvs(csv_paths: List[Path],
         'min_velocity': min_velocity
     }
     
-    # Process all CSVs
-    use_case = ProcessMultipleCSVsUseCase(
+    # Convert format string to enum
+    source_type = None
+    if data_format != 'auto':
+        source_type = DataSourceType.JIRA_CSV if data_format == 'jira' else DataSourceType.LINEAR_CSV
+    
+    # Process all data files using new abstraction
+    use_case = ProcessMultipleDataSourcesUseCase(
+        data_source_factory=data_source_factory,
         issue_repo_factory=InMemoryIssueRepository,
-        sprint_repo_factory=InMemorySprintRepository
+        sprint_repo_factory=InMemorySprintRepository,
+        config_repo_factory=FileConfigRepository
     )
     
     multi_report = use_case.execute(
-        csv_paths=csv_paths,
+        file_paths=csv_paths,
+        source_type=source_type,
         field_mapping=field_mapping,
         status_mapping=status_mapping,
         simulation_config=config,
@@ -462,53 +444,64 @@ def analyze_csv_structure(csv_path: Path) -> CSVAnalysisResult:
     return analyzer.execute(headers, rows)
 
 
-def display_analysis_results(analysis: CSVAnalysisResult):
-    """Display CSV analysis results"""
-    console.print("\n[bold green]CSV Analysis Results[/bold green]")
+def display_analysis_results(analysis):
+    """Display data source analysis results"""
+    console.print("\n[bold green]Data Source Analysis Results[/bold green]")
+    
+    # Handle both CSVAnalysisResult objects and dictionaries
+    if hasattr(analysis, '__dict__'):
+        # Convert object to dict
+        analysis_dict = {
+            'total_rows': getattr(analysis, 'total_rows', 0),
+            'total_columns': getattr(analysis, 'total_columns', 0),
+            'column_groups': getattr(analysis, 'column_groups', {}),
+            'status_values': getattr(analysis, 'status_values', []),
+            'sprint_values': getattr(analysis, 'sprint_values', []),
+            'field_mapping_suggestions': getattr(analysis, 'field_mapping_suggestions', {}),
+            'numeric_field_candidates': getattr(analysis, 'numeric_field_candidates', [])
+        }
+    else:
+        analysis_dict = analysis
     
     # Basic info
-    table = Table(title="CSV Structure")
+    table = Table(title="Data Structure")
     table.add_column("Metric", style="cyan")
     table.add_column("Value", style="magenta")
     
-    table.add_row("Total Rows", str(analysis.total_rows))
-    table.add_row("Total Columns", str(analysis.total_columns))
-    table.add_row("Column Groups", str(len(analysis.column_groups)))
+    table.add_row("Total Rows", str(analysis_dict.get('total_rows', 'N/A')))
+    table.add_row("Total Columns", str(analysis_dict.get('total_columns', 'N/A')))
+    
+    # Additional info based on source type
+    if 'has_estimates' in analysis_dict:
+        table.add_row("Has Estimates", "Yes" if analysis_dict['has_estimates'] else "No")
+    if 'has_cycles' in analysis_dict:
+        table.add_row("Has Cycles/Sprints", "Yes" if analysis_dict['has_cycles'] else "No")
     
     console.print(table)
     
-    # Column groups
-    if analysis.column_groups:
-        console.print("\n[bold]Column Groups Detected:[/bold]")
-        for name, group in analysis.column_groups.items():
-            if len(group.columns) > 1:
-                console.print(f"  {name}: {len(group.columns)} columns (strategy: {group.aggregation_strategy.value})")
-                for col in group.columns[:3]:  # Show first 3
-                    console.print(f"    - {col.name} (index {col.index})")
-    
-    # Field mapping suggestions
-    if analysis.field_mapping_suggestions:
-        console.print("\n[bold]Suggested Field Mappings:[/bold]")
-        for field, column in analysis.field_mapping_suggestions.items():
-            console.print(f"  {field}: {column}")
+    # Column info
+    if 'columns' in analysis_dict:
+        console.print(f"\n[bold]Columns ({len(analysis_dict['columns'])}):[/bold]")
+        for col in analysis_dict['columns'][:20]:  # Show first 20
+            console.print(f"  - {col}")
     
     # Status values
-    if analysis.status_values:
-        console.print(f"\n[bold]Status Values ({len(analysis.status_values)}):[/bold]")
-        for status in analysis.status_values[:10]:  # Show first 10
+    if 'status_values' in analysis_dict and analysis_dict['status_values']:
+        console.print(f"\n[bold]Status Values ({len(analysis_dict['status_values'])}):[/bold]")
+        for status in analysis_dict['status_values'][:10]:  # Show first 10
             console.print(f"  - {status}")
     
-    # Sprint values
-    if analysis.sprint_values:
-        console.print(f"\n[bold]Sprint Values ({len(analysis.sprint_values)}):[/bold]")
-        for sprint in analysis.sprint_values[:10]:  # Show first 10
-            console.print(f"  - {sprint}")
+    # Sprint/Cycle values
+    cycle_key = 'cycle_values' if 'cycle_values' in analysis_dict else 'sprint_values'
+    if cycle_key in analysis_dict and analysis_dict[cycle_key]:
+        label = "Cycle" if cycle_key == 'cycle_values' else "Sprint"
+        console.print(f"\n[bold]{label} Values ({len(analysis_dict[cycle_key])}):[/bold]")
+        for value in analysis_dict[cycle_key][:10]:  # Show first 10
+            console.print(f"  - {value}")
     
-    # Numeric fields
-    if analysis.numeric_field_candidates:
-        console.print("\n[bold]Numeric Field Candidates:[/bold]")
-        for field in analysis.numeric_field_candidates[:10]:
-            console.print(f"  - {field}")
+    # Error handling
+    if 'error' in analysis_dict:
+        console.print(f"\n[red]Error: {analysis_dict['error']}[/red]")
 
 
 if __name__ == "__main__":

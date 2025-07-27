@@ -22,7 +22,7 @@ class TestProjectData:
         
         project = ProjectData(
             name="Test Project",
-            source_path=Path("test.csv"),
+            file_path=Path("test.csv"),
             issues=issues,
             remaining_work=8.0
         )
@@ -32,7 +32,8 @@ class TestProjectData:
         assert project.done_issues == 1
         assert project.in_progress_issues == 1
         assert project.todo_issues == 1
-        assert project.completion_percentage == pytest.approx(33.33, 0.01)
+        # 1 done out of 3 issues = 33.33%
+        assert abs(project.completion_percentage - 33.33) < 0.1
 
 
 class TestAggregatedMetrics:
@@ -40,17 +41,13 @@ class TestAggregatedMetrics:
         metrics = AggregatedMetrics(
             total_projects=3,
             total_issues=100,
-            total_done_issues=60,
+            total_completed_issues=60,
             total_remaining_work=150.0,
-            average_velocity=20.0,
-            combined_velocity=60.0,
-            earliest_completion_date=datetime(2024, 6, 1),
-            latest_completion_date=datetime(2024, 9, 1),
-            confidence_intervals={0.5: 8, 0.85: 12, 0.95: 15}
+            combined_velocity=60.0
         )
         
         assert metrics.overall_completion_percentage == 60.0
-        assert metrics.confidence_intervals[0.85] == 12
+        assert metrics.total_projects == 3
 
 
 class TestMultiProjectReport:
@@ -58,13 +55,13 @@ class TestMultiProjectReport:
         # Create test projects
         project1 = ProjectData(
             name="Project A",
-            source_path=Path("a.csv"),
+            file_path=Path("a.csv"),
             remaining_work=50.0
         )
         
         project2 = ProjectData(
             name="Project B", 
-            source_path=Path("b.csv"),
+            file_path=Path("b.csv"),
             remaining_work=75.0
         )
         
@@ -72,13 +69,9 @@ class TestMultiProjectReport:
         metrics = AggregatedMetrics(
             total_projects=2,
             total_issues=50,
-            total_done_issues=30,
+            total_completed_issues=30,
             total_remaining_work=125.0,
-            average_velocity=15.0,
-            combined_velocity=30.0,
-            earliest_completion_date=datetime.now(),
-            latest_completion_date=datetime.now(),
-            confidence_intervals={0.85: 10}
+            combined_velocity=30.0
         )
         
         report = MultiProjectReport(

@@ -368,7 +368,7 @@ def show_multi_project_summary(multi_report):
     
     for project in multi_report.projects:
         if project.simulation_result and project.velocity_metrics:
-            confidence_85 = project.simulation_result.percentiles.get(85, 0)
+            confidence_85 = project.simulation_result.percentiles.get(0.85, 0)
             project_table.add_row(
                 project.name,
                 str(project.total_issues),

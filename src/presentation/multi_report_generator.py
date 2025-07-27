@@ -185,16 +185,28 @@ class MultiProjectReportGenerator:
                 percentiles = project.simulation_result.percentiles
                 
                 # Create a horizontal bar for each confidence level
+                # Use different colors for each project
+                project_colors = [
+                    "78, 205, 196",  # Teal
+                    "255, 107, 107", # Red
+                    "255, 193, 7",   # Amber
+                    "103, 126, 234", # Blue
+                    "255, 87, 34",   # Orange
+                ]
+                base_color = project_colors[i % len(project_colors)]
+                
                 for conf_level, sprints in percentiles.items():
-                    opacity = 1.0 - (conf_level - 50) / 50  # Higher confidence = lighter color
+                    # Higher confidence = lighter color
+                    opacity = 1.0 - (conf_level - 0.5) * 0.8  # Scale from 1.0 to 0.6
+                    conf_percentage = int(conf_level * 100)
                     data.append({
                         "x": [sprints],
                         "y": [project.name],
-                        "name": f"{conf_level}% confidence",
+                        "name": f"{conf_percentage}% confidence",
                         "type": "bar",
                         "orientation": "h",
                         "marker": {
-                            "color": f"rgba(78, 205, 196, {opacity})"
+                            "color": f"rgba({base_color}, {opacity})"
                         },
                         "showlegend": i == 0  # Only show legend for first project
                     })
@@ -446,8 +458,8 @@ class MultiProjectReportGenerator:
                     <td>{{ "%.1f"|format(project.completion_percentage) }}%</td>
                     <td>{{ "%.1f"|format(project.remaining_work) }}</td>
                     <td>{{ "%.1f"|format(project.velocity_metrics.average) if project.velocity_metrics else "N/A" }}</td>
-                    <td>{{ project.simulation_result.percentiles.get(50, 0) if project.simulation_result else "N/A" }}</td>
-                    <td>{{ project.simulation_result.percentiles.get(85, 0) if project.simulation_result else "N/A" }}</td>
+                    <td>{{ project.simulation_result.percentiles.get(0.5, 0)|int if project.simulation_result else "N/A" }}</td>
+                    <td>{{ project.simulation_result.percentiles.get(0.85, 0)|int if project.simulation_result else "N/A" }}</td>
                     <td><a href="{{ project_links[project.name] }}" class="project-link">View Details →</a></td>
                 </tr>
                 {% endfor %}

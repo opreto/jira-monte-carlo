@@ -478,6 +478,52 @@ flowchart TB
 4. **Scalability**: Can add new features without affecting existing code
 5. **Team Collaboration**: Clear boundaries enable parallel development
 
+## Multi-Project Support
+
+The architecture seamlessly supports processing multiple CSV files to generate combined analysis:
+
+### Domain Layer Extensions
+
+```python
+@dataclass
+class ProjectData:
+    """Data from a single CSV file/project"""
+    name: str
+    source_path: Path
+    issues: List[Issue]
+    sprints: List[Sprint]
+    velocity_metrics: VelocityMetrics
+    simulation_result: SimulationResult
+    remaining_work: float
+
+@dataclass
+class AggregatedMetrics:
+    """Aggregated metrics across multiple projects"""
+    total_projects: int
+    total_issues: int
+    total_remaining_work: float
+    combined_velocity: float
+    confidence_intervals: Dict[float, int]
+```
+
+### Application Layer Extensions
+
+The `ProcessMultipleCSVsUseCase` orchestrates:
+1. Independent processing of each CSV file
+2. Separate repository instances per project
+3. Aggregation of metrics across projects
+4. Generation of both individual and combined reports
+
+### Presentation Layer Extensions
+
+The `MultiProjectReportGenerator` creates:
+- Dashboard with aggregated metrics and comparisons
+- Interactive charts for cross-project analysis
+- Navigation links to individual project reports
+- Workload distribution visualization
+
+This design maintains separation of concerns while enabling powerful multi-project analysis capabilities.
+
 ## Future Extensions
 
 The architecture supports these potential enhancements without major refactoring:

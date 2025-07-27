@@ -158,17 +158,20 @@ src/
 │   ├── entities.py      # Core domain models (Issue, Sprint, Team, SimulationResult)
 │   ├── value_objects.py # Immutable value objects (FieldMapping, VelocityMetrics)
 │   ├── repositories.py  # Repository interfaces
-│   └── analysis.py      # CSV analysis domain models
+│   ├── analysis.py      # CSV analysis domain models
+│   └── multi_project.py # Multi-project domain models (ProjectData, AggregatedMetrics)
 ├── application/     # Use cases and business rules
 │   ├── use_cases.py     # Core application services
-│   └── csv_analysis.py  # CSV structure analysis and velocity filtering
+│   ├── csv_analysis.py  # CSV structure analysis and velocity filtering
+│   └── multi_project_use_cases.py  # Multi-CSV processing orchestration
 ├── infrastructure/  # External interfaces
 │   ├── csv_parser.py    # High-performance Jira CSV parsing
 │   ├── csv_analyzer.py  # Smart column aggregation and sprint extraction
 │   └── repositories.py  # Repository implementations
 └── presentation/    # UI and presentation logic
     ├── cli.py           # Command-line interface with rich output
-    └── report_generator.py  # HTML report generation with Plotly charts
+    ├── report_generator.py  # HTML report generation with Plotly charts
+    └── multi_report_generator.py  # Multi-project dashboard and report generation
 ```
 
 ### Key Components
@@ -238,6 +241,7 @@ Configuration is stored in `~/.jira-monte-carlo/`:
 ### Code Style
 
 The project uses:
+
 - Black for code formatting
 - isort for import sorting
 - flake8 for linting

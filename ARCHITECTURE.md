@@ -524,6 +524,35 @@ The `MultiProjectReportGenerator` creates:
 
 This design maintains separation of concerns while enabling powerful multi-project analysis capabilities.
 
+## Styling Architecture
+
+The styling system follows the same clean architecture principles:
+
+### Domain Layer
+- **Theme Entity**: Complete theme configuration including colors, typography, spacing
+- **Color Value Object**: RGB/hex color representation with conversion methods
+- **Typography Value Object**: Font family, size, weight, and spacing
+- **ThemeRepository Interface**: Abstraction for theme persistence
+
+### Application Layer
+- **StyleService**: Manages theme selection and style generation
+- Provides theme management without knowledge of CSS or HTML
+
+### Infrastructure Layer
+- **FileThemeRepository**: JSON-based theme storage in `~/.jira-monte-carlo/themes.json`
+- Default themes: "default" (purple/modern) and "opreto" (teal/professional)
+
+### Presentation Layer
+- **StyleGenerator**: Converts theme objects to CSS
+- **Templates**: Clean separation of HTML structure from styling
+- Chart color coordination with theme colors
+
+This approach enables:
+- Easy addition of new themes
+- Consistent styling across all reports
+- Theme customization without code changes
+- Clean separation of styling concerns
+
 ## Future Extensions
 
 The architecture supports these potential enhancements without major refactoring:
@@ -533,3 +562,4 @@ The architecture supports these potential enhancements without major refactoring
 - **Different UIs**: Add web interface alongside CLI
 - **Different Analytics**: Add new simulation algorithms
 - **Different Formats**: Support Excel, JSON, or API inputs
+- **Custom Themes**: User-defined themes via configuration

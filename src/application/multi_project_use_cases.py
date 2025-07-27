@@ -3,7 +3,7 @@ import logging
 from typing import List, Dict, Tuple
 from pathlib import Path
 from datetime import datetime
-import numpy as np
+import statistics
 
 from ..domain.multi_project import ProjectData, AggregatedMetrics, MultiProjectReport
 from ..domain.value_objects import FieldMapping, VelocityMetrics
@@ -211,7 +211,7 @@ class ProcessMultipleCSVsUseCase:
         
         # Calculate average and combined velocity
         velocities = [p.velocity_metrics.average for p in projects if p.velocity_metrics]
-        average_velocity = np.mean(velocities) if velocities else 0.0
+        average_velocity = statistics.mean(velocities) if velocities else 0.0
         combined_velocity = sum(velocities)
         
         # Get earliest and latest completion dates from all projects
@@ -227,7 +227,7 @@ class ProcessMultipleCSVsUseCase:
         if combined_velocity > 0:
             confidence_intervals = {}
             for confidence_level in simulation_config.confidence_levels:
-                sprints_needed = int(np.ceil(total_remaining_work / combined_velocity))
+                sprints_needed = int((total_remaining_work / combined_velocity) + 0.5)  # Round up
                 # Add some variance based on individual project uncertainties
                 variance_factor = 1.0 + (confidence_level - 0.5) * 0.5
                 confidence_intervals[confidence_level] = int(sprints_needed * variance_factor)

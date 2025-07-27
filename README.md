@@ -15,6 +15,7 @@ A high-performance Monte Carlo simulation tool for Jira project forecasting. Thi
 - **Sprint Duration Detection**: Automatically detects sprint length from data
 - **Multiple Status Support**: Handles custom Jira workflows with configurable status mappings
 - **Multi-Project Support**: Process multiple CSV files to generate a combined dashboard with drill-down to individual reports
+- **Themeable Reports**: Built-in themes (default and Opreto) with clean architecture for styling
 
 ## TODO
 
@@ -69,6 +70,7 @@ Basic Options:
   -f, --csv-file PATH            Path to Jira CSV export [required]
   -n, --num-simulations INT      Number of Monte Carlo simulations (default: 10000)
   -o, --output TEXT              Output HTML report filename (default: test-report.html)
+  --theme TEXT                   Visual theme for reports: default or opreto (default: default)
   --analyze-only                 Only run CSV analysis without simulation
   --help                         Show help message and exit
 
@@ -128,6 +130,9 @@ The dashboard includes:
 # Simple usage with all defaults (recommended)
 uv run python -m src.presentation.cli --csv-file "All Work with Sprints (JIRA).csv"
 
+# Use Opreto theme for reports
+uv run python -m src.presentation.cli --csv-file data.csv --theme opreto
+
 # Override specific options while using other defaults
 uv run python -m src.presentation.cli \
   --csv-file data/sprint-data.csv \
@@ -159,19 +164,24 @@ src/
 │   ├── value_objects.py # Immutable value objects (FieldMapping, VelocityMetrics)
 │   ├── repositories.py  # Repository interfaces
 │   ├── analysis.py      # CSV analysis domain models
-│   └── multi_project.py # Multi-project domain models (ProjectData, AggregatedMetrics)
+│   ├── multi_project.py # Multi-project domain models (ProjectData, AggregatedMetrics)
+│   └── styles.py        # Theme and styling domain models
 ├── application/     # Use cases and business rules
 │   ├── use_cases.py     # Core application services
 │   ├── csv_analysis.py  # CSV structure analysis and velocity filtering
-│   └── multi_project_use_cases.py  # Multi-CSV processing orchestration
+│   ├── multi_project_use_cases.py  # Multi-CSV processing orchestration
+│   └── style_service.py # Theme and styling management service
 ├── infrastructure/  # External interfaces
 │   ├── csv_parser.py    # High-performance Jira CSV parsing
 │   ├── csv_analyzer.py  # Smart column aggregation and sprint extraction
-│   └── repositories.py  # Repository implementations
+│   ├── repositories.py  # Repository implementations
+│   └── theme_repository.py  # Theme storage and retrieval
 └── presentation/    # UI and presentation logic
     ├── cli.py           # Command-line interface with rich output
     ├── report_generator.py  # HTML report generation with Plotly charts
-    └── multi_report_generator.py  # Multi-project dashboard and report generation
+    ├── multi_report_generator.py  # Multi-project dashboard and report generation
+    ├── style_generator.py  # CSS generation from themes
+    └── templates.py     # HTML templates with clean separation
 ```
 
 ### Key Components
@@ -230,11 +240,42 @@ The generated HTML report includes:
    - Sprint duration auto-detection
    - Issue status distribution
 
+## Styling and Themes
+
+The tool supports customizable themes for HTML reports:
+
+### Available Themes
+- **default**: Clean, modern theme with purple accents
+- **opreto**: Professional theme following Opreto's brand guidelines
+  - Teal primary colors (#03564c, #022d2c)
+  - Sublima font for headings, Inter for body text
+  - Hero archetype design elements
+  - Dynamic hover effects and transitions
+
+### Using Themes
+```bash
+# Use default theme (purple/modern)
+uv run python -m src.presentation.cli -f data.csv
+
+# Use Opreto theme (teal/professional)
+uv run python -m src.presentation.cli -f data.csv --theme opreto
+```
+
+### Theme Architecture
+The styling system follows clean architecture principles:
+- **Domain Layer**: Theme entities and value objects
+- **Application Layer**: StyleService for theme management
+- **Infrastructure Layer**: FileThemeRepository for theme persistence
+- **Presentation Layer**: StyleGenerator for CSS generation
+
+Themes are stored in `~/.jira-monte-carlo/themes.json` and can be customized.
+
 ## Configuration Files
 
 Configuration is stored in `~/.jira-monte-carlo/`:
 - `field_mapping.json`: Jira field mappings
 - `status_mapping.json`: Status categorization
+- `themes.json`: Visual themes for reports
 
 ## Development
 

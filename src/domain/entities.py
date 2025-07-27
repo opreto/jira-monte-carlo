@@ -73,8 +73,10 @@ class Team:
     def velocity_std_dev(self) -> float:
         if len(self.historical_velocities) < 2:
             return 0.0
-        import numpy as np
-        return float(np.std(self.historical_velocities))
+        # Calculate standard deviation manually to avoid numpy dependency in domain
+        mean = self.average_velocity
+        variance = sum((x - mean) ** 2 for x in self.historical_velocities) / len(self.historical_velocities)
+        return variance ** 0.5
 
 
 @dataclass

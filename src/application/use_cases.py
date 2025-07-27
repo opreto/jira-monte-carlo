@@ -1,6 +1,7 @@
 from typing import List, Dict, Optional, Tuple
 from datetime import datetime, timedelta
-import numpy as np
+import random
+import statistics
 from dataclasses import dataclass
 
 from ..domain.entities import Issue, Sprint, Team, SimulationConfig, SimulationResult
@@ -47,18 +48,23 @@ class CalculateVelocityUseCase:
         if not velocities:
             return VelocityMetrics(0, 0, 0, 0, 0, 0)
         
-        # Calculate trend
+        # Calculate trend using simple linear regression
         if len(velocities) >= 2:
-            x = np.arange(len(velocities))
-            coefficients = np.polyfit(x, velocities, 1)
-            trend = coefficients[0]
+            x = list(range(len(velocities)))
+            x_mean = sum(x) / len(x)
+            y_mean = sum(velocities) / len(velocities)
+            
+            numerator = sum((x[i] - x_mean) * (velocities[i] - y_mean) for i in range(len(x)))
+            denominator = sum((x[i] - x_mean) ** 2 for i in range(len(x)))
+            
+            trend = numerator / denominator if denominator != 0 else 0.0
         else:
             trend = 0.0
         
         return VelocityMetrics(
-            average=np.mean(velocities),
-            median=np.median(velocities),
-            std_dev=np.std(velocities) if len(velocities) > 1 else 0.0,
+            average=statistics.mean(velocities),
+            median=statistics.median(velocities),
+            std_dev=statistics.stdev(velocities) if len(velocities) > 1 else 0.0,
             min_value=min(velocities),
             max_value=max(velocities),
             trend=trend
@@ -82,7 +88,7 @@ class RunMonteCarloSimulationUseCase:
             
             while work_remaining > 0:
                 # Sample velocity from normal distribution
-                velocity = np.random.normal(
+                velocity = random.gauss(
                     velocity_metrics.average,
                     velocity_metrics.std_dev
                 )
@@ -94,23 +100,39 @@ class RunMonteCarloSimulationUseCase:
             completion_sprints.append(sprints)
         
         # Calculate results
-        completion_sprints = np.array(completion_sprints)
+        completion_sprints.sort()
         percentiles = {}
         confidence_intervals = {}
         
         for level in config.confidence_levels:
             percentile = level * 100
             # Store sprint counts instead of days
-            percentiles[level] = np.percentile(completion_sprints, percentile)
+            # Calculate percentile
+            index = int(len(completion_sprints) * level)
+            percentiles[level] = completion_sprints[min(index, len(completion_sprints) - 1)]
             
             # Calculate confidence interval in sprints
-            lower = np.percentile(completion_sprints, (1 - level) * 50)
-            upper = np.percentile(completion_sprints, 100 - (1 - level) * 50)
+            lower_idx = int(len(completion_sprints) * (1 - level) / 2)
+            upper_idx = int(len(completion_sprints) * (1 - (1 - level) / 2))
+            lower = completion_sprints[min(lower_idx, len(completion_sprints) - 1)]
+            upper = completion_sprints[min(upper_idx, len(completion_sprints) - 1)]
             confidence_intervals[level] = (lower, upper)
         
         # Create probability distribution
-        hist, bin_edges = np.histogram(completion_sprints, bins=50)
-        probability_distribution = hist / hist.sum()
+        # Simple histogram implementation
+        min_sprints = min(completion_sprints)
+        max_sprints = max(completion_sprints)
+        bins = 50
+        bin_width = (max_sprints - min_sprints) / bins if max_sprints > min_sprints else 1
+        hist = [0] * bins
+        
+        for sprint_count in completion_sprints:
+            bin_index = int((sprint_count - min_sprints) / bin_width)
+            bin_index = min(bin_index, bins - 1)
+            hist[bin_index] += 1
+        
+        total = sum(hist)
+        probability_distribution = [count / total for count in hist]
         
         # Calculate completion dates based on sprints
         today = datetime.now()
@@ -119,17 +141,17 @@ class RunMonteCarloSimulationUseCase:
             for sprints in completion_sprints
         ]
         mean_completion_date = today + timedelta(
-            days=int(np.mean(completion_sprints) * config.sprint_duration_days)
+            days=int(statistics.mean(completion_sprints) * config.sprint_duration_days)
         )
         
         return SimulationResult(
             percentiles=percentiles,
             mean_completion_date=mean_completion_date,
-            std_dev_days=float(np.std(completion_sprints)),  # Now represents std dev in sprints
-            probability_distribution=probability_distribution.tolist(),
+            std_dev_days=statistics.stdev(completion_sprints) if len(completion_sprints) > 1 else 0.0,  # Now represents std dev in sprints
+            probability_distribution=probability_distribution,
             completion_dates=completion_dates[:100],  # Sample for visualization
             confidence_intervals=confidence_intervals,
-            completion_sprints=completion_sprints.tolist()[:1000]  # Store first 1000 for visualization
+            completion_sprints=completion_sprints[:1000]  # Store first 1000 for visualization
         )
 
 

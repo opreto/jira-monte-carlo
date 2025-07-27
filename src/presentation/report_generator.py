@@ -4,17 +4,25 @@ from plotly.subplots import make_subplots
 from jinja2 import Template
 from datetime import datetime, timedelta
 from pathlib import Path
-import numpy as np
-from typing import List, Dict
+import statistics
+from typing import List, Dict, Optional
 import json
 
 from ..domain.entities import SimulationResult, SimulationConfig
 from ..domain.value_objects import VelocityMetrics, HistoricalData
+from ..application.style_service import StyleService
+from .templates import ReportTemplates
+from .style_generator import StyleGenerator
 
 
 class HTMLReportGenerator:
-    def __init__(self):
-        self.template = self._load_template()
+    def __init__(self, style_service: Optional[StyleService] = None, theme_name: Optional[str] = None):
+        self.style_service = style_service or StyleService()
+        self.theme_name = theme_name
+        self.style_generator = self.style_service.get_style_generator(theme_name)
+        self.chart_colors = self.style_generator.get_chart_colors()
+        self.base_template = ReportTemplates.get_base_template()
+        self.report_template = ReportTemplates.get_single_report_template()
     
     def generate(self,
                 simulation_results: SimulationResult,
@@ -46,7 +54,7 @@ class HTMLReportGenerator:
         }
         
         # Render HTML
-        html_content = self.template.render(**context)
+        html_content = self._generate_html(context)
         
         # Save to file
         with open(output_path, "w") as f:
@@ -54,229 +62,20 @@ class HTMLReportGenerator:
         
         return output_path
     
-    def _load_template(self) -> Template:
-        template_str = '''
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jira Monte Carlo Simulation Report</title>
-    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
+    def _generate_html(self, context: dict) -> str:
+        """Generate HTML with styles and content"""
+        # Generate content from report template
+        content = self.report_template.render(**context)
         
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            border-radius: 10px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+        # Generate complete HTML with styles
+        styles = self.style_generator.generate_css()
         
-        h1 {
-            margin: 0;
-            font-size: 2.5rem;
-        }
-        
-        .subtitle {
-            opacity: 0.9;
-            margin-top: 0.5rem;
-        }
-        
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .metric-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        
-        .metric-value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #667eea;
-            margin: 0.5rem 0;
-        }
-        
-        .metric-label {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        .chart-container {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .chart-title {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: #333;
-        }
-        
-        .summary-table {
-            width: 100%;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .summary-table th {
-            background: #667eea;
-            color: white;
-            padding: 1rem;
-            text-align: left;
-        }
-        
-        .summary-table td {
-            padding: 1rem;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .summary-table tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .confidence-high {
-            background-color: #d4edda;
-        }
-        
-        .confidence-medium {
-            background-color: #fff3cd;
-        }
-        
-        .confidence-low {
-            background-color: #f8d7da;
-        }
-        
-        .footer {
-            text-align: center;
-            color: #666;
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 1px solid #ddd;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>Monte Carlo Simulation Report</h1>
-        <p class="subtitle">Generated on {{ generation_date }}</p>
-    </div>
+        return self.base_template.render(
+            title="Jira Monte Carlo Simulation Report",
+            styles=styles,
+            content=content
+        )
     
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-label">Remaining Work</div>
-            <div class="metric-value">{{ "%.1f"|format(remaining_work) }}</div>
-            <div class="metric-label">{{ velocity_field }}</div>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-label">Average Velocity</div>
-            <div class="metric-value">{{ "%.1f"|format(velocity_metrics.average) }}</div>
-            <div class="metric-label">per sprint</div>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-label">50% Confidence</div>
-            <div class="metric-value">{{ "%.0f"|format(percentiles.p50) }}</div>
-            <div class="metric-label">sprints</div>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-label">85% Confidence</div>
-            <div class="metric-value">{{ "%.0f"|format(percentiles.p85) }}</div>
-            <div class="metric-label">sprints</div>
-        </div>
-    </div>
-    
-    <div class="chart-container">
-        <h2 class="chart-title">Probability Distribution</h2>
-        <div id="probability-distribution"></div>
-    </div>
-    
-    <div class="chart-container">
-        <h2 class="chart-title">Forecast Timeline</h2>
-        <div id="forecast-timeline"></div>
-    </div>
-    
-    <div class="chart-container">
-        <h2 class="chart-title">Historical Velocity Trend</h2>
-        <div id="velocity-trend"></div>
-    </div>
-    
-    <div class="chart-container">
-        <h2 class="chart-title">Confidence Intervals</h2>
-        <div id="confidence-intervals"></div>
-    </div>
-    
-    
-    <div class="chart-container">
-        <h2 class="chart-title">Completion Forecast Summary</h2>
-        <table class="summary-table">
-            <thead>
-                <tr>
-                    <th>Confidence Level</th>
-                    <th>Sprints to Complete</th>
-                    <th>Completion Date</th>
-                    <th>Probability</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for level, data in summary_stats.items() %}
-                <tr class="{{ data.class }}">
-                    <td>{{ level }}</td>
-                    <td>{{ data.sprints }} sprints</td>
-                    <td>{{ data.date }}</td>
-                    <td>{{ data.probability }}% chance of completing by this date</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    
-    <div class="footer">
-        <p>Monte Carlo Simulation based on {{ "{:,}".format(num_simulations) }} iterations</p>
-        <p>Analysis based on historical data and velocity metrics</p>
-    </div>
-    
-    <script>
-        // Render all charts
-        {% for chart_id, chart_json in charts.items() %}
-        try {
-            const chartData = {{ chart_json|safe }};
-            Plotly.newPlot('{{ chart_id.replace("_", "-") }}', chartData.data, chartData.layout);
-        } catch (e) {
-            console.error('Error rendering chart {{ chart_id }}:', e);
-            console.error('Chart data:', {{ chart_json|safe }});
-        }
-        {% endfor %}
-    </script>
-</body>
-</html>
-        '''
-        return Template(template_str)
     
     def _create_probability_chart(self, results: SimulationResult, config: SimulationConfig) -> str:
         # Use the sprint counts directly if available
@@ -307,8 +106,8 @@ class HTMLReportGenerator:
                 x=sprints_sorted,
                 y=probabilities,
                 name='Probability Distribution',
-                marker_color='rgba(102, 126, 234, 0.7)',
-                marker_line_color='rgba(102, 126, 234, 1)',
+                marker_color=self.chart_colors['primary_rgba'](0.7),
+                marker_line_color=self.chart_colors['primary'],
                 marker_line_width=1,
                 text=[f'{p:.1%}' for p in probabilities],
                 textposition='outside'
@@ -358,7 +157,7 @@ class HTMLReportGenerator:
             y=historical.velocities,
             mode='lines+markers',
             name='Historical Velocity',
-            line=dict(color='rgba(102, 126, 234, 1)', width=2),
+            line=dict(color=self.chart_colors['primary'], width=2),
             marker=dict(size=8)
         ))
         
@@ -373,11 +172,23 @@ class HTMLReportGenerator:
         # Trend line
         if len(historical.velocities) >= 2:
             x_numeric = list(range(len(historical.dates)))
-            z = np.polyfit(x_numeric, historical.velocities, 1)
-            p = np.poly1d(z)
+            # Simple linear regression
+            x_mean = sum(x_numeric) / len(x_numeric)
+            y_mean = sum(historical.velocities) / len(historical.velocities)
+            
+            numerator = sum((x_numeric[i] - x_mean) * (historical.velocities[i] - y_mean) for i in range(len(x_numeric)))
+            denominator = sum((x_numeric[i] - x_mean) ** 2 for i in range(len(x_numeric)))
+            
+            if denominator != 0:
+                slope = numerator / denominator
+                intercept = y_mean - slope * x_mean
+                trend_line = [slope * x + intercept for x in x_numeric]
+            else:
+                trend_line = [y_mean] * len(x_numeric)
+            
             fig.add_trace(go.Scatter(
                 x=historical.dates,
-                y=p(x_numeric),
+                y=trend_line,
                 mode='lines',
                 name='Trend',
                 line=dict(color='rgba(255, 0, 0, 0.5)', width=2, dash='dash')
@@ -416,14 +227,14 @@ class HTMLReportGenerator:
                 x=historical.cycle_times,
                 nbinsx=30,
                 name='Cycle Time Distribution',
-                marker_color='rgba(234, 102, 126, 0.7)',
-                marker_line_color='rgba(234, 102, 126, 1)',
+                marker_color=self.chart_colors['accent_rgba'](0.7),
+                marker_line_color=self.chart_colors['accent'],
                 marker_line_width=1
             )
         ])
         
         # Add average line
-        avg_cycle_time = np.mean(historical.cycle_times)
+        avg_cycle_time = statistics.mean(historical.cycle_times)
         fig.add_vline(
             x=avg_cycle_time,
             line_dash="dash",
@@ -481,11 +292,11 @@ class HTMLReportGenerator:
             date = today + timedelta(days=int(days))
             
             if confidence <= 0.5:
-                color = 'green'
+                color = self.chart_colors['success']
             elif confidence <= 0.85:
-                color = 'orange'
+                color = self.chart_colors['warning']
             else:
-                color = 'red'
+                color = self.chart_colors['error']
                 
             fig.add_trace(go.Scatter(
                 x=[date],
@@ -534,13 +345,13 @@ class HTMLReportGenerator:
         for c, s in zip(confidences, sprints):
             labels.append(f"{c*100:.0f}%")
             if c <= 0.5:
-                colors.append('green')
+                colors.append(self.chart_colors['success'])
             elif c <= 0.7:
-                colors.append('lightgreen')
+                colors.append(self.chart_colors['success'])
             elif c <= 0.85:
-                colors.append('orange')
+                colors.append(self.chart_colors['warning'])
             else:
-                colors.append('red')
+                colors.append(self.chart_colors['error'])
         
         fig = go.Figure(data=[
             go.Bar(
@@ -590,15 +401,15 @@ class HTMLReportGenerator:
             go.Bar(
                 x=historical.dates[:len(historical.throughput)],
                 y=historical.throughput,
-                marker_color='rgba(102, 234, 126, 0.7)',
-                marker_line_color='rgba(102, 234, 126, 1)',
+                marker_color=self.chart_colors['secondary_rgba'](0.7),
+                marker_line_color=self.chart_colors['secondary'],
                 marker_line_width=1
             )
         ])
         
         # Add average line
         if historical.throughput:
-            avg_throughput = np.mean(historical.throughput)
+            avg_throughput = statistics.mean(historical.throughput)
             fig.add_hline(
                 y=avg_throughput,
                 line_dash="dash",

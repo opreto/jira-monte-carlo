@@ -25,6 +25,7 @@ from ..application.use_cases import (
     CalculateRemainingWorkUseCase
 )
 from ..application.csv_analysis import AnalyzeCSVStructureUseCase, AnalyzeVelocityUseCase
+from ..application.style_service import StyleService
 from .report_generator import HTMLReportGenerator
 from .multi_report_generator import MultiProjectReportGenerator
 import polars as pl
@@ -58,7 +59,8 @@ logger = logging.getLogger(__name__)
 @click.option('--max-velocity-age', type=int, default=240, help='Maximum age of velocity data in days (default: 240 = 8 months)')
 @click.option('--outlier-std-devs', type=float, default=2.0, help='Standard deviations for outlier detection')
 @click.option('--min-velocity', type=float, default=10.0, help='Minimum velocity threshold (default: 10.0)')
-def main(csv_files: tuple, num_simulations: int, output: str,
+@click.option('--theme', type=click.Choice(['default', 'opreto']), default='default', help='Visual theme for reports (default: default)')
+def main(csv_files: tuple, num_simulations: int, output: str, theme: str,
          key_field: str, summary_field: str, status_field: str, created_field: str,
          resolved_field: str, story_points_field: str, sprint_field: str,
          done_statuses: str, in_progress_statuses: str, todo_statuses: str,
@@ -119,7 +121,7 @@ def main(csv_files: tuple, num_simulations: int, output: str,
         process_multiple_csvs(csv_paths, field_mapping, status_mapping, 
                             num_simulations, output, velocity_field, 
                             lookback_sprints, max_velocity_age, 
-                            outlier_std_devs, min_velocity)
+                            outlier_std_devs, min_velocity, theme)
         return
     
     # Single file processing (existing logic)
@@ -263,7 +265,8 @@ def main(csv_files: tuple, num_simulations: int, output: str,
     
     # Generate report
     console.print("\n[yellow]Generating HTML report...[/yellow]")
-    report_generator = HTMLReportGenerator()
+    style_service = StyleService()
+    report_generator = HTMLReportGenerator(style_service, theme)
     report_path = report_generator.generate(
         simulation_results=results,
         velocity_metrics=velocity_metrics,
@@ -288,7 +291,8 @@ def process_multiple_csvs(csv_paths: List[Path],
                          lookback_sprints: int,
                          max_velocity_age: int,
                          outlier_std_devs: float,
-                         min_velocity: float):
+                         min_velocity: float,
+                         theme: str):
     """Process multiple CSV files and generate multi-project report"""
     
     # Create simulation config
@@ -327,7 +331,8 @@ def process_multiple_csvs(csv_paths: List[Path],
     
     # Generate multi-project report
     console.print("\n[yellow]Generating multi-project HTML report...[/yellow]")
-    report_generator = MultiProjectReportGenerator()
+    style_service = StyleService()
+    report_generator = MultiProjectReportGenerator(style_service, theme)
     report_path = report_generator.generate(
         multi_report=multi_report,
         output_dir=Path(output).parent,

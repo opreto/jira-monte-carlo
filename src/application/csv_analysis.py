@@ -5,7 +5,7 @@ from typing import List, Dict, Optional, Set, Tuple
 from datetime import datetime, timedelta
 from collections import defaultdict, Counter
 import re
-import numpy as np
+import statistics
 
 from ..domain.analysis import (
     ColumnType, AggregationStrategy, ColumnPattern, ColumnMetadata,
@@ -377,8 +377,8 @@ class AnalyzeVelocityUseCase:
         
         # Calculate statistics for outlier detection
         velocities = [v.completed_points for v in bound_filtered]
-        mean = np.mean(velocities)
-        std_dev = np.std(velocities) if len(velocities) > 1 else 0
+        mean = statistics.mean(velocities) if velocities else 0
+        std_dev = statistics.stdev(velocities) if len(velocities) > 1 else 0
         
         # Filter outliers using z-score
         filtered_velocities = []
@@ -406,15 +406,20 @@ class AnalyzeVelocityUseCase:
         final_velocities = [v.completed_points for v in filtered_velocities]
         
         if final_velocities:
-            final_mean = np.mean(final_velocities)
-            final_std = np.std(final_velocities) if len(final_velocities) > 1 else 0
-            final_median = np.median(final_velocities)
+            final_mean = statistics.mean(final_velocities)
+            final_std = statistics.stdev(final_velocities) if len(final_velocities) > 1 else 0
+            final_median = statistics.median(final_velocities)
             
             # Calculate trend
             if len(final_velocities) >= 2:
-                x = np.arange(len(final_velocities))
-                coefficients = np.polyfit(x, final_velocities, 1)
-                trend = coefficients[0]
+                x = list(range(len(final_velocities)))
+                x_mean = sum(x) / len(x)
+                y_mean = final_mean
+                
+                numerator = sum((x[i] - x_mean) * (final_velocities[i] - y_mean) for i in range(len(x)))
+                denominator = sum((x[i] - x_mean) ** 2 for i in range(len(x)))
+                
+                trend = numerator / denominator if denominator != 0 else 0.0
             else:
                 trend = 0.0
             
@@ -466,9 +471,12 @@ class AnalyzeVelocityUseCase:
         # Reduce confidence for high variance
         if filtered:
             velocities = [v.completed_points for v in filtered]
-            cv = np.std(velocities) / np.mean(velocities) if np.mean(velocities) > 0 else 1
-            if cv > 0.5:  # Coefficient of variation > 50%
-                confidence *= 0.8
+            if velocities:
+                mean_vel = statistics.mean(velocities)
+                std_vel = statistics.stdev(velocities) if len(velocities) > 1 else 0
+                cv = std_vel / mean_vel if mean_vel > 0 else 1
+                if cv > 0.5:  # Coefficient of variation > 50%
+                    confidence *= 0.8
         
         return min(max(confidence, 0.0), 1.0)
     

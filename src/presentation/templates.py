@@ -176,6 +176,9 @@ class ReportTemplates:
     function toggleChartType(type) {
         if (type === currentChartType || !storySizeCharts[type]) return;
         
+        // Store current scroll position
+        const scrollPosition = window.scrollY;
+        
         // Update button states
         document.getElementById('pie-toggle').classList.toggle('active', type === 'pie');
         document.getElementById('bar-toggle').classList.toggle('active', type === 'bar');
@@ -183,16 +186,23 @@ class ReportTemplates:
         // Get chart data
         const chartData = storySizeCharts[type];
         
-        // Animate transition
+        // Get container and lock its height
         const container = document.getElementById('story-size-breakdown');
+        const containerHeight = container.offsetHeight;
+        container.style.height = containerHeight + 'px';
         container.style.opacity = '0';
         
         setTimeout(() => {
             // Update chart
             Plotly.react('story-size-breakdown', chartData.data, chartData.layout, {responsive: true});
             
-            // Fade in
+            // Fade in and restore height to auto
             container.style.opacity = '1';
+            setTimeout(() => {
+                container.style.height = 'auto';
+                // Restore scroll position
+                window.scrollTo(0, scrollPosition);
+            }, 50);
             currentChartType = type;
         }, 300);
     }

@@ -217,7 +217,8 @@ class HTMLReportGenerator:
                 bgcolor="white",
                 font_size=14,
                 font_family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                bordercolor="rgba(0,0,0,0.1)",
+                font_color="rgba(0,0,0,0.87)",  # Dark text for accessibility
+                bordercolor="rgba(0,0,0,0.2)",
             ),
         )
 
@@ -328,7 +329,8 @@ class HTMLReportGenerator:
                 bgcolor="white",
                 font_size=14,
                 font_family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                bordercolor="rgba(0,0,0,0.1)",
+                font_color="rgba(0,0,0,0.87)",  # Dark text for accessibility
+                bordercolor="rgba(0,0,0,0.2)",
             ),
             legend=dict(
                 orientation="h",
@@ -422,7 +424,8 @@ class HTMLReportGenerator:
                 bgcolor="white",
                 font_size=14,
                 font_family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                bordercolor="rgba(0,0,0,0.1)",
+                font_color="rgba(0,0,0,0.87)",  # Dark text for accessibility
+                bordercolor="rgba(0,0,0,0.2)",
             ),
             bargap=0.1,
             margin=dict(t=100, b=80, l=80, r=60),
@@ -517,22 +520,22 @@ class HTMLReportGenerator:
                 y=counts,
                 name="Story Count",
                 marker_color=self.chart_colors["data1"],
-                text=counts,
+                text=[f"{c} stories" for c in counts],
                 textposition="outside",
+                textfont=dict(size=12),
                 hovertemplate="<b>%{x}</b><br>Stories: %{y}<extra></extra>",
                 yaxis="y",
             )
         )
 
-        # Add bars for total points
+        # Add bars for total points - removed text to avoid overlap
         bar_fig.add_trace(
             go.Bar(
                 x=labels,
                 y=values,
                 name="Total Points",
                 marker_color=self.chart_colors["data2"],
-                text=values,
-                textposition="outside",
+                text=None,  # Remove text labels to prevent overlap
                 hovertemplate="<b>%{x}</b><br>Total Points: %{y}<extra></extra>",
                 yaxis="y2",
                 opacity=0.7,
@@ -557,14 +560,14 @@ class HTMLReportGenerator:
                 title=dict(text="<b>Story Count</b>", font=dict(size=14, color=self.chart_colors["data1"])),
                 tickfont=dict(size=12, color=self.chart_colors["data1"]),
                 side="left",
-                range=[0, max_count * 1.15],  # Add 15% padding for text labels
+                range=[0, max_count * 1.25],  # Add 25% padding for text labels
             ),
             yaxis2=dict(
                 title=dict(text="<b>Total Points</b>", font=dict(size=14, color=self.chart_colors["data2"])),
                 tickfont=dict(size=12, color=self.chart_colors["data2"]),
                 overlaying="y",
                 side="right",
-                range=[0, max_points * 1.15],  # Add 15% padding for text labels
+                range=[0, max_points * 1.25],  # Add 25% padding for text labels
             ),
             hovermode="x unified",
             paper_bgcolor="white",
@@ -712,7 +715,8 @@ class HTMLReportGenerator:
                 bgcolor="white",
                 font_size=14,
                 font_family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                bordercolor="rgba(0,0,0,0.1)",
+                font_color="rgba(0,0,0,0.87)",  # Dark text for accessibility
+                bordercolor="rgba(0,0,0,0.2)",
             ),
             margin=dict(t=100, b=80, l=60, r=60),
         )
@@ -756,6 +760,19 @@ class HTMLReportGenerator:
             ]
         )
 
+        # Calculate appropriate dtick based on max value
+        max_sprints = max(sprints) if sprints else 10
+        if max_sprints <= 20:
+            dtick = 1
+        elif max_sprints <= 50:
+            dtick = 5
+        elif max_sprints <= 100:
+            dtick = 10
+        elif max_sprints <= 200:
+            dtick = 20
+        else:
+            dtick = 50
+
         fig.update_layout(
             title=dict(
                 text="<b>Sprints to Complete by Confidence Level</b>",
@@ -768,7 +785,7 @@ class HTMLReportGenerator:
             yaxis=dict(
                 tickmode="linear",
                 tick0=0,
-                dtick=1,
+                dtick=dtick,  # Dynamic tick spacing
                 showgrid=True,
                 gridwidth=1,
                 gridcolor="rgba(128,128,128,0.1)",
@@ -786,7 +803,8 @@ class HTMLReportGenerator:
                 bgcolor="white",
                 font_size=14,
                 font_family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                bordercolor="rgba(0,0,0,0.1)",
+                font_color="rgba(0,0,0,0.87)",  # Dark text for accessibility
+                bordercolor="rgba(0,0,0,0.2)",
             ),
             bargap=0.3,
             margin=dict(t=100, b=80, l=80, r=60),

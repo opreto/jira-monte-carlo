@@ -311,6 +311,7 @@ a:hover {
 /* Chart transition animation */
 .chart-transition {
     transition: opacity 0.3s ease;
+    min-height: 450px;  /* Prevent layout shift during transitions */
 }
 
 /* Footer */

@@ -107,6 +107,9 @@ class RunMonteCarloSimulationUseCase:
             
             completion_sprints.append(sprints)
         
+        # Store unsorted data for visualization
+        completion_sprints_unsorted = completion_sprints.copy()
+        
         # Calculate results
         completion_sprints.sort()
         percentiles = {}
@@ -159,7 +162,7 @@ class RunMonteCarloSimulationUseCase:
             probability_distribution=probability_distribution,
             completion_dates=completion_dates[:100],  # Sample for visualization
             confidence_intervals=confidence_intervals,
-            completion_sprints=completion_sprints[:1000]  # Store first 1000 for visualization
+            completion_sprints=completion_sprints_unsorted[:1000]  # Store first 1000 UNSORTED for visualization
         )
 
 

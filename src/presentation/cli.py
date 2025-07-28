@@ -202,8 +202,21 @@ def main(csv_files: tuple, num_simulations: int, output: str, theme: str, data_f
     # Run simulation
     console.print(f"\n[yellow]Running {num_simulations:,} Monte Carlo simulations...[/yellow]")
     
-    # Get sprint duration - default to 14 days (2 weeks)
-    sprint_duration = 14  # Default
+    # Get sprint duration from actual sprint data if available
+    sprint_duration = 14  # Default to 2 weeks
+    if sprints:
+        # Calculate average sprint duration from actual data
+        durations = []
+        for sprint in sprints:
+            if hasattr(sprint, 'duration_days'):
+                duration = sprint.duration_days
+                if duration > 0:
+                    durations.append(duration)
+        if durations:
+            avg_duration = sum(durations) / len(durations)
+            # Round to nearest week
+            sprint_duration = int(round(avg_duration / 7) * 7)
+            console.print(f"[cyan]Detected sprint duration: {sprint_duration} days[/cyan]")
     
     config = SimulationConfig(
         num_simulations=num_simulations,

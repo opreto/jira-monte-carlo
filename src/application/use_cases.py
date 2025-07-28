@@ -8,6 +8,9 @@ from dataclasses import dataclass
 from ..domain.entities import Issue, Sprint, Team, SimulationConfig, SimulationResult
 from ..domain.repositories import IssueRepository, SprintRepository
 from ..domain.value_objects import DateRange, VelocityMetrics, HistoricalData
+from ..domain.forecasting import MonteCarloConfiguration
+from ..infrastructure.monte_carlo_model import MonteCarloModel
+from .forecasting_use_cases import GenerateForecastUseCase
 
 logger = logging.getLogger(__name__)
 
@@ -80,89 +83,81 @@ class CalculateVelocityUseCase:
 
 
 class RunMonteCarloSimulationUseCase:
+    """Legacy use case for backward compatibility - delegates to new forecasting model"""
+    
     def __init__(self, issue_repo: IssueRepository):
         self.issue_repo = issue_repo
+        # Create Monte Carlo model for backward compatibility
+        self.forecasting_model = MonteCarloModel()
+        self.forecast_use_case = GenerateForecastUseCase(self.forecasting_model, issue_repo)
     
     def execute(self,
                 remaining_work: float,
                 velocity_metrics: VelocityMetrics,
                 config: SimulationConfig) -> SimulationResult:
-        completion_sprints = []
+        """Execute Monte Carlo simulation using new forecasting model"""
         
-        # Run simulations
-        for _ in range(config.num_simulations):
-            sprints = 0
-            work_remaining = remaining_work
-            
-            while work_remaining > 0:
-                # Sample velocity from normal distribution
-                velocity = random.gauss(
-                    velocity_metrics.average,
-                    velocity_metrics.std_dev
-                )
-                velocity = max(0.1, velocity)  # Ensure positive velocity
-                
-                work_remaining -= velocity
-                sprints += 1
-            
-            completion_sprints.append(sprints)
+        # Convert legacy config to new model config
+        model_config = MonteCarloConfiguration(
+            num_simulations=config.num_simulations,
+            confidence_levels=config.confidence_levels,
+            sprint_duration_days=config.sprint_duration_days
+        )
         
-        # Store unsorted data for visualization
-        completion_sprints_unsorted = completion_sprints.copy()
+        # Run forecast using new model
+        forecast_result = self.forecast_use_case.execute(
+            remaining_work, velocity_metrics, model_config
+        )
         
-        # Calculate results
-        completion_sprints.sort()
+        # Convert new ForecastResult to legacy SimulationResult
         percentiles = {}
         confidence_intervals = {}
         
-        for level in config.confidence_levels:
-            percentile = level * 100
-            # Store sprint counts instead of days
-            # Calculate percentile
-            index = int(len(completion_sprints) * level)
-            percentiles[level] = completion_sprints[min(index, len(completion_sprints) - 1)]
+        for interval in forecast_result.prediction_intervals:
+            confidence = interval.confidence_level
+            percentiles[confidence] = interval.predicted_value
+            confidence_intervals[confidence] = (
+                interval.lower_bound,
+                interval.upper_bound
+            )
+        
+        # Convert probability distribution from dict to list format
+        # Legacy format uses 50-bin histogram
+        probability_distribution = []
+        if forecast_result.probability_distribution:
+            min_sprints = min(forecast_result.probability_distribution.keys())
+            max_sprints = max(forecast_result.probability_distribution.keys())
+            bins = 50
+            bin_width = (max_sprints - min_sprints) / bins if max_sprints > min_sprints else 1
+            hist = [0.0] * bins
             
-            # Calculate confidence interval in sprints
-            lower_idx = int(len(completion_sprints) * (1 - level) / 2)
-            upper_idx = int(len(completion_sprints) * (1 - (1 - level) / 2))
-            lower = completion_sprints[min(lower_idx, len(completion_sprints) - 1)]
-            upper = completion_sprints[min(upper_idx, len(completion_sprints) - 1)]
-            confidence_intervals[level] = (lower, upper)
+            # Populate histogram bins
+            for sprints, prob in forecast_result.probability_distribution.items():
+                bin_index = int((sprints - min_sprints) / bin_width)
+                bin_index = min(bin_index, bins - 1)
+                hist[bin_index] += prob
+            
+            probability_distribution = hist
         
-        # Create probability distribution
-        # Simple histogram implementation
-        min_sprints = min(completion_sprints)
-        max_sprints = max(completion_sprints)
-        bins = 50
-        bin_width = (max_sprints - min_sprints) / bins if max_sprints > min_sprints else 1
-        hist = [0] * bins
-        
-        for sprint_count in completion_sprints:
-            bin_index = int((sprint_count - min_sprints) / bin_width)
-            bin_index = min(bin_index, bins - 1)
-            hist[bin_index] += 1
-        
-        total = sum(hist)
-        probability_distribution = [count / total for count in hist]
-        
-        # Calculate completion dates based on sprints
+        # Generate sample completion dates for visualization
         today = datetime.now()
-        completion_dates = [
-            today + timedelta(days=int(sprints * config.sprint_duration_days)) 
-            for sprints in completion_sprints
-        ]
-        mean_completion_date = today + timedelta(
-            days=int(statistics.mean(completion_sprints) * config.sprint_duration_days)
-        )
+        completion_dates = []
+        if forecast_result.sample_predictions:
+            completion_dates = [
+                today + timedelta(days=int(sprints * config.sprint_duration_days))
+                for sprints in forecast_result.sample_predictions[:100]
+            ]
         
+        # Return legacy format
         return SimulationResult(
             percentiles=percentiles,
-            mean_completion_date=mean_completion_date,
-            std_dev_days=statistics.stdev(completion_sprints) if len(completion_sprints) > 1 else 0.0,  # Now represents std dev in sprints
+            mean_completion_date=forecast_result.expected_completion_date,
+            std_dev_days=statistics.stdev(forecast_result.sample_predictions) 
+                         if len(forecast_result.sample_predictions) > 1 else 0.0,
             probability_distribution=probability_distribution,
-            completion_dates=completion_dates[:100],  # Sample for visualization
+            completion_dates=completion_dates,
             confidence_intervals=confidence_intervals,
-            completion_sprints=completion_sprints_unsorted[:1000]  # Store first 1000 UNSORTED for visualization
+            completion_sprints=forecast_result.sample_predictions[:1000]
         )
 
 

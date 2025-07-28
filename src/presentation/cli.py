@@ -27,6 +27,9 @@ from ..application.use_cases import (
     AnalyzeHistoricalDataUseCase,
     CalculateRemainingWorkUseCase
 )
+from ..application.forecasting_use_cases import GenerateForecastUseCase
+from ..infrastructure.forecasting_model_factory import DefaultModelFactory
+from ..domain.forecasting import ModelType, MonteCarloConfiguration
 from ..application.import_data import ImportDataUseCase, AnalyzeDataSourceUseCase
 from ..application.csv_analysis import AnalyzeCSVStructureUseCase, AnalyzeVelocityUseCase
 from ..application.style_service import StyleService
@@ -65,12 +68,13 @@ logger = logging.getLogger(__name__)
 @click.option('--outlier-std-devs', type=float, default=2.0, help='Standard deviations for outlier detection')
 @click.option('--min-velocity', type=float, default=10.0, help='Minimum velocity threshold (default: 10.0)')
 @click.option('--theme', type=click.Choice(['opreto', 'generic']), default='opreto', help='Visual theme for reports (default: opreto)')
+@click.option('--model', type=click.Choice(['monte_carlo']), default='monte_carlo', help='Forecasting model to use (default: monte_carlo)')
 def main(csv_files: tuple, num_simulations: int, output: str, theme: str, data_format: str,
          key_field: str, summary_field: str, status_field: str, created_field: str,
          resolved_field: str, story_points_field: str, sprint_field: str,
          done_statuses: str, in_progress_statuses: str, todo_statuses: str,
          velocity_field: str, lookback_sprints: int, analyze_only: bool,
-         max_velocity_age: int, outlier_std_devs: float, min_velocity: float):
+         max_velocity_age: int, outlier_std_devs: float, min_velocity: float, model: str):
     console.print("[bold blue]Monte Carlo Simulation[/bold blue]")
     
     # Initialize repositories
@@ -199,8 +203,18 @@ def main(csv_files: tuple, num_simulations: int, output: str, theme: str, data_f
     
     console.print(f"\n[cyan]Remaining work: {remaining_work:.1f} {velocity_field}[/cyan]")
     
+    # Get model type from string
+    model_type = ModelType.MONTE_CARLO  # Default
+    if model == 'monte_carlo':
+        model_type = ModelType.MONTE_CARLO
+    # Add more model types as they become available
+    
+    # Create forecasting model factory
+    model_factory = DefaultModelFactory()
+    
     # Run simulation
-    console.print(f"\n[yellow]Running {num_simulations:,} Monte Carlo simulations...[/yellow]")
+    model_info = model_factory.create(model_type).get_model_info()
+    console.print(f"\n[yellow]Running {model_info.name} forecast...[/yellow]")
     
     # Get sprint duration from actual sprint data if available
     sprint_duration = 14  # Default to 2 weeks
@@ -218,17 +232,65 @@ def main(csv_files: tuple, num_simulations: int, output: str, theme: str, data_f
             sprint_duration = int(round(avg_duration / 7) * 7)
             console.print(f"[cyan]Detected sprint duration: {sprint_duration} days[/cyan]")
     
-    config = SimulationConfig(
-        num_simulations=num_simulations,
-        velocity_field=velocity_field,
-        done_statuses=status_mapping.get("done", []),
-        in_progress_statuses=status_mapping.get("in_progress", []),
-        todo_statuses=status_mapping.get("todo", []),
-        sprint_duration_days=sprint_duration
-    )
-    
-    simulation_use_case = RunMonteCarloSimulationUseCase(issue_repo)
-    results = simulation_use_case.execute(remaining_work, velocity_metrics, config)
+    # Check if we're using the new model abstraction or legacy path
+    if model_type == ModelType.MONTE_CARLO:
+        # Use legacy path for backward compatibility
+        config = SimulationConfig(
+            num_simulations=num_simulations,
+            velocity_field=velocity_field,
+            done_statuses=status_mapping.get("done", []),
+            in_progress_statuses=status_mapping.get("in_progress", []),
+            todo_statuses=status_mapping.get("todo", []),
+            sprint_duration_days=sprint_duration
+        )
+        
+        simulation_use_case = RunMonteCarloSimulationUseCase(issue_repo)
+        results = simulation_use_case.execute(remaining_work, velocity_metrics, config)
+    else:
+        # Use new model abstraction for other models
+        forecasting_model = model_factory.create(model_type)
+        model_config = model_factory.get_default_config(model_type)
+        
+        # Override config with CLI parameters
+        if isinstance(model_config, MonteCarloConfiguration):
+            model_config.num_simulations = num_simulations
+            model_config.sprint_duration_days = sprint_duration
+        
+        forecast_use_case = GenerateForecastUseCase(forecasting_model, issue_repo)
+        forecast_result = forecast_use_case.execute(remaining_work, velocity_metrics, model_config)
+        
+        # Convert to legacy SimulationResult format for report compatibility
+        from ..domain.entities import SimulationResult
+        from datetime import datetime, timedelta
+        import statistics
+        
+        # Convert prediction intervals to percentiles
+        percentiles = {}
+        confidence_intervals = {}
+        for interval in forecast_result.prediction_intervals:
+            percentiles[interval.confidence_level] = interval.predicted_value
+            confidence_intervals[interval.confidence_level] = (
+                interval.lower_bound, interval.upper_bound
+            )
+        
+        # Generate sample completion dates
+        today = datetime.now()
+        completion_dates = [
+            today + timedelta(days=int(s * sprint_duration))
+            for s in forecast_result.sample_predictions[:100]
+        ]
+        
+        # Create legacy result
+        results = SimulationResult(
+            percentiles=percentiles,
+            mean_completion_date=forecast_result.expected_completion_date,
+            std_dev_days=statistics.stdev(forecast_result.sample_predictions) 
+                         if len(forecast_result.sample_predictions) > 1 else 0.0,
+            probability_distribution=[],  # Simplified for now
+            completion_dates=completion_dates,
+            confidence_intervals=confidence_intervals,
+            completion_sprints=forecast_result.sample_predictions[:1000]
+        )
     
     # Analyze historical data
     historical_use_case = AnalyzeHistoricalDataUseCase(issue_repo)

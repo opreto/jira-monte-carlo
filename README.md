@@ -11,6 +11,7 @@ A high-performance Monte Carlo simulation tool for agile project forecasting. Th
 - **Sprint-Based Forecasting**: Predictions in sprints rather than days for clearer planning
 - **Velocity Outlier Detection**: Filters outliers using z-score and time-based analysis
 - **Configurable Field Mapping**: Command-line options with sensible defaults to map customizable fields
+- **Extensible Forecasting Models**: Pluggable architecture for different statistical models (Monte Carlo, PERT, Linear Regression, etc.)
 - **Monte Carlo Simulations**: Run thousands of simulations to predict project completion dates
 - **Beautiful HTML Reports**: Visual charts showing probability distributions, velocity trends, and forecasts
 - **Clean Architecture**: Follows Domain-Driven Design principles for maintainability
@@ -173,17 +174,26 @@ src/
 │   ├── repositories.py  # Repository interfaces
 │   ├── analysis.py      # CSV analysis domain models
 │   ├── multi_project.py # Multi-project domain models (ProjectData, AggregatedMetrics)
-│   └── styles.py        # Theme and styling domain models
+│   ├── styles.py        # Theme and styling domain models
+│   ├── forecasting.py   # Statistical model abstraction (ForecastingModel, ForecastResult)
+│   └── data_sources.py  # Data source abstraction interfaces
 ├── application/     # Use cases and business rules
 │   ├── use_cases.py     # Core application services
 │   ├── csv_analysis.py  # CSV structure analysis and velocity filtering
 │   ├── multi_project_use_cases.py  # Multi-CSV processing orchestration
-│   └── style_service.py # Theme and styling management service
+│   ├── style_service.py # Theme and styling management service
+│   ├── forecasting_use_cases.py  # Forecasting model orchestration
+│   └── import_data.py   # Data import orchestration
 ├── infrastructure/  # External interfaces
 │   ├── csv_parser.py    # High-performance Jira CSV parsing
 │   ├── csv_analyzer.py  # Smart column aggregation and sprint extraction
 │   ├── repositories.py  # Repository implementations
-│   └── theme_repository.py  # Theme storage and retrieval
+│   ├── theme_repository.py  # Theme storage and retrieval
+│   ├── monte_carlo_model.py  # Monte Carlo forecasting implementation
+│   ├── forecasting_model_factory.py  # Model factory and registration
+│   ├── jira_data_source.py  # Jira CSV data source implementation
+│   ├── linear_data_source.py  # Linear CSV data source implementation
+│   └── data_source_factory.py  # Data source factory
 └── presentation/    # UI and presentation logic
     ├── cli.py           # Command-line interface with rich output
     ├── report_generator.py  # HTML report generation with Plotly charts
@@ -286,12 +296,55 @@ The styling system follows clean architecture principles:
 
 Themes are stored in `~/.jira-monte-carlo/themes.json` and can be customized.
 
+## Extensibility
+
+### Adding New Forecasting Models
+
+The system supports pluggable forecasting models. To add a new model:
+
+1. Implement the `ForecastingModel` interface:
+```python
+from domain.forecasting import ForecastingModel, ForecastResult, ModelInfo
+
+class MyCustomModel(ForecastingModel):
+    def forecast(self, remaining_work, velocity_metrics, config):
+        # Your forecasting logic here
+        return ForecastResult(...)
+    
+    def get_model_info(self):
+        return ModelInfo(
+            model_type=ModelType.CUSTOM,
+            name="My Custom Model",
+            description="Description of your model"
+        )
+```
+
+2. Register your model in the factory:
+```python
+factory.register_model(ModelType.CUSTOM, MyCustomModel)
+```
+
+### Adding New Data Sources
+
+To support new data formats:
+
+1. Implement the `DataSource` interface
+2. Register in `DefaultDataSourceFactory`
+3. Add auto-detection logic if desired
+
 ## Configuration Files
 
 Configuration is stored in `~/.jira-monte-carlo/`:
 - `field_mapping.json`: Jira field mappings
 - `status_mapping.json`: Status categorization
 - `themes.json`: Visual themes for reports
+
+## Architectural Decisions
+
+Major architectural decisions are documented in the `docs/architecture/` directory using Lightweight Architecture Decision Records (LADRs). Key decisions include:
+
+- **0001-data-source-abstraction.md**: Abstraction layer for supporting multiple data sources
+- **0002-statistical-model-abstraction.md**: Pluggable forecasting model architecture
 
 ## Development
 

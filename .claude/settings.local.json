@@ -262,7 +262,11 @@
       "Bash(pytest:*)",
       "Bash(uv pip:*)",
       "Bash(open multi_report.html)",
-      "Bash(open:*)"
+      "Bash(open:*)",
+      "Bash(pip install:*)",
+      "Bash(jira-monte-carlo:*)",
+      "Bash(git restore:*)",
+      "Bash(csvstat:*)"
     ],
     "deny": []
   }

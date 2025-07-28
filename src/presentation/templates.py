@@ -138,8 +138,8 @@ class ReportTemplates:
         """Get multi-project dashboard template"""
         template_str = """
 <div class="header">
-    <h1>Multi-Project Forecasting Dashboard</h1>
-    <p class="subtitle">Analyzing {{ multi_report.projects|length }} projects • 
+    <h1>{% if model_info and model_info.report_title %}Multi-Project {{ model_info.name }} Dashboard{% else %}Multi-Project Forecasting Dashboard{% endif %}</h1>
+    <p class="subtitle">{% if model_info and model_info.report_subtitle %}{{ model_info.report_subtitle }} • {% endif %}Analyzing {{ multi_report.projects|length }} projects • 
         Generated {{ multi_report.generated_at.strftime('%Y-%m-%d %H:%M') }}</p>
 </div>
 
@@ -265,5 +265,9 @@ class ReportTemplates:
     );
     {% endfor %}
 </script>
+
+<div class="footer">
+    <p>{% if model_info and model_info.methodology_description %}{{ model_info.methodology_description }}{% else %}Statistical Forecasting{% endif %} by Opreto Agile Analytics</p>
+</div>
 """
         return Template(template_str)

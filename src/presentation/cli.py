@@ -364,29 +364,39 @@ def main(
 
     # If we have sprints with dates, create better historical data
     if sprints:
-        # Get sprint velocities and dates from the sprint repository
+        # Extract velocity and date data directly from sprints
         sprint_velocities = []
         sprint_dates = []
-
-        # Sort sprints by date (if they have dates)
-        sorted_sprints = sorted(
-            sprints, key=lambda s: s.end_date if hasattr(s, "end_date") and s.end_date else datetime.now()
-        )
-
-        for sprint in sorted_sprints[-lookback_sprints:]:
+        sprint_names = []
+        
+        # Natural sort function for sprint names
+        import re
+        
+        def natural_sort_key(sprint):
+            name = getattr(sprint, 'name', '')
+            parts = []
+            for part in re.split(r'(\d+)', name):
+                if part.isdigit():
+                    parts.append(int(part))
+                else:
+                    parts.append(part)
+            return parts
+        
+        # Sort sprints by name using natural sort
+        sorted_sprints = sorted(sprints, key=natural_sort_key)
+        
+        for sprint in sorted_sprints:
             if hasattr(sprint, "completed_points") and sprint.completed_points > 0:
                 sprint_velocities.append(sprint.completed_points)
-                # Use end_date if available, otherwise use start_date
+                sprint_names.append(getattr(sprint, 'name', 'Unknown'))
+                # Keep dates for backwards compatibility
                 if hasattr(sprint, "end_date") and sprint.end_date:
                     sprint_dates.append(sprint.end_date)
-                elif hasattr(sprint, "start_date") and sprint.start_date:
-                    sprint_dates.append(sprint.start_date)
                 else:
-                    # If no date available, skip this sprint
-                    sprint_velocities.pop()  # Remove the velocity we just added
-
-        # If we have sprint data with dates, use it for historical data
-        if sprint_velocities and sprint_dates and len(sprint_velocities) == len(sprint_dates):
+                    # Use a dummy date if no date available
+                    sprint_dates.append(datetime.now())
+        
+        if sprint_velocities:
             from ..domain.value_objects import HistoricalData
 
             historical_data = HistoricalData(
@@ -394,6 +404,7 @@ def main(
                 cycle_times=historical_data.cycle_times,  # Keep original cycle times
                 throughput=historical_data.throughput,  # Keep original throughput
                 dates=sprint_dates,
+                sprint_names=sprint_names,
             )
 
     # Generate report
@@ -479,12 +490,22 @@ def process_multiple_csvs(
         velocity_config=velocity_config,
     )
 
+    # Get model info for the default Monte Carlo model
+    from ..domain.forecasting import ModelType
+    from ..infrastructure.forecasting_model_factory import DefaultModelFactory
+    model_factory = DefaultModelFactory()
+    model = model_factory.create(ModelType.MONTE_CARLO)
+    model_info = model.get_model_info()
+    
     # Generate multi-project report
     console.print("\n[yellow]Generating multi-project HTML report...[/yellow]")
     style_service = StyleService()
     report_generator = MultiProjectReportGenerator(style_service, theme)
     report_path = report_generator.generate(
-        multi_report=multi_report, output_dir=Path(output).parent, output_filename=Path(output).name
+        multi_report=multi_report,
+        output_dir=Path(output).parent,
+        output_filename=Path(output).name,
+        model_info=model_info,
     )
 
     console.print(f"\n[green]✓ Multi-project report generated: {report_path}[/green]")

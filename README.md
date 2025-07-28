@@ -14,6 +14,7 @@ A high-performance Monte Carlo simulation tool for agile project forecasting. Th
 - **Extensible Forecasting Models**: Pluggable architecture for different statistical models (Monte Carlo, PERT, Linear Regression, etc.)
 - **Monte Carlo Simulations**: Run thousands of simulations to predict project completion dates
 - **Beautiful HTML Reports**: Visual charts showing probability distributions, velocity trends, and forecasts
+- **Sprint Name X-Axis**: Historical velocity charts use sprint names on X-axis for clarity when dates are unavailable
 - **Clean Architecture**: Follows Domain-Driven Design principles for maintainability
 - **Sprint Duration Detection**: Automatically detects sprint length from data
 - **Multiple Status Support**: Handles custom workflows with configurable status mappings

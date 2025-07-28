@@ -1,9 +1,9 @@
 """Domain interfaces for data sources"""
 from abc import ABC, abstractmethod
-from typing import List, Dict, Optional, Any, Tuple
-from pathlib import Path
-from enum import Enum
 from dataclasses import dataclass
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 from .entities import Issue, Sprint
 from .value_objects import FieldMapping
@@ -11,6 +11,7 @@ from .value_objects import FieldMapping
 
 class DataSourceType(Enum):
     """Supported data source types"""
+
     JIRA_CSV = "jira_csv"
     LINEAR_CSV = "linear_csv"
     JIRA_XML = "jira_xml"
@@ -21,6 +22,7 @@ class DataSourceType(Enum):
 @dataclass
 class DataSourceInfo:
     """Information about a data source"""
+
     source_type: DataSourceType
     name: str
     description: str
@@ -30,37 +32,37 @@ class DataSourceInfo:
 
 class DataSource(ABC):
     """Abstract interface for data sources"""
-    
+
     @abstractmethod
     def parse_file(self, file_path: Path) -> Tuple[List[Issue], List[Sprint]]:
         """
         Parse a file and extract issues and sprints
-        
+
         Returns:
             Tuple of (issues, sprints)
         """
         pass
-    
+
     @abstractmethod
     def detect_format(self, file_path: Path) -> bool:
         """
         Detect if this parser can handle the given file
-        
+
         Returns:
             True if this parser can handle the file format
         """
         pass
-    
+
     @abstractmethod
     def get_info(self) -> DataSourceInfo:
         """Get information about this data source"""
         pass
-    
+
     @abstractmethod
     def analyze_structure(self, file_path: Path) -> Dict[str, Any]:
         """
         Analyze the structure of the data source
-        
+
         Returns:
             Dictionary with analysis results (columns, sample data, etc.)
         """
@@ -69,17 +71,17 @@ class DataSource(ABC):
 
 class DataSourceFactory(ABC):
     """Factory for creating data source instances"""
-    
+
     @abstractmethod
     def create(self, source_type: DataSourceType, field_mapping: Optional[FieldMapping] = None) -> DataSource:
         """Create a data source instance"""
         pass
-    
+
     @abstractmethod
     def detect_source_type(self, file_path: Path) -> Optional[DataSourceType]:
         """Auto-detect the source type from file"""
         pass
-    
+
     @abstractmethod
     def get_available_sources(self) -> List[DataSourceInfo]:
         """Get list of available data sources"""

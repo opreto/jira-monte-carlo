@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from typing import Dict, List, Optional
 from datetime import datetime
+from typing import Dict, List, Optional
 
 
 @dataclass(frozen=True)
@@ -19,7 +19,7 @@ class FieldMapping:
     reporter_field: str = "Reporter"
     labels_field: str = "Labels"
     sprint_field: Optional[str] = "Sprint"
-    
+
     def to_dict(self) -> Dict[str, str]:
         return {k: v for k, v in self.__dict__.items() if v is not None}
 
@@ -32,17 +32,17 @@ class VelocityMetrics:
     min_value: float
     max_value: float
     trend: float  # Positive for increasing, negative for decreasing
-    
-    
+
+
 @dataclass(frozen=True)
 class DateRange:
     start: datetime
     end: datetime
-    
+
     @property
     def days(self) -> int:
         return (self.end - self.start).days
-    
+
     def contains(self, date: datetime) -> bool:
         # Handle timezone-aware vs naive datetime comparison
         if date.tzinfo is not None and self.start.tzinfo is None:
@@ -62,3 +62,4 @@ class HistoricalData:
     cycle_times: List[float]
     throughput: List[int]  # Number of issues completed per period
     dates: List[datetime]
+    sprint_names: Optional[List[str]] = None  # Sprint names for X-axis labels

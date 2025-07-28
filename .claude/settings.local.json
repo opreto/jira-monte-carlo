@@ -269,7 +269,15 @@
       "Bash(csvstat:*)",
       "Bash(cut:*)",
       "Bash(cat:*)",
-      "Bash(ruff check:*)"
+      "Bash(ruff check:*)",
+      "Bash(mv:*)",
+      "Bash(flake8:*)",
+      "Bash(black:*)",
+      "Bash(isort:*)",
+      "Bash(git checkout:*)",
+      "Bash(git reset:*)",
+      "Bash(git rm:*)",
+      "Bash(git rev-parse:*)"
     ],
     "deny": []
   }

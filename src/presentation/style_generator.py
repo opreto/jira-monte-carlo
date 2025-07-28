@@ -1,14 +1,14 @@
 """Style generator for HTML reports"""
-from typing import Optional
+
 from ..domain.styles import Theme
 
 
 class StyleGenerator:
     """Generate CSS styles from theme"""
-    
+
     def __init__(self, theme: Theme):
         self.theme = theme
-    
+
     def generate_css(self) -> str:
         """Generate complete CSS from theme"""
         css_parts = [
@@ -17,15 +17,15 @@ class StyleGenerator:
             self._generate_typography_styles(),
             self._generate_component_styles(),
             self._generate_utility_styles(),
-            self._generate_chart_styles()
+            self._generate_chart_styles(),
         ]
-        
+
         # Add custom CSS if provided
         if self.theme.custom_css:
             css_parts.append(self.theme.custom_css)
-        
+
         return "\n\n".join(css_parts)
-    
+
     def _generate_root_variables(self) -> str:
         """Generate CSS custom properties"""
         return f"""
@@ -71,7 +71,7 @@ class StyleGenerator:
     --border-width: {self.theme.borders.width};
     --border-color: {self.theme.borders.color};
 }}"""
-    
+
     def _generate_base_styles(self) -> str:
         """Generate base HTML styles"""
         return f"""
@@ -90,7 +90,7 @@ body {{
     margin: 0 auto;
     padding: var(--spacing-lg);
 }}"""
-    
+
     def _generate_typography_styles(self) -> str:
         """Generate typography styles"""
         return f"""
@@ -136,7 +136,7 @@ h3 {{
     font-weight: {self.theme.typography.button.font_weight};
     letter-spacing: {self.theme.typography.button.letter_spacing or 'normal'};
 }}"""
-    
+
     def _generate_component_styles(self) -> str:
         """Generate component styles"""
         return """
@@ -287,7 +287,7 @@ a:hover {
     padding: var(--spacing-xs) var(--spacing-sm);
     border-radius: var(--border-radius-sm);
 }"""
-    
+
     def _generate_utility_styles(self) -> str:
         """Generate utility styles"""
         return """
@@ -307,7 +307,7 @@ a:hover {
 .p-sm { padding: var(--spacing-sm); }
 .p-md { padding: var(--spacing-md); }
 .p-lg { padding: var(--spacing-lg); }"""
-    
+
     def _generate_chart_styles(self) -> str:
         """Generate chart-specific styles"""
         return """
@@ -320,7 +320,7 @@ a:hover {
 .plotly .main-svg {
     border-radius: var(--border-radius-sm);
 }"""
-    
+
     def get_chart_colors(self) -> dict:
         """Get chart color configuration with BI best practices"""
         if self.theme.colors.chart_colors:
@@ -331,25 +331,21 @@ a:hover {
                 "medium_confidence": cc.medium_confidence.hex,  # Amber = Caution
                 "low_confidence": cc.low_confidence.hex,  # Red = Risk/Warning
                 "neutral": cc.neutral.hex,  # Blue/Gray = Neutral info
-                
                 # RGBA functions for transparency
                 "high_confidence_rgba": lambda alpha: cc.high_confidence.to_rgba(alpha),
                 "medium_confidence_rgba": lambda alpha: cc.medium_confidence.to_rgba(alpha),
                 "low_confidence_rgba": lambda alpha: cc.low_confidence.to_rgba(alpha),
                 "neutral_rgba": lambda alpha: cc.neutral.to_rgba(alpha),
-                
                 # Data visualization colors
                 "data1": cc.data1.hex,
                 "data2": cc.data2.hex,
                 "data3": cc.data3.hex,
                 "data4": cc.data4.hex,
                 "data5": cc.data5.hex,
-                
                 # Gradient colors for distributions
                 "gradient_start": cc.gradient_start.hex,
                 "gradient_mid": cc.gradient_mid.hex,
                 "gradient_end": cc.gradient_end.hex,
-                
                 # Legacy compatibility
                 "primary": cc.data1.hex,
                 "primary_rgba": lambda alpha: cc.data1.to_rgba(alpha),
@@ -358,8 +354,16 @@ a:hover {
                 "accent": cc.data3.hex,
                 "accent_rgba": lambda alpha: cc.data3.to_rgba(alpha),
                 "success": cc.high_confidence.hex,
+                "success_rgba": lambda alpha: cc.high_confidence.to_rgba(alpha),
                 "warning": cc.medium_confidence.hex,
-                "error": cc.low_confidence.hex
+                "warning_rgba": lambda alpha: cc.medium_confidence.to_rgba(alpha),
+                "error": cc.low_confidence.hex,
+                # Add rgba functions for data colors
+                "data1_rgba": lambda alpha: cc.data1.to_rgba(alpha),
+                "data2_rgba": lambda alpha: cc.data2.to_rgba(alpha),
+                "data3_rgba": lambda alpha: cc.data3.to_rgba(alpha),
+                "data4_rgba": lambda alpha: cc.data4.to_rgba(alpha),
+                "data5_rgba": lambda alpha: cc.data5.to_rgba(alpha),
             }
         else:
             # Fallback for themes without chart colors
@@ -376,5 +380,5 @@ a:hover {
                 "high_confidence": self.theme.colors.success.hex,
                 "medium_confidence": self.theme.colors.warning.hex,
                 "low_confidence": self.theme.colors.error.hex,
-                "neutral": self.theme.colors.info.hex
+                "neutral": self.theme.colors.info.hex,
             }

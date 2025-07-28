@@ -221,10 +221,18 @@ class HTMLReportGenerator:
 
         fig = go.Figure()
 
+        # Use sprint names if available, otherwise use dates
+        x_values = historical.sprint_names if historical.sprint_names else historical.dates
+        hover_template = (
+            "<b>%{x}</b><br>Velocity: %{y:.1f}<extra></extra>" 
+            if historical.sprint_names 
+            else "<b>%{x|%b %Y}</b><br>Velocity: %{y:.1f}<extra></extra>"
+        )
+
         # Historical velocities with modern styling
         fig.add_trace(
             go.Scatter(
-                x=historical.dates,
+                x=x_values,
                 y=historical.velocities,
                 mode="lines+markers",
                 name="Historical Velocity",
@@ -238,7 +246,7 @@ class HTMLReportGenerator:
                 ),
                 fill="tozeroy",
                 fillcolor=self.chart_colors["data1_rgba"](0.1),
-                hovertemplate="<b>%{x|%b %Y}</b><br>Velocity: %{y:.1f}<extra></extra>",
+                hovertemplate=hover_template,
             )
         )
 
@@ -274,7 +282,7 @@ class HTMLReportGenerator:
 
             fig.add_trace(
                 go.Scatter(
-                    x=historical.dates,
+                    x=x_values,
                     y=trend_line,
                     mode="lines",
                     name="Trend",
@@ -288,7 +296,7 @@ class HTMLReportGenerator:
                 text="<b>Historical Velocity Trend</b>",
                 font=dict(size=22, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"),
             ),
-            xaxis_title=dict(text="<b>Date</b>", font=dict(size=14)),
+            xaxis_title=dict(text="<b>Sprint</b>" if historical.sprint_names else "<b>Date</b>", font=dict(size=14)),
             yaxis_title=dict(text="<b>Velocity (Story Points)</b>", font=dict(size=14)),
             height=450,
             xaxis=dict(

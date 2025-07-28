@@ -61,3 +61,11 @@ dist/
 *.tmp
 *.bak
 .~*
+*.backup
+*_fixed.py
+*_clean.py
+*_debug.json
+
+# Documentation PDFs
+*.pdf
+opretostyleguide-1.pdf

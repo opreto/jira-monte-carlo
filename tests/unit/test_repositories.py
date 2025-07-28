@@ -1,9 +1,6 @@
-import json
 import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
-
-import pytest
 
 from src.domain.entities import Issue, Sprint
 from src.domain.value_objects import DateRange, FieldMapping

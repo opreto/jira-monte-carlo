@@ -2,11 +2,8 @@
 from datetime import datetime
 from pathlib import Path
 
-import pytest
-
-from src.domain.entities import Issue, SimulationResult, Sprint
+from src.domain.entities import Issue
 from src.domain.multi_project import AggregatedMetrics, MultiProjectReport, ProjectData
-from src.domain.value_objects import VelocityMetrics
 
 
 class TestProjectData:
@@ -48,6 +45,18 @@ class TestProjectData:
         assert project.todo_issues == 1
         # 1 done out of 3 issues = 33.33%
         assert abs(project.completion_percentage - 33.33) < 0.1
+
+    def test_project_data_with_story_size_breakdown(self):
+        """Test that ProjectData properly handles story_size_breakdown"""
+        story_breakdown = {1.0: 5, 3.0: 3, 5.0: 2, 8.0: 1}
+
+        project = ProjectData(
+            name="Test Project", file_path=Path("test.csv"), remaining_work=50.0, story_size_breakdown=story_breakdown
+        )
+
+        assert project.story_size_breakdown == story_breakdown
+        assert project.story_size_breakdown[1.0] == 5
+        assert project.story_size_breakdown[3.0] == 3
 
 
 class TestAggregatedMetrics:

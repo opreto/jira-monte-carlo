@@ -249,7 +249,6 @@ def main(
         return
 
     # Velocity analysis will be done by the use cases using the imported sprint data
-    velocity_analysis = None  # Initialize for later use
 
     # Show issue status distribution
     show_status_distribution(issues)
@@ -267,7 +266,7 @@ def main(
     # Calculate remaining work
     remaining_use_case = CalculateRemainingWorkUseCase(issue_repo)
     remaining_work = remaining_use_case.execute(status_mapping.get("todo", []), velocity_field)
-    
+
     # Get story size breakdown
     story_size_breakdown = remaining_use_case.get_story_size_breakdown(status_mapping.get("todo", []))
 
@@ -371,34 +370,34 @@ def main(
         sprint_velocities = []
         sprint_dates = []
         sprint_names = []
-        
+
         # Natural sort function for sprint names
         import re
-        
+
         def natural_sort_key(sprint):
-            name = getattr(sprint, 'name', '')
+            name = getattr(sprint, "name", "")
             parts = []
-            for part in re.split(r'(\d+)', name):
+            for part in re.split(r"(\d+)", name):
                 if part.isdigit():
                     parts.append(int(part))
                 else:
                     parts.append(part)
             return parts
-        
+
         # Sort sprints by name using natural sort
         sorted_sprints = sorted(sprints, key=natural_sort_key)
-        
+
         for sprint in sorted_sprints:
             if hasattr(sprint, "completed_points") and sprint.completed_points > 0:
                 sprint_velocities.append(sprint.completed_points)
-                sprint_names.append(getattr(sprint, 'name', 'Unknown'))
+                sprint_names.append(getattr(sprint, "name", "Unknown"))
                 # Keep dates for backwards compatibility
                 if hasattr(sprint, "end_date") and sprint.end_date:
                     sprint_dates.append(sprint.end_date)
                 else:
                     # Use a dummy date if no date available
                     sprint_dates.append(datetime.now())
-        
+
         if sprint_velocities:
             from ..domain.value_objects import HistoricalData
 
@@ -497,10 +496,11 @@ def process_multiple_csvs(
     # Get model info for the default Monte Carlo model
     from ..domain.forecasting import ModelType
     from ..infrastructure.forecasting_model_factory import DefaultModelFactory
+
     model_factory = DefaultModelFactory()
     model = model_factory.create(ModelType.MONTE_CARLO)
     model_info = model.get_model_info()
-    
+
     # Generate multi-project report
     console.print("\n[yellow]Generating multi-project HTML report...[/yellow]")
     style_service = StyleService()

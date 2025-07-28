@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from .entities import Issue, SimulationResult, Sprint
 from .value_objects import VelocityMetrics
@@ -22,6 +22,7 @@ class ProjectData:
     simulation_result: Optional[SimulationResult] = None
     historical_data: Optional[object] = None  # HistoricalData type
     sprints: List[Sprint] = field(default_factory=list)
+    story_size_breakdown: Optional[Dict[float, int]] = None
     # Legacy support
     issues: List[Issue] = field(default_factory=list)
     source_path: Optional[Path] = None  # Backward compatibility

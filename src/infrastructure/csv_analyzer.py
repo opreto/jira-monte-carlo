@@ -182,7 +182,7 @@ class VelocityExtractor:
         df: pl.DataFrame, sprint_velocities: Dict[str, Dict[str, float]], resolved_date_column: str
     ) -> List:
         """Extract velocity data points with dates
-        
+
         This method will try to use real dates from the resolved column, but will fall back
         to synthetic dates if:
         1. No date column exists
@@ -198,30 +198,30 @@ class VelocityExtractor:
 
         # Try to extract real dates first
         use_synthetic = False
-        
+
         if has_sprint_column and has_date_column:
             sprint_col = "_agg_sprint" if "_agg_sprint" in df.columns else "Sprint"
-            
+
             # Collect sprint dates
             sprint_dates_map = {}
             for sprint_name, data in sprint_velocities.items():
                 sprint_issues = df.filter(pl.col(sprint_col).eq(sprint_name))
-                
+
                 if len(sprint_issues) > 0:
                     resolved_dates = sprint_issues[resolved_date_column].drop_nulls()
-                    
+
                     if len(resolved_dates) > 0:
                         latest_date_str = resolved_dates.max()
                         sprint_date = parse_flexible_date(latest_date_str)
-                        
+
                         if sprint_date:
                             sprint_dates_map[sprint_name] = (sprint_date, data)
-            
+
             # Check for date clustering (sprints too close together)
             if sprint_dates_map:
                 # Sort sprints by date
                 sorted_sprint_data = sorted(sprint_dates_map.items(), key=lambda x: x[1][0])
-                
+
                 # Check for sprints that are too close together (less than 7 days)
                 clustered_count = 0
                 for i in range(1, len(sorted_sprint_data)):
@@ -230,10 +230,10 @@ class VelocityExtractor:
                     days_apart = (curr_date - prev_date).days
                     if days_apart < 7:
                         clustered_count += 1
-                
+
                 # If more than 30% of sprints are clustered, use synthetic dates
                 clustering_ratio = clustered_count / len(sorted_sprint_data) if len(sorted_sprint_data) > 1 else 0
-                
+
                 if clustering_ratio > 0.3:
                     logger.info(
                         f"Found {clustered_count}/{len(sorted_sprint_data)} sprints clustered within 7 days. "
@@ -255,14 +255,14 @@ class VelocityExtractor:
             use_synthetic = True
             if not has_date_column:
                 logger.warning(f"No date column '{resolved_date_column}' found. Using synthetic dates.")
-        
+
         # Generate synthetic dates if needed
         if use_synthetic or not velocity_data:
             velocity_data = []
-            
+
             # Sort sprints naturally
             import re
-            
+
             def natural_sort_key(sprint_name):
                 parts = []
                 for part in re.split(r"(\d+)", sprint_name):
@@ -271,15 +271,15 @@ class VelocityExtractor:
                     else:
                         parts.append(part)
                 return parts
-            
+
             sorted_sprints = sorted(sprint_velocities.items(), key=lambda x: natural_sort_key(x[0]))
-            
+
             # Detect sprint duration
             sprint_duration = detect_sprint_duration(sorted_sprints)
-            
+
             # Generate evenly spaced dates
             base_date = datetime.now() - timedelta(days=len(sorted_sprints) * sprint_duration)
-            
+
             for i, (sprint_name, data) in enumerate(sorted_sprints):
                 sprint_date = base_date + timedelta(days=i * sprint_duration)
                 velocity_data.append(
@@ -290,10 +290,10 @@ class VelocityExtractor:
                         issue_count=data["issue_count"],
                     )
                 )
-        
+
         # Sort by date
         velocity_data.sort(key=lambda v: v.sprint_date)
-        
+
         return velocity_data
 
 

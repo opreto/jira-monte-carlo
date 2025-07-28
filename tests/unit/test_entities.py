@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
 
-import pytest
-
-from src.domain.entities import Issue, IssueStatus, Sprint, Team
+from src.domain.entities import Issue, Sprint, Team
 
 
 class TestIssue:

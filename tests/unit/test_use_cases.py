@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock, Mock
+from unittest.mock import Mock
 
-import numpy as np
-import pytest
 
 from src.application.use_cases import (
     AnalyzeHistoricalDataUseCase,
@@ -11,7 +9,7 @@ from src.application.use_cases import (
     RunMonteCarloSimulationUseCase,
 )
 from src.domain.entities import Issue, SimulationConfig, Sprint
-from src.domain.value_objects import DateRange, VelocityMetrics
+from src.domain.value_objects import VelocityMetrics
 
 
 class TestCalculateVelocityUseCase:
@@ -137,6 +135,76 @@ class TestCalculateRemainingWorkUseCase:
         remaining = use_case.execute(todo_statuses=["To Do"], velocity_field="count")
 
         assert remaining == 5.0
+
+    def test_get_story_size_breakdown(self):
+        """Test that story size breakdown correctly groups stories by size"""
+        issues = [
+            Issue(
+                key="TEST-1",
+                summary="Small 1",
+                issue_type="Story",
+                status="To Do",
+                created=datetime.now(),
+                story_points=1.0,
+            ),
+            Issue(
+                key="TEST-2",
+                summary="Small 2",
+                issue_type="Story",
+                status="To Do",
+                created=datetime.now(),
+                story_points=1.0,
+            ),
+            Issue(
+                key="TEST-3",
+                summary="Small 3",
+                issue_type="Story",
+                status="To Do",
+                created=datetime.now(),
+                story_points=1.0,
+            ),
+            Issue(
+                key="TEST-4",
+                summary="Medium 1",
+                issue_type="Story",
+                status="To Do",
+                created=datetime.now(),
+                story_points=3.0,
+            ),
+            Issue(
+                key="TEST-5",
+                summary="Medium 2",
+                issue_type="Story",
+                status="To Do",
+                created=datetime.now(),
+                story_points=3.0,
+            ),
+            Issue(
+                key="TEST-6",
+                summary="Large",
+                issue_type="Story",
+                status="To Do",
+                created=datetime.now(),
+                story_points=5.0,
+            ),
+            Issue(
+                key="TEST-7",
+                summary="No points",
+                issue_type="Story",
+                status="To Do",
+                created=datetime.now(),
+                story_points=None,
+            ),
+        ]
+
+        issue_repo = Mock()
+        issue_repo.get_by_status.return_value = issues
+
+        use_case = CalculateRemainingWorkUseCase(issue_repo)
+        breakdown = use_case.get_story_size_breakdown(["To Do"])
+
+        assert breakdown == {1.0: 3, 3.0: 2, 5.0: 1}
+        assert 0.0 not in breakdown  # Should not include stories without points
 
 
 class TestAnalyzeHistoricalDataUseCase:

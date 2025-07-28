@@ -1,4 +1,3 @@
-import json
 import statistics
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -69,12 +68,13 @@ class HTMLReportGenerator:
             empty_fig = go.Figure()
             empty_fig.update_layout(title="No Velocity Data Available")
             charts["velocity_trend"] = empty_fig.to_json()
-        
-        # Story size breakdown chart
+
+        # Story size breakdown chart (returns dict with pie and bar)
         if story_size_breakdown:
             charts["story_size_breakdown"] = self._create_story_size_breakdown_chart(story_size_breakdown)
         else:
-            charts["story_size_breakdown"] = go.Figure().to_json()
+            empty_json = go.Figure().to_json()
+            charts["story_size_breakdown"] = {"pie": empty_json, "bar": empty_json}
 
         # Prepare data for template
         context = {
@@ -232,8 +232,8 @@ class HTMLReportGenerator:
         # Use sprint names if available, otherwise use dates
         x_values = historical.sprint_names if historical.sprint_names else historical.dates
         hover_template = (
-            "<b>%{x}</b><br>Velocity: %{y:.1f}<extra></extra>" 
-            if historical.sprint_names 
+            "<b>%{x}</b><br>Velocity: %{y:.1f}<extra></extra>"
+            if historical.sprint_names
             else "<b>%{x|%b %Y}</b><br>Velocity: %{y:.1f}<extra></extra>"
         )
 
@@ -271,7 +271,7 @@ class HTMLReportGenerator:
 
         # Trend line
         if len(historical.velocities) >= 2:
-            x_numeric = list(range(len(historical.dates)))
+            x_numeric = list(range(len(historical.velocities)))
             # Simple linear regression
             x_mean = sum(x_numeric) / len(x_numeric)
             y_mean = sum(historical.velocities) / len(historical.velocities)
@@ -429,20 +429,21 @@ class HTMLReportGenerator:
         )
 
         return fig.to_json()
-    
-    def _create_story_size_breakdown_chart(self, story_size_breakdown: Dict[float, int]) -> str:
+
+    def _create_story_size_breakdown_chart(self, story_size_breakdown: Dict[float, int]) -> Dict[str, str]:
         """Create both pie and bar charts showing distribution of remaining stories by size"""
         if not story_size_breakdown:
-            return json.dumps({"pie": go.Figure().to_json(), "bar": go.Figure().to_json()})
-        
+            empty = go.Figure().to_json()
+            return {"pie": empty, "bar": empty}
+
         # Sort sizes for consistent ordering
         sizes = sorted(story_size_breakdown.keys())
         counts = [story_size_breakdown[size] for size in sizes]
         labels = [f"{size} pts" for size in sizes]
-        
+
         # Calculate total points per size
         values = [size * count for size, count in zip(sizes, counts)]
-        
+
         # Color scheme
         colors = [
             self.chart_colors["data1"],
@@ -454,37 +455,37 @@ class HTMLReportGenerator:
             self.chart_colors["warning"],
             self.chart_colors["error"],
         ]
-        
+
         # Create pie chart
         pie_fig = go.Figure()
-        
-        pie_fig.add_trace(go.Pie(
-            labels=labels,
-            values=values,
-            hole=0.4,
-            marker=dict(
-                colors=colors[:len(sizes)],
-                line=dict(color='white', width=2)
-            ),
-            textinfo='label+percent',
-            textposition='outside',
-            hovertemplate='<b>%{label}</b><br>' +
-                         'Stories: %{customdata}<br>' +
-                         'Total Points: %{value}<br>' +
-                         '<extra></extra>',
-            customdata=counts,
-        ))
-        
+
+        pie_fig.add_trace(
+            go.Pie(
+                labels=labels,
+                values=values,
+                hole=0.4,
+                marker=dict(colors=colors[: len(sizes)], line=dict(color="white", width=2)),
+                textinfo="label+percent",
+                textposition="outside",
+                hovertemplate="<b>%{label}</b><br>"
+                + "Stories: %{customdata}<br>"
+                + "Total Points: %{value}<br>"
+                + "<extra></extra>",
+                customdata=counts,
+            )
+        )
+
         # Add center text showing total
         total_stories = sum(counts)
         total_points = sum(values)
         pie_fig.add_annotation(
-            text=f'<b>{total_stories}</b><br>Stories<br><b>{total_points:.0f}</b> Points',
-            x=0.5, y=0.5,
+            text=f"<b>{total_stories}</b><br>Stories<br><b>{total_points:.0f}</b> Points",
+            x=0.5,
+            y=0.5,
             font=dict(size=16),
             showarrow=False,
         )
-        
+
         pie_fig.update_layout(
             title=dict(
                 text="<b>Remaining Work by Story Size</b>",
@@ -503,40 +504,45 @@ class HTMLReportGenerator:
             margin=dict(l=20, r=150, t=80, b=20),
             paper_bgcolor="white",
             plot_bgcolor="rgba(248,249,250,0.8)",
-            font=dict(
-                family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                size=12
-            ),
+            font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", size=12),
         )
-        
+
         # Create bar chart
         bar_fig = go.Figure()
-        
+
         # Add bars for story counts
-        bar_fig.add_trace(go.Bar(
-            x=labels,
-            y=counts,
-            name='Story Count',
-            marker_color=self.chart_colors["data1"],
-            text=counts,
-            textposition='outside',
-            hovertemplate='<b>%{x}</b><br>Stories: %{y}<extra></extra>',
-            yaxis='y',
-        ))
-        
+        bar_fig.add_trace(
+            go.Bar(
+                x=labels,
+                y=counts,
+                name="Story Count",
+                marker_color=self.chart_colors["data1"],
+                text=counts,
+                textposition="outside",
+                hovertemplate="<b>%{x}</b><br>Stories: %{y}<extra></extra>",
+                yaxis="y",
+            )
+        )
+
         # Add bars for total points
-        bar_fig.add_trace(go.Bar(
-            x=labels,
-            y=values,
-            name='Total Points',
-            marker_color=self.chart_colors["data2"],
-            text=values,
-            textposition='outside',
-            hovertemplate='<b>%{x}</b><br>Total Points: %{y}<extra></extra>',
-            yaxis='y2',
-            opacity=0.7,
-        ))
-        
+        bar_fig.add_trace(
+            go.Bar(
+                x=labels,
+                y=values,
+                name="Total Points",
+                marker_color=self.chart_colors["data2"],
+                text=values,
+                textposition="outside",
+                hovertemplate="<b>%{x}</b><br>Total Points: %{y}<extra></extra>",
+                yaxis="y2",
+                opacity=0.7,
+            )
+        )
+
+        # Calculate max values to set appropriate y-axis ranges
+        max_count = max(counts) if counts else 1
+        max_points = max(values) if values else 1
+
         bar_fig.update_layout(
             title=dict(
                 text="<b>Remaining Work by Story Size</b>",
@@ -544,27 +550,26 @@ class HTMLReportGenerator:
             ),
             height=450,
             xaxis=dict(
-                title=dict(text='<b>Story Size</b>', font=dict(size=14)),
+                title=dict(text="<b>Story Size</b>", font=dict(size=14)),
                 tickfont=dict(size=12),
             ),
             yaxis=dict(
-                title=dict(text='<b>Story Count</b>', font=dict(size=14, color=self.chart_colors["data1"])),
+                title=dict(text="<b>Story Count</b>", font=dict(size=14, color=self.chart_colors["data1"])),
                 tickfont=dict(size=12, color=self.chart_colors["data1"]),
-                side='left',
+                side="left",
+                range=[0, max_count * 1.15],  # Add 15% padding for text labels
             ),
             yaxis2=dict(
-                title=dict(text='<b>Total Points</b>', font=dict(size=14, color=self.chart_colors["data2"])),
+                title=dict(text="<b>Total Points</b>", font=dict(size=14, color=self.chart_colors["data2"])),
                 tickfont=dict(size=12, color=self.chart_colors["data2"]),
-                overlaying='y',
-                side='right',
+                overlaying="y",
+                side="right",
+                range=[0, max_points * 1.15],  # Add 15% padding for text labels
             ),
-            hovermode='x unified',
+            hovermode="x unified",
             paper_bgcolor="white",
             plot_bgcolor="rgba(248,249,250,0.8)",
-            font=dict(
-                family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                size=12
-            ),
+            font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", size=12),
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
@@ -573,15 +578,11 @@ class HTMLReportGenerator:
                 x=1,
             ),
             bargap=0.2,
-            margin=dict(l=80, r=80, t=100, b=60),
+            margin=dict(l=80, r=80, t=120, b=60),  # Increased top margin from 100 to 120
         )
-        
-        # Return both charts
-        import json
-        return json.dumps({
-            "pie": pie_fig.to_json(),
-            "bar": bar_fig.to_json()
-        })
+
+        # Return both charts as JSON strings
+        return {"pie": pie_fig.to_json(), "bar": bar_fig.to_json()}
 
     def _create_forecast_timeline(self, results: SimulationResult) -> str:
         # Create a timeline showing confidence levels
@@ -638,13 +639,14 @@ class HTMLReportGenerator:
             confidences.sort()
 
             # Determine color based on highest confidence in group
+            # Industry standard: higher confidence = more conservative = safer (green)
             highest_confidence = confidences[-1]
             if highest_confidence <= 0.5:
-                color = self.chart_colors["high_confidence"]
+                color = self.chart_colors["low_confidence"]  # Red - Aggressive
             elif highest_confidence <= 0.85:
-                color = self.chart_colors["medium_confidence"]
+                color = self.chart_colors["medium_confidence"]  # Amber - Moderate
             else:
-                color = self.chart_colors["low_confidence"]
+                color = self.chart_colors["high_confidence"]  # Green - Conservative
 
             # Create label showing all confidence levels for this sprint count
             if len(confidences) == 1:
@@ -727,14 +729,15 @@ class HTMLReportGenerator:
         for c, s in zip(confidences, sprints):
             labels.append(f"{c*100:.0f}%")
             # Use semantic colors based on confidence levels
+            # Industry standard: higher confidence = more conservative = safer (green)
             if c <= 0.5:
-                colors.append(self.chart_colors["high_confidence"])  # Green - High confidence
+                colors.append(self.chart_colors["low_confidence"])  # Red - Aggressive estimate
             elif c <= 0.7:
-                colors.append(self.chart_colors["high_confidence"])  # Still green for 70%
+                colors.append(self.chart_colors["medium_confidence"])  # Amber - Moderate risk
             elif c <= 0.85:
-                colors.append(self.chart_colors["medium_confidence"])  # Amber - Medium confidence
+                colors.append(self.chart_colors["medium_confidence"])  # Amber - Moderate risk
             else:
-                colors.append(self.chart_colors["low_confidence"])  # Red - Low confidence
+                colors.append(self.chart_colors["high_confidence"])  # Green - Conservative estimate
 
         fig = go.Figure(
             data=[
@@ -851,11 +854,13 @@ class HTMLReportGenerator:
         summary = {}
 
         # Map confidence levels to labels, including 70% if present
+        # Industry best practice: higher confidence = more conservative = safer (green)
+        # Lower confidence = more aggressive = riskier (red/amber)
         confidence_mapping = {
-            0.5: ("50% (Most Likely)", "confidence-high"),
-            0.7: ("70% (Probable)", "confidence-medium"),
-            0.85: ("85% (Confident)", "confidence-medium"),
-            0.95: ("95% (Conservative)", "confidence-low"),
+            0.5: ("50% (Aggressive)", "confidence-low"),  # Red - high risk estimate
+            0.7: ("70% (Moderate)", "confidence-medium"),  # Amber - moderate risk
+            0.85: ("85% (Confident)", "confidence-medium"),  # Amber - moderate risk
+            0.95: ("95% (Conservative)", "confidence-high"),  # Green - low risk estimate
         }
 
         # Track seen sprint values to avoid duplicates

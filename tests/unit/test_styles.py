@@ -1,9 +1,6 @@
 """Tests for styling and theming system"""
-import json
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
-
-import pytest
+from unittest.mock import Mock, patch
 
 from src.application.style_service import StyleService
 from src.domain.styles import Theme

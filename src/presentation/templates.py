@@ -152,12 +152,14 @@ class ReportTemplates:
     try {
         {% if chart_id == 'story_size_breakdown' %}
         // Special handling for story size breakdown with multiple chart types
-        const chartDataJson = {{ chart_json|safe }};
-        storySizeCharts = JSON.parse(chartDataJson);
+        storySizeCharts = {
+            pie: {{ chart_json.pie|safe }},
+            bar: {{ chart_json.bar|safe }}
+        };
         
         // Render initial pie chart
         if (storySizeCharts.pie) {
-            const pieData = JSON.parse(storySizeCharts.pie);
+            const pieData = storySizeCharts.pie;
             Plotly.newPlot('story-size-breakdown', pieData.data, pieData.layout, {responsive: true});
         }
         {% else %}
@@ -178,8 +180,8 @@ class ReportTemplates:
         document.getElementById('pie-toggle').classList.toggle('active', type === 'pie');
         document.getElementById('bar-toggle').classList.toggle('active', type === 'bar');
         
-        // Parse chart data
-        const chartData = JSON.parse(storySizeCharts[type]);
+        // Get chart data
+        const chartData = storySizeCharts[type];
         
         // Animate transition
         const container = document.getElementById('story-size-breakdown');

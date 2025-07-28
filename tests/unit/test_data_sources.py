@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from src.domain.data_sources import DataSourceInfo, DataSourceType
-from src.domain.entities import Issue, IssueStatus, Sprint
+from src.domain.data_sources import DataSourceType
+from src.domain.entities import IssueStatus, Sprint
 from src.domain.value_objects import FieldMapping
 from src.infrastructure.data_source_factory import DefaultDataSourceFactory
 from src.infrastructure.jira_data_source import JiraCSVDataSource

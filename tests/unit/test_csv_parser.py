@@ -1,9 +1,7 @@
 import csv
 import tempfile
-from datetime import datetime
 from pathlib import Path
 
-import pytest
 
 from src.domain.value_objects import FieldMapping
 from src.infrastructure.csv_parser import CSVFieldAnalyzer, JiraCSVParser

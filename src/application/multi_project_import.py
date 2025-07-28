@@ -150,6 +150,9 @@ class ProcessMultipleDataSourcesUseCase:
             todo_statuses=status_mapping.get("todo", []), velocity_field=velocity_config["velocity_field"]
         )
 
+        # Get story size breakdown
+        story_size_breakdown = remaining_use_case.get_story_size_breakdown(status_mapping.get("todo", []))
+
         # Count completed issues
         completed_issues = []
         for status in status_mapping.get("done", []):
@@ -180,6 +183,7 @@ class ProcessMultipleDataSourcesUseCase:
             simulation_result=simulation_result,
             historical_data=historical_data,
             sprints=sprints,
+            story_size_breakdown=story_size_breakdown,
         )
 
     def _calculate_aggregated_metrics(

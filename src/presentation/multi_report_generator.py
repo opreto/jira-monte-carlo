@@ -49,7 +49,8 @@ class MultiProjectReportGenerator:
         for project in multi_report.projects:
             # Generate individual report with safe filename
             import re
-            safe_name = re.sub(r'[^\w\-_]', '_', project.name)
+
+            safe_name = re.sub(r"[^\w\-_]", "_", project.name)
             project_filename = f"{safe_name}_report.html"
             project_path = output_dir / project_filename
 
@@ -66,10 +67,31 @@ class MultiProjectReportGenerator:
             historical_data = HistoricalData(velocities=[], cycle_times=[], throughput=[], dates=[], sprint_names=[])
 
             if project.sprints:
-                for sprint in project.sprints:
-                    if hasattr(sprint, "completed_points"):
+                # Natural sort function for sprint names
+                import re
+
+                def natural_sort_key(sprint):
+                    name = getattr(sprint, "name", "")
+                    parts = []
+                    for part in re.split(r"(\d+)", name):
+                        if part.isdigit():
+                            parts.append(int(part))
+                        else:
+                            parts.append(part)
+                    return parts
+
+                # Sort sprints by name using natural sort
+                sorted_sprints = sorted(project.sprints, key=natural_sort_key)
+
+                for sprint in sorted_sprints:
+                    if hasattr(sprint, "completed_points") and sprint.completed_points > 0:
                         historical_data.velocities.append(sprint.completed_points)
-                        historical_data.dates.append(sprint.start_date)
+                        historical_data.sprint_names.append(getattr(sprint, "name", "Unknown"))
+                        # Keep dates for backwards compatibility
+                        if hasattr(sprint, "end_date") and sprint.end_date:
+                            historical_data.dates.append(sprint.end_date)
+                        else:
+                            historical_data.dates.append(sprint.start_date)
 
             # Generate individual report
             single_report_generator.generate(
@@ -81,6 +103,7 @@ class MultiProjectReportGenerator:
                 output_path=project_path,
                 project_name=project.name,
                 model_info=model_info,
+                story_size_breakdown=project.story_size_breakdown,
             )
 
             project_links[project.name] = project_filename
@@ -290,5 +313,5 @@ class MultiProjectReportGenerator:
             title = f"Multi-Project {model_name} Dashboard"
         else:
             title = "Multi-Project Forecasting Dashboard"
-        
+
         return self.base_template.render(title=title, styles=styles, content=content)

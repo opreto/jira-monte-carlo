@@ -249,7 +249,6 @@ class ProcessMultipleDataSourcesUseCase:
             total_issues=total_issues,
             total_completed_issues=total_completed,
             total_remaining_work=total_remaining_work,
-            overall_completion_percentage=overall_completion,
             combined_velocity=combined_velocity,
             combined_simulation_result=combined_simulation
         )

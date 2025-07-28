@@ -49,13 +49,13 @@ class JiraCSVDataSource(DataSource):
         
         # Convert sprint data to Sprint entities
         sprints = []
-        for sprint_name, completed_points in sprint_data.items():
+        for sprint_name, data in sprint_data.items():
             from datetime import datetime
             sprint = Sprint(
                 name=sprint_name,
                 start_date=datetime.now(),  # Will be enhanced with actual dates
                 end_date=datetime.now(),
-                completed_points=completed_points
+                completed_points=data["completed_points"] if isinstance(data, dict) else data
             )
             sprints.append(sprint)
         

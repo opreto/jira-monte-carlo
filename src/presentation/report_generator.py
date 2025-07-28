@@ -33,13 +33,39 @@ class HTMLReportGenerator:
                 output_path: Path,
                 project_name: Optional[str] = None) -> Path:
         
-        # Generate charts
-        charts = {
-            "probability_distribution": self._create_probability_chart(simulation_results, config),
-            "velocity_trend": self._create_velocity_trend_chart(historical_data, velocity_metrics),
-            "forecast_timeline": self._create_forecast_timeline(simulation_results),
-            "confidence_intervals": self._create_confidence_chart(simulation_results)
-        }
+        # Generate charts - handle None simulation_results
+        charts = {}
+        if simulation_results:
+            charts["probability_distribution"] = self._create_probability_chart(simulation_results, config)
+            charts["forecast_timeline"] = self._create_forecast_timeline(simulation_results)
+            charts["confidence_intervals"] = self._create_confidence_chart(simulation_results)
+        else:
+            # Create empty charts
+            empty_fig = go.Figure()
+            empty_fig.update_layout(
+                title="No Simulation Data Available",
+                annotations=[{
+                    "text": "Insufficient data for simulation",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "x": 0.5,
+                    "y": 0.5,
+                    "showarrow": False,
+                    "font": {"size": 16}
+                }]
+            )
+            empty_json = empty_fig.to_json()
+            charts["probability_distribution"] = empty_json
+            charts["forecast_timeline"] = empty_json
+            charts["confidence_intervals"] = empty_json
+        
+        # Velocity trend can still be shown even without simulation
+        if velocity_metrics and historical_data:
+            charts["velocity_trend"] = self._create_velocity_trend_chart(historical_data, velocity_metrics)
+        else:
+            empty_fig = go.Figure()
+            empty_fig.update_layout(title="No Velocity Data Available")
+            charts["velocity_trend"] = empty_fig.to_json()
         
         # Prepare data for template
         context = {
@@ -290,28 +316,50 @@ class HTMLReportGenerator:
             hoverinfo='skip'
         ))
         
+        # Group confidence levels by sprint count
+        sprint_groups = {}
+        for confidence, sprints in results.percentiles.items():
+            if sprints not in sprint_groups:
+                sprint_groups[sprints] = []
+            sprint_groups[sprints].append(confidence)
+        
+        # Sort groups by sprint count
+        sorted_groups = sorted(sprint_groups.items())
+        
         # Add confidence markers
-        for confidence, sprints in sorted(results.percentiles.items()):
+        for sprints, confidences in sorted_groups:
             days = sprints * sprint_duration
             date = today + timedelta(days=int(days))
             
-            # Use semantic colors for timeline markers
-            if confidence <= 0.5:
+            # Sort confidences for this sprint count
+            confidences.sort()
+            
+            # Determine color based on highest confidence in group
+            highest_confidence = confidences[-1]
+            if highest_confidence <= 0.5:
                 color = self.chart_colors['high_confidence']
-            elif confidence <= 0.85:
+            elif highest_confidence <= 0.85:
                 color = self.chart_colors['medium_confidence']
             else:
                 color = self.chart_colors['low_confidence']
+            
+            # Create label showing all confidence levels for this sprint count
+            if len(confidences) == 1:
+                label = f"{confidences[0]*100:.0f}%<br>{sprints:.0f} sprints"
+            else:
+                confidence_text = ", ".join([f"{c*100:.0f}%" for c in confidences])
+                label = f"{confidence_text}<br>{sprints:.0f} sprints"
                 
             fig.add_trace(go.Scatter(
                 x=[date],
                 y=[0],
                 mode='markers+text',
                 marker=dict(size=20, color=color, symbol='diamond'),
-                text=[f"{confidence*100:.0f}%<br>{sprints:.0f} sprints"],
+                text=[label],
                 textposition='top center',
+                textfont=dict(size=11),
                 showlegend=False,
-                name=f"{confidence*100:.0f}% Confidence"
+                name=f"{confidence_text if len(confidences) > 1 else f'{confidences[0]*100:.0f}%'} Confidence"
             ))
         
         # Add today marker
@@ -434,6 +482,8 @@ class HTMLReportGenerator:
         return fig.to_json()
     
     def _format_percentiles(self, results: SimulationResult) -> Dict[str, float]:
+        if not results:
+            return {"p50": 0, "p85": 0}
         return {
             f"p{int(k*100)}": v 
             for k, v in results.percentiles.items()
@@ -442,6 +492,8 @@ class HTMLReportGenerator:
     def _calculate_summary_stats(self, results: SimulationResult, 
                                 velocity_metrics: VelocityMetrics,
                                 config: SimulationConfig) -> Dict:
+        if not results:
+            return {}
         today = datetime.now()
         summary = {}
         

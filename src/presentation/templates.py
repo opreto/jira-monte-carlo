@@ -164,7 +164,7 @@ class ReportTemplates:
     
     <div class="metric-card">
         <div class="label">85% Confidence</div>
-        <div class="value">{{ multi_report.aggregated_metrics.confidence_intervals.get(0.85, 0) }} sprints</div>
+        <div class="value">{{ multi_report.aggregated_metrics.combined_simulation_result.percentiles.get(0.85, 0)|int if multi_report.aggregated_metrics.combined_simulation_result else "N/A" }} sprints</div>
     </div>
 </div>
 

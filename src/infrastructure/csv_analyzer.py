@@ -218,12 +218,26 @@ class VelocityExtractor:
                                 completed_points=data["completed_points"],
                                 issue_count=data["issue_count"]
                             ))
+                        else:
+                            logger.warning(f"Could not parse date for sprint {sprint_name}: {latest_date_str}")
         else:
             # No dates available - create synthetic dates based on sprint order
             logger.warning(f"No date column '{resolved_date_column}' found. Using synthetic dates.")
             
             # Sort sprints by name to get chronological order
-            sorted_sprints = sorted(sprint_velocities.items(), key=lambda x: x[0])
+            # Use natural sort to handle sprint numbers correctly
+            import re
+            def natural_sort_key(sprint_name):
+                # Extract numbers and convert to int for proper sorting
+                parts = []
+                for part in re.split(r'(\d+)', sprint_name[0]):
+                    if part.isdigit():
+                        parts.append(int(part))
+                    else:
+                        parts.append(part)
+                return parts
+            
+            sorted_sprints = sorted(sprint_velocities.items(), key=natural_sort_key)
             
             # Try to detect sprint duration from sprint names
             sprint_duration = detect_sprint_duration(sorted_sprints)
@@ -256,6 +270,7 @@ def parse_flexible_date(date_str: Any) -> Optional[datetime]:
     # Common Jira date formats
     date_formats = [
         "%d/%b/%y %I:%M %p",    # 13/Jun/25 6:20 AM
+        "%d/%b/%Y %I:%M %p",    # 13/Jun/2025 6:20 AM (4-digit year)
         "%Y-%m-%d %H:%M:%S",    # 2025-06-13 18:20:00
         "%Y-%m-%dT%H:%M:%S.%f%z",  # ISO format with timezone
         "%Y-%m-%d",             # Simple date

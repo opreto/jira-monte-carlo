@@ -296,8 +296,8 @@ def main(csv_files: tuple, num_simulations: int, output: str, theme: str, data_f
     historical_use_case = AnalyzeHistoricalDataUseCase(issue_repo)
     historical_data = historical_use_case.execute()
     
-    # If historical data is empty, create it from sprint data
-    if not historical_data.velocities and velocity_analysis and velocity_analysis.filtered_velocities:
+    # If we have sprint velocity data, prefer it over issue-based historical data
+    if velocity_analysis and velocity_analysis.filtered_velocities:
         # Create historical data from velocity analysis
         sprint_velocities = [v.completed_points for v in velocity_analysis.filtered_velocities]
         sprint_dates = [v.sprint_date for v in velocity_analysis.filtered_velocities]

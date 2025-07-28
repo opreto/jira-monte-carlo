@@ -192,7 +192,7 @@ class LinearCSVDataSource(DataSource):
                 return None
             
             summary = str(row.get(self.field_mapping.summary_field, ""))
-            status = str(row.get(self.field_mapping.status_field, "")).lower()
+            status = str(row.get(self.field_mapping.status_field, ""))
             
             # Parse dates
             created = self._parse_date(row.get(self.field_mapping.created_field))
@@ -201,6 +201,10 @@ class LinearCSVDataSource(DataSource):
             
             # Parse estimate (Linear uses T-shirt sizes or numeric)
             story_points = self._parse_estimate(row.get(self.field_mapping.story_points_field))
+            
+            # Use default value of 1 if no estimate provided and issue is not done
+            if story_points is None and not self._is_done_status(status):
+                story_points = 1.0
             
             # Extract other fields
             assignee = str(row.get(self.field_mapping.assignee_field, ""))

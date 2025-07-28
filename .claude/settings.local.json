@@ -266,7 +266,10 @@
       "Bash(pip install:*)",
       "Bash(jira-monte-carlo:*)",
       "Bash(git restore:*)",
-      "Bash(csvstat:*)"
+      "Bash(csvstat:*)",
+      "Bash(cut:*)",
+      "Bash(cat:*)",
+      "Bash(ruff check:*)"
     ],
     "deny": []
   }

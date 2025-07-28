@@ -513,38 +513,44 @@ class HTMLReportGenerator:
         # Create bar chart
         bar_fig = go.Figure()
 
-        # Add bars for story counts
+        # Calculate opacity gradient based on Y values
+        max_count = max(counts) if counts else 1
+        min_count = min(counts) if counts else 0
+
+        # Create colors with opacity gradient (50% to 100% based on value)
+        bar_colors = []
+        for count in counts:
+            # Normalize count to 0-1 range
+            if max_count == min_count:
+                normalized = 1.0
+            else:
+                normalized = (count - min_count) / (max_count - min_count)
+
+            # Map to opacity range 0.5 to 1.0
+            opacity = 0.5 + (normalized * 0.5)
+
+            # Use the primary data color with calculated opacity
+            bar_colors.append(self.chart_colors["data1_rgba"](opacity))
+
+        # Add single bar trace for story counts with total points in hover
         bar_fig.add_trace(
             go.Bar(
                 x=labels,
                 y=counts,
-                name="Story Count",
-                marker_color=self.chart_colors["data1"],
+                marker=dict(color=bar_colors, line=dict(color="white", width=1)),
                 text=[f"{c} stories" for c in counts],
                 textposition="outside",
                 textfont=dict(size=12),
-                hovertemplate="<b>%{x}</b><br>Stories: %{y}<extra></extra>",
-                yaxis="y",
+                hovertemplate="<b>%{x}</b><br>"
+                + "Stories: %{y}<br>"
+                + "Total Points: %{customdata:.0f}<br>"
+                + "<extra></extra>",
+                customdata=values,
             )
         )
 
-        # Add bars for total points - removed text to avoid overlap
-        bar_fig.add_trace(
-            go.Bar(
-                x=labels,
-                y=values,
-                name="Total Points",
-                marker_color=self.chart_colors["data2"],
-                text=None,  # Remove text labels to prevent overlap
-                hovertemplate="<b>%{x}</b><br>Total Points: %{y}<extra></extra>",
-                yaxis="y2",
-                opacity=0.7,
-            )
-        )
-
-        # Calculate max values to set appropriate y-axis ranges
+        # Calculate max value for y-axis range
         max_count = max(counts) if counts else 1
-        max_points = max(values) if values else 1
 
         bar_fig.update_layout(
             title=dict(
@@ -557,31 +563,17 @@ class HTMLReportGenerator:
                 tickfont=dict(size=12),
             ),
             yaxis=dict(
-                title=dict(text="<b>Story Count</b>", font=dict(size=14, color=self.chart_colors["data1"])),
-                tickfont=dict(size=12, color=self.chart_colors["data1"]),
-                side="left",
+                title=dict(text="<b>Number of Stories</b>", font=dict(size=14)),
+                tickfont=dict(size=12),
                 range=[0, max_count * 1.25],  # Add 25% padding for text labels
             ),
-            yaxis2=dict(
-                title=dict(text="<b>Total Points</b>", font=dict(size=14, color=self.chart_colors["data2"])),
-                tickfont=dict(size=12, color=self.chart_colors["data2"]),
-                overlaying="y",
-                side="right",
-                range=[0, max_points * 1.25],  # Add 25% padding for text labels
-            ),
-            hovermode="x unified",
+            hovermode="x",
             paper_bgcolor="white",
             plot_bgcolor="rgba(248,249,250,0.8)",
             font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", size=12),
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="right",
-                x=1,
-            ),
+            showlegend=False,
             bargap=0.2,
-            margin=dict(l=80, r=80, t=120, b=60),  # Increased top margin from 100 to 120
+            margin=dict(l=80, r=80, t=120, b=60),  # Increased top margin
         )
 
         # Return both charts as JSON strings

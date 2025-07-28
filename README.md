@@ -426,18 +426,18 @@ logging.basicConfig(level=logging.DEBUG)
   - Throughput trends (items/week)
   - Flow efficiency calculations
 
-- **Team Performance**
-  - Velocity by team member (if assignee data available)
-  - Estimation accuracy tracking
-  - Sprint commitment reliability
-  - Rework rate analysis
+- **Team Health Metrics**
+  - Team-level estimation accuracy
+  - Sprint commitment reliability (team aggregate)
+  - Quality metrics (bug vs feature ratio)
+  - Technical debt trends
 
-- **Risk & Blockers**
-  - Aging work items report
+- **Process Health Indicators**
+  - Aging work items report (team level)
   - Blocked items tracking with duration
-  - Bug vs feature ratio
-  - Technical debt tracking (if labeled)
-  - Items without estimates
+  - Unestimated items in backlog
+  - Sprint scope changes
+  - Dependency bottlenecks
 
 - **Forecasting Enhancements**
   - Best/worst case scenario visualization
@@ -450,10 +450,17 @@ logging.basicConfig(level=logging.DEBUG)
   - Cross-team dependency visualization
   - Program Increment (PI) progress (SAFe)
   - Epic progress rollups
-  - Resource allocation insights
+  - Team capacity planning
   - Portfolio health dashboard
 
 #### Technical Improvements
+- **Clean Architecture Refactoring** (LADR-0003)
+  - Create domain interfaces for external dependencies
+  - Implement dependency injection
+  - Remove infrastructure imports from application layer
+  - Split large modules into single-responsibility components
+  - Improve testability with mockable interfaces
+
 - **Performance Optimizations**
   - Parallel CSV processing
   - Caching for large datasets

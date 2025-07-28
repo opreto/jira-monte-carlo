@@ -4,11 +4,11 @@ from jinja2 import Template
 
 class ReportTemplates:
     """HTML templates for report generation"""
-    
+
     @staticmethod
     def get_base_template() -> Template:
         """Get base HTML template"""
-        template_str = '''
+        template_str = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,15 +26,18 @@ class ReportTemplates:
     </div>
 </body>
 </html>
-'''
+"""
         return Template(template_str)
-    
+
     @staticmethod
     def get_single_report_template() -> Template:
         """Get single project report template"""
-        template_str = '''
+        template_str = """
 <div class="header">
-    <h1>Monte Carlo Simulation Report{% if project_name %}: {{ project_name }}{% endif %}</h1>
+    <h1>{% if model_info and model_info.report_title %}{{ model_info.report_title }}{% else %}Statistical Forecasting Report{% endif %}{% if project_name %}: {{ project_name }}{% endif %}</h1>
+    {% if model_info and model_info.report_subtitle %}
+    <p class="subtitle">{{ model_info.report_subtitle }}</p>
+    {% endif %}
     <p class="subtitle">Generated on {{ generation_date }}</p>
 </div>
 
@@ -109,7 +112,10 @@ class ReportTemplates:
 </div>
 
 <div class="footer">
-    <p>Monte Carlo Simulation by Opreto Agile Analytics</p>
+    <p>{% if model_info and model_info.name %}{{ model_info.name }}{% else %}Statistical Forecasting{% endif %} by Opreto Agile Analytics</p>
+    {% if model_info and model_info.methodology_description %}
+    <p>{{ model_info.methodology_description }}</p>
+    {% endif %}
     <p>Based on {{ "{:,}".format(num_simulations) }} iterations • Analysis of historical data and velocity metrics</p>
 </div>
 
@@ -124,16 +130,17 @@ class ReportTemplates:
     }
     {% endfor %}
 </script>
-'''
+"""
         return Template(template_str)
-    
+
     @staticmethod
     def get_dashboard_template() -> Template:
         """Get multi-project dashboard template"""
-        template_str = '''
+        template_str = """
 <div class="header">
-    <h1>Multi-Project Monte Carlo Dashboard</h1>
-    <p class="subtitle">Analyzing {{ multi_report.projects|length }} projects • Generated {{ multi_report.generated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+    <h1>Multi-Project Forecasting Dashboard</h1>
+    <p class="subtitle">Analyzing {{ multi_report.projects|length }} projects • 
+        Generated {{ multi_report.generated_at.strftime('%Y-%m-%d %H:%M') }}</p>
 </div>
 
 <div class="metrics-grid">
@@ -164,7 +171,13 @@ class ReportTemplates:
     
     <div class="metric-card">
         <div class="label">85% Confidence</div>
-        <div class="value">{{ multi_report.aggregated_metrics.combined_simulation_result.percentiles.get(0.85, 0)|int if multi_report.aggregated_metrics.combined_simulation_result else "N/A" }} sprints</div>
+        <div class="value">
+            {% if multi_report.aggregated_metrics.combined_simulation_result %}
+                {{ multi_report.aggregated_metrics.combined_simulation_result.percentiles.get(0.85, 0)|int }} sprints
+            {% else %}
+                N/A
+            {% endif %}
+        </div>
     </div>
 </div>
 
@@ -190,9 +203,27 @@ class ReportTemplates:
                 <td>{{ project.total_issues }}</td>
                 <td>{{ "%.1f"|format(project.completion_percentage) }}%</td>
                 <td>{{ "%.1f"|format(project.remaining_work) }}</td>
-                <td>{{ "%.1f"|format(project.velocity_metrics.average) if project.velocity_metrics else "N/A" }}</td>
-                <td>{{ project.simulation_result.percentiles.get(0.5, 0)|int if project.simulation_result else "N/A" }}</td>
-                <td>{{ project.simulation_result.percentiles.get(0.85, 0)|int if project.simulation_result else "N/A" }}</td>
+                <td>
+                    {% if project.velocity_metrics %}
+                        {{ "%.1f"|format(project.velocity_metrics.average) }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td>
+                    {% if project.simulation_result %}
+                        {{ project.simulation_result.percentiles.get(0.5, 0)|int }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td>
+                    {% if project.simulation_result %}
+                        {{ project.simulation_result.percentiles.get(0.85, 0)|int }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
                 <td><a href="{{ project_links[project.name] }}">View Details →</a></td>
             </tr>
             {% endfor %}
@@ -221,7 +252,7 @@ class ReportTemplates:
 </div>
 
 <div class="footer">
-    <p>Monte Carlo Simulation by Opreto Agile Analytics</p>
+    <p>Statistical Forecasting by Opreto Agile Analytics</p>
 </div>
 
 <script>
@@ -234,5 +265,5 @@ class ReportTemplates:
     );
     {% endfor %}
 </script>
-'''
+"""
         return Template(template_str)

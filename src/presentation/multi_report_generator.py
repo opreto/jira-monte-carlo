@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Dict, Optional
 
 from ..application.style_service import StyleService
+from ..domain.forecasting import ModelInfo
 from ..domain.multi_project import MultiProjectReport
 from .report_generator import HTMLReportGenerator
 from .templates import ReportTemplates

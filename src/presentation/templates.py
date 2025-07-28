@@ -83,6 +83,11 @@ class ReportTemplates:
 </div>
 
 <div class="chart-container">
+    <h2>Remaining Work Distribution</h2>
+    <div id="story-size-breakdown"></div>
+</div>
+
+<div class="chart-container">
     <h2>Confidence Intervals</h2>
     <div id="confidence-intervals"></div>
 </div>

@@ -213,3 +213,16 @@ class CalculateRemainingWorkUseCase:
                     remaining_work += 1
 
         return remaining_work
+    
+    def get_story_size_breakdown(self, todo_statuses: List[str]) -> Dict[float, int]:
+        """Get count of remaining stories grouped by story points"""
+        size_breakdown = {}
+        
+        for status in todo_statuses:
+            issues = self.issue_repo.get_by_status(status)
+            for issue in issues:
+                if issue.story_points:
+                    size = float(issue.story_points)
+                    size_breakdown[size] = size_breakdown.get(size, 0) + 1
+        
+        return size_breakdown

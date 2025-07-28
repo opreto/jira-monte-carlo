@@ -31,6 +31,7 @@ class HTMLReportGenerator:
         output_path: Path,
         project_name: Optional[str] = None,
         model_info: Optional["ModelInfo"] = None,
+        story_size_breakdown: Optional[Dict[float, int]] = None,
     ) -> Path:
         # Generate charts - handle None simulation_results
         charts = {}
@@ -67,6 +68,12 @@ class HTMLReportGenerator:
             empty_fig = go.Figure()
             empty_fig.update_layout(title="No Velocity Data Available")
             charts["velocity_trend"] = empty_fig.to_json()
+        
+        # Story size breakdown chart
+        if story_size_breakdown:
+            charts["story_size_breakdown"] = self._create_story_size_breakdown_chart(story_size_breakdown)
+        else:
+            charts["story_size_breakdown"] = go.Figure().to_json()
 
         # Prepare data for template
         context = {
@@ -420,6 +427,84 @@ class HTMLReportGenerator:
             margin=dict(t=100, b=80, l=80, r=60),
         )
 
+        return fig.to_json()
+    
+    def _create_story_size_breakdown_chart(self, story_size_breakdown: Dict[float, int]) -> str:
+        """Create pie chart showing distribution of remaining stories by size"""
+        if not story_size_breakdown:
+            return go.Figure().to_json()
+        
+        # Sort sizes for consistent ordering
+        sizes = sorted(story_size_breakdown.keys())
+        counts = [story_size_breakdown[size] for size in sizes]
+        labels = [f"{size} pts" for size in sizes]
+        
+        # Calculate total points per size
+        values = [size * count for size, count in zip(sizes, counts)]
+        
+        fig = go.Figure()
+        
+        # Create donut chart
+        fig.add_trace(go.Pie(
+            labels=labels,
+            values=values,
+            hole=0.4,
+            marker=dict(
+                colors=[
+                    self.chart_colors["data1"],
+                    self.chart_colors["data2"],
+                    self.chart_colors["data3"],
+                    self.chart_colors["data4"],
+                    self.chart_colors["data5"],
+                    self.chart_colors["success"],
+                    self.chart_colors["warning"],
+                    self.chart_colors["error"],
+                ],
+                line=dict(color='white', width=2)
+            ),
+            textinfo='label+percent',
+            textposition='outside',
+            hovertemplate='<b>%{label}</b><br>' +
+                         'Stories: %{customdata}<br>' +
+                         'Total Points: %{value}<br>' +
+                         '<extra></extra>',
+            customdata=counts,
+        ))
+        
+        # Add center text showing total
+        total_stories = sum(counts)
+        total_points = sum(values)
+        fig.add_annotation(
+            text=f'<b>{total_stories}</b><br>Stories<br><b>{total_points:.0f}</b> Points',
+            x=0.5, y=0.5,
+            font=dict(size=16),
+            showarrow=False,
+        )
+        
+        fig.update_layout(
+            title=dict(
+                text="<b>Remaining Work by Story Size</b>",
+                font=dict(size=22, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"),
+            ),
+            height=450,
+            showlegend=True,
+            legend=dict(
+                orientation="v",
+                yanchor="middle",
+                y=0.5,
+                xanchor="left",
+                x=1.05,
+                font=dict(size=12),
+            ),
+            margin=dict(l=20, r=150, t=80, b=20),
+            paper_bgcolor="white",
+            plot_bgcolor="rgba(248,249,250,0.8)",
+            font=dict(
+                family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                size=12
+            ),
+        )
+        
         return fig.to_json()
 
     def _create_forecast_timeline(self, results: SimulationResult) -> str:

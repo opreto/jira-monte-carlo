@@ -267,6 +267,9 @@ def main(
     # Calculate remaining work
     remaining_use_case = CalculateRemainingWorkUseCase(issue_repo)
     remaining_work = remaining_use_case.execute(status_mapping.get("todo", []), velocity_field)
+    
+    # Get story size breakdown
+    story_size_breakdown = remaining_use_case.get_story_size_breakdown(status_mapping.get("todo", []))
 
     console.print(f"\n[cyan]Remaining work: {remaining_work:.1f} {velocity_field}[/cyan]")
 
@@ -423,6 +426,7 @@ def main(
         output_path=Path(output),
         project_name=project_name,
         model_info=model_info,
+        story_size_breakdown=story_size_breakdown,
     )
 
     console.print(f"\n[green]✓ Report generated: {report_path}[/green]")

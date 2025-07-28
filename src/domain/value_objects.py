@@ -44,6 +44,15 @@ class DateRange:
         return (self.end - self.start).days
     
     def contains(self, date: datetime) -> bool:
+        # Handle timezone-aware vs naive datetime comparison
+        if date.tzinfo is not None and self.start.tzinfo is None:
+            # Make date naive if it has timezone info
+            date = date.replace(tzinfo=None)
+        elif date.tzinfo is None and self.start.tzinfo is not None:
+            # Make self dates naive if they have timezone info
+            start = self.start.replace(tzinfo=None)
+            end = self.end.replace(tzinfo=None)
+            return start <= date <= end
         return self.start <= date <= self.end
 
 

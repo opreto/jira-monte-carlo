@@ -8,6 +8,7 @@ import csv
 
 from ..domain.data_sources import DataSource, DataSourceInfo, DataSourceType
 from ..domain.entities import Issue, Sprint, IssueStatus
+from typing import List
 from ..domain.value_objects import FieldMapping
 
 logger = logging.getLogger(__name__)
@@ -107,6 +108,12 @@ class LinearCSVDataSource(DataSource):
                 completed_points=cycle_data["completed_points"]
             )
             sprints.append(sprint)
+        
+        # If no cycles found, try to create synthetic sprints from monthly data
+        if not sprints and issues:
+            logger.info("No cycles found, creating synthetic monthly sprints from completed work")
+            monthly_sprints = self._create_monthly_sprints(issues)
+            sprints.extend(monthly_sprints)
         
         logger.info(f"Parsed {len(issues)} issues and {len(sprints)} cycles/sprints")
         return issues, sprints
@@ -257,7 +264,11 @@ class LinearCSVDataSource(DataSource):
         
         for fmt in formats:
             try:
-                return datetime.strptime(date_str, fmt)
+                parsed_date = datetime.strptime(date_str, fmt)
+                # If the format includes 'Z', it's UTC - make it timezone-naive for consistency
+                if date_str.endswith('Z'):
+                    return parsed_date.replace(tzinfo=None)
+                return parsed_date
             except ValueError:
                 continue
         
@@ -314,3 +325,51 @@ class LinearCSVDataSource(DataSource):
             time_estimate_field="Estimate",  # Same as story points in Linear
             time_spent_field=None  # Linear doesn't track time spent in CSV
         )
+    
+    def _create_monthly_sprints(self, issues: List[Issue]) -> List[Sprint]:
+        """Create synthetic monthly sprints from completed issues"""
+        from collections import defaultdict
+        import calendar
+        
+        monthly_data = defaultdict(lambda: {
+            "completed_points": 0.0,
+            "completed_issues": [],
+            "start_date": None,
+            "end_date": None
+        })
+        
+        # Group completed issues by month
+        for issue in issues:
+            if issue.resolved and self._is_done_status(issue.status):
+                # Create month key
+                month_key = issue.resolved.strftime("%Y-%m")
+                
+                # Add points if available
+                if issue.story_points:
+                    monthly_data[month_key]["completed_points"] += issue.story_points
+                
+                monthly_data[month_key]["completed_issues"].append(issue)
+                
+                # Track date range
+                if not monthly_data[month_key]["start_date"] or issue.resolved < monthly_data[month_key]["start_date"]:
+                    # Set to first day of month
+                    monthly_data[month_key]["start_date"] = issue.resolved.replace(day=1)
+                
+                if not monthly_data[month_key]["end_date"] or issue.resolved > monthly_data[month_key]["end_date"]:
+                    # Set to last day of month
+                    last_day = calendar.monthrange(issue.resolved.year, issue.resolved.month)[1]
+                    monthly_data[month_key]["end_date"] = issue.resolved.replace(day=last_day)
+        
+        # Create sprints from monthly data
+        sprints = []
+        for month_key, data in sorted(monthly_data.items()):
+            if data["completed_points"] > 0:  # Only create sprints with actual velocity
+                sprint = Sprint(
+                    name=f"Month {month_key}",
+                    start_date=data["start_date"],
+                    end_date=data["end_date"],
+                    completed_points=data["completed_points"]
+                )
+                sprints.append(sprint)
+        
+        return sprints

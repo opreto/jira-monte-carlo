@@ -255,6 +255,62 @@ a:hover {
 .chart-container h2 {
     margin: 0 0 var(--spacing-md) 0;
     color: var(--color-text-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Chart toggle buttons */
+.chart-toggle {
+    display: inline-flex;
+    gap: 0;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.toggle-btn {
+    background: var(--color-background);
+    border: var(--border-width) solid var(--border-color);
+    color: var(--color-text-secondary);
+    padding: var(--spacing-sm) var(--spacing-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+}
+
+.toggle-btn:first-child {
+    border-right: none;
+    border-radius: var(--border-radius-md) 0 0 var(--border-radius-md);
+}
+
+.toggle-btn:last-child {
+    border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+}
+
+.toggle-btn:hover {
+    background: rgba(var(--color-primary-rgb), 0.1);
+    color: var(--color-primary);
+}
+
+.toggle-btn.active {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.toggle-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Chart transition animation */
+.chart-transition {
+    transition: opacity 0.3s ease;
 }
 
 /* Footer */

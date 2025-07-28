@@ -1,3 +1,4 @@
+import json
 import statistics
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -430,9 +431,9 @@ class HTMLReportGenerator:
         return fig.to_json()
     
     def _create_story_size_breakdown_chart(self, story_size_breakdown: Dict[float, int]) -> str:
-        """Create pie chart showing distribution of remaining stories by size"""
+        """Create both pie and bar charts showing distribution of remaining stories by size"""
         if not story_size_breakdown:
-            return go.Figure().to_json()
+            return json.dumps({"pie": go.Figure().to_json(), "bar": go.Figure().to_json()})
         
         # Sort sizes for consistent ordering
         sizes = sorted(story_size_breakdown.keys())
@@ -442,24 +443,27 @@ class HTMLReportGenerator:
         # Calculate total points per size
         values = [size * count for size, count in zip(sizes, counts)]
         
-        fig = go.Figure()
+        # Color scheme
+        colors = [
+            self.chart_colors["data1"],
+            self.chart_colors["data2"],
+            self.chart_colors["data3"],
+            self.chart_colors["data4"],
+            self.chart_colors["data5"],
+            self.chart_colors["success"],
+            self.chart_colors["warning"],
+            self.chart_colors["error"],
+        ]
         
-        # Create donut chart
-        fig.add_trace(go.Pie(
+        # Create pie chart
+        pie_fig = go.Figure()
+        
+        pie_fig.add_trace(go.Pie(
             labels=labels,
             values=values,
             hole=0.4,
             marker=dict(
-                colors=[
-                    self.chart_colors["data1"],
-                    self.chart_colors["data2"],
-                    self.chart_colors["data3"],
-                    self.chart_colors["data4"],
-                    self.chart_colors["data5"],
-                    self.chart_colors["success"],
-                    self.chart_colors["warning"],
-                    self.chart_colors["error"],
-                ],
+                colors=colors[:len(sizes)],
                 line=dict(color='white', width=2)
             ),
             textinfo='label+percent',
@@ -474,14 +478,14 @@ class HTMLReportGenerator:
         # Add center text showing total
         total_stories = sum(counts)
         total_points = sum(values)
-        fig.add_annotation(
+        pie_fig.add_annotation(
             text=f'<b>{total_stories}</b><br>Stories<br><b>{total_points:.0f}</b> Points',
             x=0.5, y=0.5,
             font=dict(size=16),
             showarrow=False,
         )
         
-        fig.update_layout(
+        pie_fig.update_layout(
             title=dict(
                 text="<b>Remaining Work by Story Size</b>",
                 font=dict(size=22, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"),
@@ -505,7 +509,79 @@ class HTMLReportGenerator:
             ),
         )
         
-        return fig.to_json()
+        # Create bar chart
+        bar_fig = go.Figure()
+        
+        # Add bars for story counts
+        bar_fig.add_trace(go.Bar(
+            x=labels,
+            y=counts,
+            name='Story Count',
+            marker_color=self.chart_colors["data1"],
+            text=counts,
+            textposition='outside',
+            hovertemplate='<b>%{x}</b><br>Stories: %{y}<extra></extra>',
+            yaxis='y',
+        ))
+        
+        # Add bars for total points
+        bar_fig.add_trace(go.Bar(
+            x=labels,
+            y=values,
+            name='Total Points',
+            marker_color=self.chart_colors["data2"],
+            text=values,
+            textposition='outside',
+            hovertemplate='<b>%{x}</b><br>Total Points: %{y}<extra></extra>',
+            yaxis='y2',
+            opacity=0.7,
+        ))
+        
+        bar_fig.update_layout(
+            title=dict(
+                text="<b>Remaining Work by Story Size</b>",
+                font=dict(size=22, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"),
+            ),
+            height=450,
+            xaxis=dict(
+                title=dict(text='<b>Story Size</b>', font=dict(size=14)),
+                tickfont=dict(size=12),
+            ),
+            yaxis=dict(
+                title=dict(text='<b>Story Count</b>', font=dict(size=14, color=self.chart_colors["data1"])),
+                tickfont=dict(size=12, color=self.chart_colors["data1"]),
+                side='left',
+            ),
+            yaxis2=dict(
+                title=dict(text='<b>Total Points</b>', font=dict(size=14, color=self.chart_colors["data2"])),
+                tickfont=dict(size=12, color=self.chart_colors["data2"]),
+                overlaying='y',
+                side='right',
+            ),
+            hovermode='x unified',
+            paper_bgcolor="white",
+            plot_bgcolor="rgba(248,249,250,0.8)",
+            font=dict(
+                family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                size=12
+            ),
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1,
+            ),
+            bargap=0.2,
+            margin=dict(l=80, r=80, t=100, b=60),
+        )
+        
+        # Return both charts
+        import json
+        return json.dumps({
+            "pie": pie_fig.to_json(),
+            "bar": bar_fig.to_json()
+        })
 
     def _create_forecast_timeline(self, results: SimulationResult) -> str:
         # Create a timeline showing confidence levels

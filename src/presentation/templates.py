@@ -83,8 +83,26 @@ class ReportTemplates:
 </div>
 
 <div class="chart-container">
-    <h2>Remaining Work Distribution</h2>
-    <div id="story-size-breakdown"></div>
+    <h2>Remaining Work Distribution
+        <div class="chart-toggle">
+            <button id="pie-toggle" class="toggle-btn active" onclick="toggleChartType('pie')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+                    <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+                </svg>
+                Pie
+            </button>
+            <button id="bar-toggle" class="toggle-btn" onclick="toggleChartType('bar')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="2" y="13" width="6" height="8"></rect>
+                    <rect x="10" y="9" width="6" height="12"></rect>
+                    <rect x="18" y="5" width="6" height="16"></rect>
+                </svg>
+                Bar
+            </button>
+        </div>
+    </h2>
+    <div id="story-size-breakdown" class="chart-transition"></div>
 </div>
 
 <div class="chart-container">
@@ -125,15 +143,57 @@ class ReportTemplates:
 </div>
 
 <script>
+    // Store chart data globally for toggling
+    let storySizeCharts = {};
+    let currentChartType = 'pie';
+    
     // Render all charts
     {% for chart_id, chart_json in charts.items() %}
     try {
+        {% if chart_id == 'story_size_breakdown' %}
+        // Special handling for story size breakdown with multiple chart types
+        const chartDataJson = {{ chart_json|safe }};
+        storySizeCharts = JSON.parse(chartDataJson);
+        
+        // Render initial pie chart
+        if (storySizeCharts.pie) {
+            const pieData = JSON.parse(storySizeCharts.pie);
+            Plotly.newPlot('story-size-breakdown', pieData.data, pieData.layout, {responsive: true});
+        }
+        {% else %}
+        // Regular chart rendering
         const chartData = {{ chart_json|safe }};
         Plotly.newPlot('{{ chart_id.replace("_", "-") }}', chartData.data, chartData.layout, {responsive: true});
+        {% endif %}
     } catch (e) {
         console.error('Error rendering chart {{ chart_id }}:', e);
     }
     {% endfor %}
+    
+    // Toggle function for chart type
+    function toggleChartType(type) {
+        if (type === currentChartType || !storySizeCharts[type]) return;
+        
+        // Update button states
+        document.getElementById('pie-toggle').classList.toggle('active', type === 'pie');
+        document.getElementById('bar-toggle').classList.toggle('active', type === 'bar');
+        
+        // Parse chart data
+        const chartData = JSON.parse(storySizeCharts[type]);
+        
+        // Animate transition
+        const container = document.getElementById('story-size-breakdown');
+        container.style.opacity = '0';
+        
+        setTimeout(() => {
+            // Update chart
+            Plotly.react('story-size-breakdown', chartData.data, chartData.layout, {responsive: true});
+            
+            // Fade in
+            container.style.opacity = '1';
+            currentChartType = type;
+        }, 300);
+    }
 </script>
 """
         return Template(template_str)

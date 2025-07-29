@@ -28,11 +28,18 @@ from ..application.use_cases import (
     CalculateVelocityUseCase,
     RunMonteCarloSimulationUseCase,
 )
+from ..application.velocity_prediction_use_cases import (
+    ApplyVelocityAdjustmentsUseCase,
+    CreateVelocityScenarioUseCase,
+    GenerateScenarioComparisonUseCase,
+)
 from ..domain.data_sources import DataSourceType
 from ..domain.entities import SimulationConfig
 from ..domain.forecasting import ModelType, MonteCarloConfiguration
 from ..domain.reporting_capabilities import REPORT_REQUIREMENTS
 from ..domain.value_objects import FieldMapping
+from ..domain.velocity_adjustments import VelocityAdjustment, TeamChange
+from ..infrastructure.velocity_adjustment_parser import VelocityAdjustmentParser
 from ..infrastructure.data_source_factory import DefaultDataSourceFactory
 from ..infrastructure.forecasting_model_factory import DefaultModelFactory
 from ..infrastructure.repositories import FileConfigRepository, InMemoryIssueRepository, InMemorySprintRepository
@@ -129,6 +136,16 @@ logger = logging.getLogger(__name__)
     help="WIP limits in format 'status:limit' (e.g., 'in_progress:10')",
 )
 @click.option(
+    "--velocity-change",
+    multiple=True,
+    help="Model velocity changes (format: 'sprint:N[-M|+],factor:F[,reason:R]')",
+)
+@click.option(
+    "--team-change",
+    multiple=True,
+    help="Model team size changes (format: 'sprint:N,change:±C[,ramp:R]')",
+)
+@click.option(
     "--clear-cache",
     is_flag=True,
     help="Clear the API cache before running",
@@ -163,6 +180,8 @@ def main(
     model: str,
     include_process_health: bool,
     wip_limit: tuple,
+    velocity_change: tuple,
+    team_change: tuple,
     clear_cache: bool,
     cache_info: bool,
 ):
@@ -369,6 +388,45 @@ def main(
     # Run simulation
     model_info = model_factory.create(model_type).get_model_info()
     console.print(f"\n[yellow]Running {model_info.name} forecast...[/yellow]")
+    
+    # Variables to track baseline and adjusted results
+    baseline_results = None
+    adjusted_results = None
+    
+    # Parse velocity adjustments if provided
+    velocity_scenario = None
+    if velocity_change or team_change:
+        parser = VelocityAdjustmentParser()
+        adjustments = []
+        team_changes = []
+        
+        # Parse velocity changes
+        for vc in velocity_change:
+            try:
+                adjustment = parser.parse_velocity_change(vc)
+                adjustments.append(adjustment)
+                console.print(f"[cyan]Velocity adjustment: {adjustment.get_description()}[/cyan]")
+            except ValueError as e:
+                console.print(f"[red]Error parsing velocity change: {e}[/red]")
+                return
+        
+        # Parse team changes
+        for tc in team_change:
+            try:
+                change = parser.parse_team_change(tc)
+                team_changes.append(change)
+                console.print(f"[cyan]Team change: {change.get_description()}[/cyan]")
+            except ValueError as e:
+                console.print(f"[red]Error parsing team change: {e}[/red]")
+                return
+        
+        # Create scenario
+        scenario_use_case = CreateVelocityScenarioUseCase()
+        velocity_scenario = scenario_use_case.execute(
+            name="User Scenario",
+            velocity_adjustments=adjustments,
+            team_changes=team_changes
+        )
 
     # Get sprint duration from actual sprint data if available
     sprint_duration = 14  # Default to 2 weeks
@@ -398,8 +456,68 @@ def main(
             sprint_duration_days=sprint_duration,
         )
 
-        simulation_use_case = RunMonteCarloSimulationUseCase(issue_repo)
-        results = simulation_use_case.execute(remaining_work, velocity_metrics, config)
+        # For now, use the new model abstraction for velocity scenarios
+        if velocity_scenario:
+            console.print("\n[yellow]Note: Velocity scenarios are currently only supported with the new model abstraction[/yellow]")
+            # Fall through to new model abstraction path
+            model_type = ModelType.MONTE_CARLO
+            forecasting_model = model_factory.create(model_type)
+            model_config = MonteCarloConfiguration(
+                num_simulations=num_simulations,
+                confidence_levels=[50, 70, 85, 95]
+            )
+            
+            # Apply velocity adjustments
+            adjust_use_case = ApplyVelocityAdjustmentsUseCase(forecasting_model)
+            baseline_result, adjusted_result = adjust_use_case.execute(
+                remaining_work, velocity_metrics, velocity_scenario, model_config
+            )
+            
+            # Store both results for dual report generation
+            baseline_forecast = baseline_result
+            adjusted_forecast = adjusted_result
+            
+            # Use adjusted result as primary
+            forecast_result = adjusted_result
+            
+            # Convert both results to legacy SimulationResult format
+            import statistics
+            from datetime import datetime, timedelta
+            from ..domain.entities import SimulationResult
+            
+            # Helper function to convert forecast result
+            def convert_to_legacy(forecast_result):
+                percentiles = {}
+                confidence_intervals = {}
+                for interval in forecast_result.prediction_intervals:
+                    percentiles[interval.confidence_level] = interval.predicted_value
+                    confidence_intervals[interval.confidence_level] = (interval.lower_bound, interval.upper_bound)
+                
+                today = datetime.now()
+                completion_dates = [
+                    today + timedelta(days=int(s * sprint_duration)) 
+                    for s in forecast_result.sample_predictions[:100]
+                ]
+                
+                return SimulationResult(
+                    percentiles=percentiles,
+                    mean_completion_date=forecast_result.expected_completion_date,
+                    std_dev_days=statistics.stdev(forecast_result.sample_predictions)
+                    if len(forecast_result.sample_predictions) > 1
+                    else 0.0,
+                    probability_distribution=[],
+                    completion_dates=completion_dates,
+                    confidence_intervals=confidence_intervals,
+                    completion_sprints=forecast_result.sample_predictions[:1000],
+                    model_info=forecast_result.model_info,
+                )
+            
+            baseline_results = convert_to_legacy(baseline_forecast)
+            adjusted_results = convert_to_legacy(adjusted_forecast)
+            results = adjusted_results  # Use adjusted as primary
+        else:
+            simulation_use_case = RunMonteCarloSimulationUseCase(issue_repo)
+            results = simulation_use_case.execute(remaining_work, velocity_metrics, config)
     else:
         # Use new model abstraction for other models
         forecasting_model = model_factory.create(model_type)
@@ -575,6 +693,10 @@ def main(
         console.print("\n[yellow]Generating HTML report...[/yellow]")
         style_service = StyleService()
         report_generator = HTMLReportGenerator(style_service, theme)
+        
+        # Import scenario report generator if needed
+        if velocity_scenario:
+            from .scenario_report_generator import ScenarioReportGenerator
         # Extract project name, JQL query, and Jira URL
         jql_query = None
         jira_url = None
@@ -602,21 +724,56 @@ def main(
         if not output_path.parent.exists():
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        report_path = report_generator.generate(
-            simulation_results=results,
-            velocity_metrics=velocity_metrics,
-            historical_data=historical_data,
-            remaining_work=remaining_work,
-            config=config,
-            output_path=output_path,
-            project_name=project_name,
-            model_info=model_info,
-            story_size_breakdown=story_size_breakdown,
-            process_health_metrics=process_health_metrics,
-            reporting_capabilities=reporting_capabilities,
-            jql_query=jql_query,
-            jira_url=jira_url,
-        )
+        # Generate report(s)
+        if velocity_scenario and baseline_results and adjusted_results:
+            # Generate dual reports for velocity scenarios
+            scenario_generator = ScenarioReportGenerator(report_generator)
+            
+            # Create comparison
+            comparison_use_case = GenerateScenarioComparisonUseCase()
+            comparison = comparison_use_case.execute(
+                baseline_results, adjusted_results, velocity_scenario
+            )
+            
+            baseline_path, adjusted_path = scenario_generator.generate_reports(
+                baseline_results=baseline_results,
+                adjusted_results=adjusted_results,
+                scenario=velocity_scenario,
+                comparison=comparison,
+                velocity_metrics=velocity_metrics,
+                historical_data=historical_data,
+                remaining_work=remaining_work,
+                config=config,
+                output_path=output_path,
+                project_name=project_name,
+                model_info=model_info,
+                story_size_breakdown=story_size_breakdown,
+                process_health_metrics=process_health_metrics,
+                reporting_capabilities=reporting_capabilities,
+                jql_query=jql_query,
+                jira_url=jira_url,
+            )
+            
+            report_path = adjusted_path  # Use adjusted as primary
+            console.print(f"\n[green]✓ Baseline report: {baseline_path}[/green]")
+            console.print(f"[green]✓ Adjusted report: {adjusted_path}[/green]")
+        else:
+            # Generate single report
+            report_path = report_generator.generate(
+                simulation_results=results,
+                velocity_metrics=velocity_metrics,
+                historical_data=historical_data,
+                remaining_work=remaining_work,
+                config=config,
+                output_path=output_path,
+                project_name=project_name,
+                model_info=model_info,
+                story_size_breakdown=story_size_breakdown,
+                process_health_metrics=process_health_metrics,
+                reporting_capabilities=reporting_capabilities,
+                jql_query=jql_query,
+                jira_url=jira_url,
+            )
 
         console.print(f"\n[green]✓ Report generated: {report_path}[/green]")
 

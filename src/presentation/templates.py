@@ -45,6 +45,10 @@ class ReportTemplates:
     <p class="subtitle">Generated on {{ generation_date }}</p>
 </div>
 
+{% if scenario_banner %}
+{{ scenario_banner|safe }}
+{% endif %}
+
 {% if jql_query %}
 <div class="jql-query-container">
     <h3>Data Selection Query (JQL)</h3>

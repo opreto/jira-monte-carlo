@@ -18,6 +18,7 @@ class StyleGenerator:
             self._generate_component_styles(),
             self._generate_utility_styles(),
             self._generate_chart_styles(),
+            self._generate_scenario_styles(),
         ]
 
         # Add custom CSS if provided
@@ -544,6 +545,114 @@ a:hover {
 .plotly .main-svg {
     border-radius: var(--border-radius-sm);
 }"""
+
+    def _generate_scenario_styles(self) -> str:
+        """Generate styles for velocity scenario banners"""
+        return """
+/* Scenario Banner Styles */
+.scenario-banner {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 2px solid #0284c7;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.scenario-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+    transform: rotate(45deg);
+}
+
+.scenario-banner h3 {
+    color: #0369a1;
+    margin: 0 0 10px 0;
+    font-size: 1.3em;
+    position: relative;
+    z-index: 1;
+}
+
+.scenario-banner p {
+    margin: 5px 0;
+    color: #075985;
+    position: relative;
+    z-index: 1;
+}
+
+.scenario-banner strong {
+    color: #0c4a6e;
+}
+
+.scenario-link {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 8px 16px;
+    background: #0284c7;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.scenario-link:hover {
+    background: #0369a1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+}
+
+.baseline-banner {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-color: #16a34a;
+}
+
+.baseline-banner h3 {
+    color: #15803d;
+}
+
+.baseline-banner p {
+    color: #166534;
+}
+
+.baseline-banner .scenario-link {
+    background: #16a34a;
+}
+
+.baseline-banner .scenario-link:hover {
+    background: #15803d;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.adjusted-banner {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-color: #f59e0b;
+}
+
+.adjusted-banner h3 {
+    color: #d97706;
+}
+
+.adjusted-banner p {
+    color: #92400e;
+}
+
+.adjusted-banner .scenario-link {
+    background: #f59e0b;
+}
+
+.adjusted-banner .scenario-link:hover {
+    background: #d97706;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+"""
 
     def get_chart_colors(self) -> dict:
         """Get chart color configuration with BI best practices"""

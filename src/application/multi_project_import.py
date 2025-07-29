@@ -224,9 +224,7 @@ class ProcessMultipleDataSourcesUseCase:
 
                 # Run combined simulation
                 # Create a temporary issue repo with all remaining work
-                from ..infrastructure.repositories import InMemoryIssueRepository
-
-                temp_repo = InMemoryIssueRepository()
+                temp_repo = self.issue_repo_factory()
 
                 # Use first project's repo as a template for simulation
                 for project in projects:

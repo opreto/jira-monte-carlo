@@ -1,13 +1,12 @@
 import logging
 import statistics
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from ..domain.entities import Issue, SimulationConfig, SimulationResult
-from ..domain.forecasting import MonteCarloConfiguration
+from ..domain.forecasting import ForecastingModelFactory, ModelType, MonteCarloConfiguration
 from ..domain.repositories import IssueRepository, SprintRepository
 from ..domain.value_objects import DateRange, HistoricalData, VelocityMetrics
-from ..infrastructure.monte_carlo_model import MonteCarloModel
 from .forecasting_use_cases import GenerateForecastUseCase
 
 logger = logging.getLogger(__name__)
@@ -81,10 +80,16 @@ class CalculateVelocityUseCase:
 class RunMonteCarloSimulationUseCase:
     """Legacy use case for backward compatibility - delegates to new forecasting model"""
 
-    def __init__(self, issue_repo: IssueRepository):
+    def __init__(self, issue_repo: IssueRepository, model_factory: Optional[ForecastingModelFactory] = None):
         self.issue_repo = issue_repo
+        # Use injected factory or create default for backward compatibility
+        if model_factory is None:
+            # This is a temporary measure - in production, factory should always be injected
+            from ..infrastructure.forecasting_model_factory import DefaultModelFactory
+            model_factory = DefaultModelFactory()
+        
         # Create Monte Carlo model for backward compatibility
-        self.forecasting_model = MonteCarloModel()
+        self.forecasting_model = model_factory.create(ModelType.MONTE_CARLO)
         self.forecast_use_case = GenerateForecastUseCase(self.forecasting_model, issue_repo)
 
     def execute(

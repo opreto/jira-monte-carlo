@@ -29,6 +29,79 @@ A high-performance Monte Carlo simulation tool for agile project forecasting. Th
 - **Clickable Issue Links**: Direct links to Jira issues in HTML reports
 - **Health Score Visualization**: Gauge charts and breakdowns with 0-100% bounded scores
 
+## Getting Started (Quick Setup for Jira API)
+
+The most common use case is connecting directly to your Jira instance. Here's how to get up and running in 5 minutes:
+
+### 1. Clone and Install
+
+```bash
+# Clone the repository
+git clone https://github.com/opreto/jira-monte-carlo.git
+cd jira-monte-carlo
+
+# Install UV (fast package manager)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Create virtual environment and install
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+uv pip install -e ".[dev]"
+```
+
+### 2. Configure Jira Access
+
+Copy the example configuration and fill in your details:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your Jira credentials:
+```
+JIRA_URL=https://yourcompany.atlassian.net
+JIRA_USERNAME=your.email@company.com
+ATLASSIAN_API_TOKEN=your-api-token
+JIRA_PROJECT_KEY=PROJ
+
+# Optional: Custom JQL query (defaults to all issues in project)
+# JIRA_JQL_FILTER=project = PROJ AND type != Epic AND status != Closed
+```
+
+To get your Atlassian API token:
+1. Go to https://id.atlassian.com/manage-profile/security/api-tokens
+2. Click "Create API token"
+3. Give it a name and copy the token
+
+### 3. Run Your First Forecast
+
+```bash
+# Generate forecast for your project
+jira-monte-carlo -f jira-api:// -o reports/forecast.html
+
+# Open the report in your browser
+open reports/forecast.html  # On Windows: start reports/forecast.html
+```
+
+That's it! You now have a comprehensive Monte Carlo forecast for your project.
+
+### Common Next Steps
+
+```bash
+# Analyze a specific project (overrides .env)
+jira-monte-carlo -f jira-api://MYPROJECT -o reports/myproject.html
+
+# Model vacation impact
+jira-monte-carlo -f jira-api:// \
+  --velocity-change "sprint:10,factor:0.7,reason:team vacation week"
+
+# Include process health metrics
+jira-monte-carlo -f jira-api:// --include-process-health
+
+# Clear cache to fetch fresh data
+jira-monte-carlo --clear-cache
+```
+
 ## Supported Data Sources
 
 - **Jira CSV**: Export from Jira with all issue fields and sprint data

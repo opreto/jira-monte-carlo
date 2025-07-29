@@ -1,4 +1,5 @@
 """Chart generation for process health metrics"""
+
 import logging
 from typing import Dict, List
 
@@ -78,6 +79,13 @@ class ProcessHealthChartGenerator:
         labels = [cat.value.capitalize() for cat in categories]
         counts = [len(aging_analysis.items_by_category.get(cat, [])) for cat in categories]
 
+        # Calculate story points sum for each category
+        points_sums = []
+        for cat in categories:
+            items = aging_analysis.items_by_category.get(cat, [])
+            total_points = sum(item.story_points for item in items if item.story_points is not None)
+            points_sums.append(total_points)
+
         # Color gradient from green to red
         colors = [
             self.chart_colors.get("success", self.chart_colors.get("high_confidence", "#00A86B")),  # Fresh
@@ -89,6 +97,9 @@ class ProcessHealthChartGenerator:
 
         fig = go.Figure()
 
+        # Create custom data for tooltips
+        customdata = [[points] for points in points_sums]
+
         fig.add_trace(
             go.Bar(
                 x=labels,
@@ -96,7 +107,8 @@ class ProcessHealthChartGenerator:
                 marker=dict(color=colors, line=dict(color="white", width=1)),
                 text=[str(c) if c > 0 else "" for c in counts],
                 textposition="outside",
-                hovertemplate="<b>%{x}</b><br>Items: %{y}<extra></extra>",
+                customdata=customdata,
+                hovertemplate="<b>%{x}</b><br>Items: %{y}<br>Story Points: %{customdata[0]:.0f}<extra></extra>",
             )
         )
 
@@ -199,7 +211,17 @@ class ProcessHealthChartGenerator:
         counts = [len(wip_analysis.items_by_status.get(status, [])) for status in statuses]
         labels = [status.value.replace("_", " ").title() for status in statuses]
 
+        # Calculate story points sum for each status
+        points_sums = []
+        for status in statuses:
+            items = wip_analysis.items_by_status.get(status, [])
+            total_points = sum(item.story_points for item in items if item.story_points is not None)
+            points_sums.append(total_points)
+
         fig = go.Figure()
+
+        # Create custom data for tooltips
+        customdata = [[points] for points in points_sums]
 
         # Add bars for current WIP
         fig.add_trace(
@@ -210,7 +232,8 @@ class ProcessHealthChartGenerator:
                 marker_color=self.chart_colors["data1"],
                 text=[str(c) for c in counts],
                 textposition="outside",
-                hovertemplate="<b>%{x}</b><br>Items: %{y}<extra></extra>",
+                customdata=customdata,
+                hovertemplate="<b>%{x}</b><br>Items: %{y}<br>Story Points: %{customdata[0]:.0f}<extra></extra>",
             )
         )
 
@@ -500,7 +523,8 @@ class ProcessHealthChartGenerator:
     def create_health_score_breakdown_chart(self, components: List["HealthScoreComponent"]) -> str:
         """Create horizontal bar chart showing health score component breakdown"""
         if not components:
-            return "{}"
+            # Return valid empty chart JSON
+            return '{"data": [], "layout": {}}'
 
         names = [c.name for c in components]
         scores = [c.score * 100 for c in components]

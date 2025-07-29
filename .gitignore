@@ -69,3 +69,6 @@ dist/
 # Documentation PDFs
 *.pdf
 opretostyleguide-1.pdf
+
+# Proprietary documentation
+"The Architect Handbook.md"

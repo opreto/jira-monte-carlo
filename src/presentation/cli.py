@@ -8,6 +8,7 @@ from rich.console import Console
 from rich.table import Table
 
 from ..application.capability_analyzer import AnalyzeCapabilitiesUseCase
+from ..application.plugin_registry import report_plugin_registry
 from ..application.csv_analysis import AnalyzeCSVStructureUseCase
 from ..application.forecasting_use_cases import GenerateForecastUseCase
 from ..application.import_data import AnalyzeDataSourceUseCase, ImportDataUseCase
@@ -28,6 +29,7 @@ from ..application.use_cases import (
 from ..domain.data_sources import DataSourceType
 from ..domain.entities import SimulationConfig
 from ..domain.forecasting import ModelType, MonteCarloConfiguration
+from ..domain.reporting_capabilities import REPORT_REQUIREMENTS
 from ..domain.value_objects import FieldMapping
 from ..infrastructure.data_source_factory import DefaultDataSourceFactory
 from ..infrastructure.forecasting_model_factory import DefaultModelFactory
@@ -46,7 +48,7 @@ logger = logging.getLogger(__name__)
     "-f",
     "csv_files",
     multiple=True,
-    type=click.Path(exists=True),
+    type=click.Path(exists=False),  # Allow non-existent paths for API URLs
     help="Path to CSV export (can be specified multiple times)",
 )
 @click.option(
@@ -124,6 +126,16 @@ logger = logging.getLogger(__name__)
     multiple=True,
     help="WIP limits in format 'status:limit' (e.g., 'in_progress:10')",
 )
+@click.option(
+    "--clear-cache",
+    is_flag=True,
+    help="Clear the API cache before running",
+)
+@click.option(
+    "--cache-info",
+    is_flag=True,
+    help="Show cache information and exit",
+)
 def main(
     csv_files: tuple,
     num_simulations: int,
@@ -149,20 +161,73 @@ def main(
     model: str,
     include_process_health: bool,
     wip_limit: tuple,
+    clear_cache: bool,
+    cache_info: bool,
 ):
     console.print("[bold blue]Statistical Forecasting Tool[/bold blue]")
+    
+    # Handle cache operations
+    if cache_info or clear_cache:
+        from ..infrastructure.cache import APICache
+        cache = APICache()
+        
+        if cache_info:
+            # Show cache information
+            info = cache.get_info()
+            console.print("\n[bold cyan]Cache Information[/bold cyan]")
+            console.print(f"Cache directory: {info['cache_dir']}")
+            console.print(f"TTL: {info['ttl_hours']} hours")
+            console.print(f"Entries: {info['num_entries']}")
+            console.print(f"Total size: {info['total_size_mb']:.2f} MB")
+            
+            if info['entries']:
+                cache_table = Table(title="Cached Entries")
+                cache_table.add_column("Key", style="cyan")
+                cache_table.add_column("Age (min)", style="magenta")
+                cache_table.add_column("Size (KB)", style="green")
+                cache_table.add_column("Status", style="yellow")
+                
+                for entry in info['entries']:
+                    status = "Expired" if entry['expired'] else "Valid"
+                    cache_table.add_row(
+                        entry['key'][:50] + "..." if len(entry['key']) > 50 else entry['key'],
+                        str(entry['age_minutes']),
+                        f"{entry['size_kb']:.1f}",
+                        status
+                    )
+                
+                console.print(cache_table)
+            return
+        
+        if clear_cache:
+            cache.clear()
+            console.print("[green]✓ Cache cleared[/green]")
+            if not csv_files:
+                return
 
     # Initialize repositories
     config_repo = FileConfigRepository()
     issue_repo = InMemoryIssueRepository()
     sprint_repo = InMemorySprintRepository()
 
-    # Get CSV files
+    # Get data source files/URLs
     if not csv_files:
-        console.print("[red]Error: At least one CSV file path is required. Use --csv-file option.[/red]")
+        console.print("[red]Error: At least one data source is required. Use --csv-file option.[/red]")
         return
 
-    csv_paths = [Path(csv_file) for csv_file in csv_files]
+    # Handle both file paths and API URLs
+    csv_paths = []
+    for csv_file in csv_files:
+        if csv_file.startswith(("jira-api://", "linear-api://")):
+            # API URLs are passed as-is
+            csv_paths.append(Path(csv_file))
+        else:
+            # Regular files must exist
+            path = Path(csv_file)
+            if not path.exists():
+                console.print(f"[red]Error: File not found: {csv_file}[/red]")
+                return
+            csv_paths.append(path)
 
     # Initialize data source factory
     data_source_factory = DefaultDataSourceFactory()
@@ -427,22 +492,34 @@ def main(
                 sprint_names=sprint_names,
             )
 
-        # Analyze capabilities and process health if requested
+        # Analyze capabilities using plugin-aware system
+        # Create capability checkers from registry
+        registered_checkers = {}
+        for report_type, checker_class in report_plugin_registry.get_all_checkers().items():
+            # Instantiate checker with appropriate base capability
+            if report_type in REPORT_REQUIREMENTS:
+                registered_checkers[report_type] = checker_class(
+                    report_type, REPORT_REQUIREMENTS[report_type]
+                )
+        
         capabilities_use_case = AnalyzeCapabilitiesUseCase(
             issue_repository=issue_repo,
             sprint_repository=sprint_repo,
             field_mapping=field_mapping,
+            capability_checkers=registered_checkers if registered_checkers else None,
         )
         reporting_capabilities = capabilities_use_case.execute()
 
-        # Process health analysis
+        # Process health analysis - automatic based on data availability
+        from ..domain.reporting_capabilities import ReportType
+        
         process_health_metrics = None
-        if include_process_health:
+        # Always analyze process health - let the data availability determine what's shown
+        # The --include-process-health flag is now deprecated but kept for compatibility
+        if True:  # Always enabled
             console.print("\n[yellow]Analyzing process health metrics...[/yellow]")
 
             # Check if we have the required data for process health
-            from ..domain.reporting_capabilities import ReportType
-
             if not reporting_capabilities.is_available(ReportType.AGING_WORK_ITEMS):
                 console.print("[red]Warning: Aging analysis not available - missing created date data[/red]")
             if not reporting_capabilities.is_available(ReportType.WORK_IN_PROGRESS):

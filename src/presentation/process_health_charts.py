@@ -383,7 +383,7 @@ class ProcessHealthChartGenerator:
                 name="Scope Removed",
                 x=sprint_names,
                 y=removed_points,
-                marker_color=self.chart_colors["info"],
+                marker_color=self.chart_colors.get("info", "#17a2b8"),
                 hovertemplate="<b>%{x}</b><br>Removed: %{y:.0f} points<extra></extra>",
             )
         )

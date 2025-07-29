@@ -143,6 +143,7 @@ class ReportTemplates:
     <h2>Process Health Score</h2>
     <div id="health-score-gauge"></div>
     
+    {% if process_health_metrics.health_score_breakdown %}
     <!-- Health Score Breakdown Chart -->
     <div id="health-score-breakdown" style="margin-top: 20px;"></div>
     
@@ -186,6 +187,15 @@ class ReportTemplates:
         </div>
         {% endfor %}
     </div>
+    {% else %}
+    <!-- Limited health data message -->
+    <div style="margin-top: 20px; padding: 15px; background: rgba(255,193,7,0.1); border-radius: 8px;">
+        <p style="margin: 0; color: #856404;">
+            <strong>Limited Health Data:</strong> Additional metrics require more complete data fields 
+            (created dates, labels, etc.) to provide detailed insights.
+        </p>
+    </div>
+    {% endif %}
 </div>
 
 {% if process_health_metrics.aging_analysis %}
@@ -238,7 +248,8 @@ class ReportTemplates:
     <p>Based on {{ "{:,}".format(num_simulations) }} iterations • Analysis of historical data and velocity metrics</p>
     {% if reporting_capabilities %}
     <p><small>
-        Available reports: {{ reporting_capabilities.available_reports|length }} of {{ reporting_capabilities.all_reports|length }} • 
+        Available reports: {{ reporting_capabilities.available_reports|length }} of 
+        {{ reporting_capabilities.all_reports|length }} • 
         Data quality score: {{ "%.0f"|format(reporting_capabilities.data_quality_score * 100) }}%
     </small></p>
     {% endif %}

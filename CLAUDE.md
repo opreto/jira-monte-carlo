@@ -5,3 +5,8 @@
 ## Development Workflow
 
 - Your workflow should be: plan -> design failing tests -> implement -> flesh out tests -> update documentation as appropriate -> commit/push.
+
+## CLI Guidelines
+
+- When generating reports from the CLI, ensure they always get saved in the `reports` directory.
+- Any report you generate should go in the reports/ directory. Documentation should go in the docs/ directory. Keep the top level directory of the project well organized and clean.

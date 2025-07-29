@@ -86,8 +86,9 @@ class RunMonteCarloSimulationUseCase:
         if model_factory is None:
             # This is a temporary measure - in production, factory should always be injected
             from ..infrastructure.forecasting_model_factory import DefaultModelFactory
+
             model_factory = DefaultModelFactory()
-        
+
         # Create Monte Carlo model for backward compatibility
         self.forecasting_model = model_factory.create(ModelType.MONTE_CARLO)
         self.forecast_use_case = GenerateForecastUseCase(self.forecasting_model, issue_repo)

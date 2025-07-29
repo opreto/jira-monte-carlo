@@ -1,13 +1,10 @@
 """Tests for capability analyzer"""
-import pytest
 from unittest.mock import Mock
 from datetime import datetime, timedelta
 
 from src.domain.entities import Issue, Sprint
 from src.domain.reporting_capabilities import (
     DataRequirement,
-    ReportCapability,
-    ReportingCapabilities,
     ReportType,
 )
 from src.application.capability_analyzer import AnalyzeCapabilitiesUseCase
@@ -47,6 +44,16 @@ class TestAnalyzeCapabilitiesUseCase:
                 time_estimate=4.0,
                 assignee="Dev2",
                 issue_type="Bug"
+            ),
+            Issue(
+                key="TEST-3",
+                summary="Blocked issue",
+                status="Blocked",
+                created=datetime.now() - timedelta(days=7),
+                story_points=2,
+                assignee="Dev1",
+                labels=["blocked", "dependency"],
+                issue_type="Story"
             ),
         ]
         

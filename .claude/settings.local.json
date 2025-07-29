@@ -278,7 +278,11 @@
       "Bash(git checkout:*)",
       "Bash(git reset:*)",
       "Bash(git rm:*)",
-      "Bash(git rev-parse:*)"
+      "Bash(git rev-parse:*)",
+      "Bash(make:*)",
+      "Bash(sed:*)",
+      "Bash(chmod:*)",
+      "Bash(.venv/bin/pip install:*)"
     ],
     "deny": []
   }

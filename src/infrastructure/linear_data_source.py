@@ -321,7 +321,7 @@ class LinearCSVDataSource(DataSource):
             created_field="Created",
             resolved_field="Completed",  # Linear uses Completed instead of Resolved
             story_points_field="Estimate",
-            sprint_field="Cycle",  # Linear uses Cycles instead of Sprints
+            sprint_field="Cycle Name",  # Linear uses Cycles instead of Sprints
             assignee_field="Assignee",
             reporter_field="Creator",  # Linear uses Creator
             issue_type_field="Type",
@@ -364,12 +364,14 @@ class LinearCSVDataSource(DataSource):
         # Create sprints from monthly data
         sprints = []
         for month_key, data in sorted(monthly_data.items()):
-            if data["completed_points"] > 0:  # Only create sprints with actual velocity
+            # Create sprint if there are any completed issues (for count-based velocity)
+            if data["completed_issues"]:
                 sprint = Sprint(
                     name=f"Month {month_key}",
                     start_date=data["start_date"],
                     end_date=data["end_date"],
                     completed_points=data["completed_points"],
+                    completed_issues=data["completed_issues"],
                 )
                 sprints.append(sprint)
 

@@ -1,5 +1,4 @@
 """Tests for process health domain entities and use cases"""
-import pytest
 from datetime import datetime, timedelta
 from unittest.mock import Mock
 

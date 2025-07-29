@@ -282,7 +282,10 @@ class ProcessHealthMetrics:
                 HealthScoreComponent(
                     name="Aging Items",
                     score=score,
-                    description=f"Based on {critical_count} critical items out of {self.aging_analysis.total_items} total",
+                    description=(
+                        f"Based on {critical_count} critical items out of "
+                        f"{self.aging_analysis.total_items} total"
+                    ),
                     insights=insights,
                     recommendations=recommendations,
                 )
@@ -313,7 +316,10 @@ class ProcessHealthMetrics:
                 HealthScoreComponent(
                     name="Work In Progress",
                     score=score,
-                    description=f"{self.wip_analysis.total_wip} items in progress, {violation_count} WIP limit violations",
+                    description=(
+                        f"{self.wip_analysis.total_wip} items in progress, "
+                        f"{violation_count} WIP limit violations"
+                    ),
                     insights=insights,
                     recommendations=recommendations,
                 )

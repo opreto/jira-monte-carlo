@@ -16,7 +16,7 @@ class DataSourceType(Enum):
     JIRA_CSV = "jira_csv"
     LINEAR_CSV = "linear_csv"
     JIRA_XML = "jira_xml"
-    # Future: JIRA_API = "jira_api"
+    JIRA_API = "jira_api"
     # Future: LINEAR_API = "linear_api"
 
 

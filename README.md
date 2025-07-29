@@ -5,7 +5,9 @@ A high-performance Monte Carlo simulation tool for agile project forecasting. Th
 ## Features
 
 - **High Performance**: Uses Polars for efficient CSV parsing and batch processing
-- **Multi-Source Support**: Import data from Jira CSV, Linear CSV, with extensible architecture for more formats
+- **Multi-Source Support**: Import data from Jira CSV, Linear CSV, and Jira API with extensible architecture
+- **Jira API Integration**: Direct connection to Jira REST API with automatic pagination for all issues
+- **Intelligent Caching**: API responses cached for 1 hour to minimize server load during report iterations
 - **Auto-Detection**: Automatically detects the data source format
 - **Smart Column Aggregation**: Automatically handles Jira's duplicate Sprint columns (Sprint, Sprint.1, Sprint.2, etc.)
 - **Sprint-Based Forecasting**: Predictions in sprints rather than days for clearer planning
@@ -20,10 +22,12 @@ A high-performance Monte Carlo simulation tool for agile project forecasting. Th
 - **Multiple Status Support**: Handles custom workflows with configurable status mappings
 - **Multi-Project Support**: Process multiple CSV files to generate a combined dashboard with drill-down to individual reports
 - **Themeable Reports**: Built-in themes (Opreto and generic) with clean architecture for styling
+- **Process Health Metrics**: Analyzes aging work items, WIP limits, sprint health, and blocked items
 
 ## Supported Data Sources
 
 - **Jira CSV**: Export from Jira with all issue fields and sprint data
+- **Jira API**: Direct connection to Jira Cloud/Server via REST API
 - **Linear CSV**: Export from Linear with cycle and estimate data
 - **Extensible**: Clean architecture allows adding new data sources easily
 
@@ -72,6 +76,38 @@ jira-monte-carlo -f jira-export.csv --format jira
 jira-monte-carlo -f jira-export.csv -f linear-export.csv
 ```
 
+### Jira API Integration
+
+Connect directly to Jira without needing to export CSV files:
+
+```bash
+# Set up your Jira credentials in .env file
+cat > .env << EOF
+JIRA_URL=https://yourcompany.atlassian.net
+JIRA_USERNAME=your.email@company.com
+ATLASSIAN_API_TOKEN=your-api-token
+JIRA_PROJECT_KEY=PROJ
+EOF
+
+# Generate report from Jira API
+jira-monte-carlo -f jira-api:// -o reports/forecast.html
+
+# Use a specific project
+jira-monte-carlo -f jira-api://PROJECT-KEY -o reports/forecast.html
+
+# Clear cache to fetch fresh data
+jira-monte-carlo --clear-cache
+
+# View cache information
+jira-monte-carlo --cache-info
+```
+
+To get an Atlassian API token:
+1. Go to https://id.atlassian.com/manage-profile/security/api-tokens
+2. Click "Create API token"
+3. Give it a descriptive name
+4. Copy the token to your .env file
+
 ### Command Line Options
 
 ```
@@ -104,6 +140,11 @@ Analysis Options:
   --max-velocity-age INT         Maximum age of velocity data in days (default: 240)
   --outlier-std-devs FLOAT       Standard deviations for outlier detection (default: 2.0)
   --min-velocity FLOAT           Minimum velocity threshold (default: 10.0)
+  --include-process-health       Include process health metrics in the report
+
+Cache Management:
+  --clear-cache                  Clear the API cache before running
+  --cache-info                   Show cache information and exit
 ```
 
 ### Multi-Project Analysis

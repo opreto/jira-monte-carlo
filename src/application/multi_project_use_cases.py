@@ -10,7 +10,6 @@ from ..domain.multi_project import AggregatedMetrics, MultiProjectReport, Projec
 from ..domain.repositories import IssueRepository, SprintRepository
 from ..domain.value_objects import FieldMapping
 from .csv_analysis import AnalyzeCSVStructureUseCase, AnalyzeVelocityUseCase
-from .csv_processing_factory import CSVProcessingFactory
 from .use_cases import CalculateRemainingWorkUseCase, CalculateVelocityUseCase, RunMonteCarloSimulationUseCase
 
 logger = logging.getLogger(__name__)
@@ -105,14 +104,15 @@ class ProcessMultipleCSVsUseCase:
             headers = next(reader)
             rows = list(reader)
 
-        analysis_result = analyze_csv_use_case.execute(headers, rows)
+        analyze_csv_use_case.execute(headers, rows)
 
         # Parse CSV with analyzer to get the DataFrame
         # Note: In a cleaner design, the analyzer would return parsed data directly
         # For now, we'll read the CSV ourselves
         import pandas as pd
+
         df = pd.read_csv(csv_path)
-        
+
         # Convert to issues using the parser from factory
         parser = self.csv_processing_factory.create_parser(field_mapping=field_mapping)
         issues = parser.parse(df, field_mapping)
@@ -123,12 +123,14 @@ class ProcessMultipleCSVsUseCase:
         # Extract sprint velocities using the extractor
         # We'll use our adapter to properly handle the infrastructure implementation
         from .csv_adapters import EnhancedSprintExtractorAdapter
+
         extractor = EnhancedSprintExtractorAdapter(status_mapping, field_mapping)
-        sprint_velocities = extractor.extract_from_issues(issues)
-        
+        extractor.extract_from_issues(issues)
+
         # For velocity data points, we need the analyzer
         analyzer = self.csv_processing_factory.create_analyzer()
         from ..domain.analysis import VelocityAnalysisConfig
+
         velocity_analysis_config = VelocityAnalysisConfig(
             lookback_sprints=velocity_config.get("lookback_sprints", 6),
             velocity_field=velocity_config.get("velocity_field", "story_points"),

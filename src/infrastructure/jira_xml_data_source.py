@@ -3,7 +3,7 @@
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Iterator, List, Optional, Set, Tuple
+from typing import Iterator, List, Optional, Tuple
 
 from lxml import etree
 

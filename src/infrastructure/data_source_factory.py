@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Type
 from ..domain.data_sources import DataSource, DataSourceFactory, DataSourceInfo, DataSourceType
 from ..domain.value_objects import FieldMapping
 from .jira_data_source import JiraCSVDataSource
+from .jira_xml_adapter import JiraXmlDataSourceAdapter
 from .linear_data_source import LinearCSVDataSource
 
 logger = logging.getLogger(__name__)
@@ -19,6 +20,7 @@ class DefaultDataSourceFactory(DataSourceFactory):
         self._sources: Dict[DataSourceType, Type[DataSource]] = {
             DataSourceType.JIRA_CSV: JiraCSVDataSource,
             DataSourceType.LINEAR_CSV: LinearCSVDataSource,
+            DataSourceType.JIRA_XML: JiraXmlDataSourceAdapter,
         }
 
     def create(self, source_type: DataSourceType, field_mapping: Optional[FieldMapping] = None) -> DataSource:

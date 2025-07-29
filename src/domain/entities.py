@@ -60,7 +60,9 @@ class Sprint:
 
     @property
     def duration_days(self) -> int:
-        return (self.end_date - self.start_date).days
+        if self.start_date and self.end_date:
+            return (self.end_date - self.start_date).days
+        return 14  # Default sprint duration
 
 
 @dataclass

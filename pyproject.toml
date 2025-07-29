@@ -21,6 +21,7 @@ dependencies = [
     "pytest-asyncio>=0.21.0",
     "pytest-integration>=0.2.3",
     "pytest-benchmark>=4.0.0",
+    "lxml>=4.9.0",
 ]
 
 [project.optional-dependencies]
@@ -38,6 +39,13 @@ python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --cov=src --cov-report=term-missing"
+
+# Custom pytest markers
+markers = [
+    "integration: marks tests as integration tests",
+    "slow: marks tests as slow",
+    "template: marks tests that validate templates",
+]
 
 [tool.black]
 line-length = 120

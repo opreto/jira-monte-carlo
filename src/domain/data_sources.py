@@ -1,6 +1,7 @@
 """Domain interfaces for data sources"""
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -86,3 +87,24 @@ class DataSourceFactory(ABC):
     def get_available_sources(self) -> List[DataSourceInfo]:
         """Get list of available data sources"""
         pass
+
+
+@dataclass
+class IssueData:
+    """Data transfer object for issue information during parsing"""
+    
+    key: Optional[str] = None
+    summary: Optional[str] = None
+    issue_type: Optional[str] = None
+    status: Optional[str] = None
+    priority: Optional[str] = None
+    assignee: Optional[str] = None
+    reporter: Optional[str] = None
+    created: Optional[datetime] = None
+    updated: Optional[datetime] = None
+    resolved: Optional[datetime] = None
+    description: Optional[str] = None
+    story_points: Optional[float] = None
+    sprint: Optional[str] = None
+    epic_link: Optional[str] = None
+    labels: Optional[List[str]] = field(default_factory=list)

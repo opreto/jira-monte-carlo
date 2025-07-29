@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="0.92">
+    <channel>
+        <title>Sample Jira Export</title>
+        <link>https://example.atlassian.net</link>
+        <description>An XML representation of search results</description>
+        <language>en-us</language>
+        <build-info>
+            <version>9.0.0</version>
+            <build-number>900000</build-number>
+        </build-info>
+        <item>
+            <title>[DEMO-1] Setup development environment</title>
+            <link>https://example.atlassian.net/browse/DEMO-1</link>
+            <project id="10000" key="DEMO">Demo Project</project>
+            <description>Setup the initial development environment for the project</description>
+            <environment></environment>
+            <key id="10001">DEMO-1</key>
+            <summary>Setup development environment</summary>
+            <type id="10001" iconUrl="https://example.atlassian.net/images/icons/issuetypes/task.png">Task</type>
+            <priority id="3" iconUrl="https://example.atlassian.net/images/icons/priorities/major.svg">Major</priority>
+            <status id="10001" iconUrl="https://example.atlassian.net/images/icons/statuses/closed.png" description="The issue is considered finished.">Done</status>
+            <statusCategory id="3" key="done" colorName="green"/>
+            <resolution id="10000">Done</resolution>
+            <assignee>john.doe</assignee>
+            <reporter>jane.smith</reporter>
+            <created>Mon, 1 Jan 2024 10:00:00 +0000</created>
+            <updated>Wed, 10 Jan 2024 15:30:00 +0000</updated>
+            <resolved>Wed, 10 Jan 2024 15:30:00 +0000</resolved>
+            <fixVersion>1.0.0</fixVersion>
+            <customfields>
+                <customfield id="customfield_10020" key="com.atlassian.jira.plugin.system.customfieldtypes:float">
+                    <customfieldname>Story Points</customfieldname>
+                    <customfieldvalues>
+                        <customfieldvalue>5.0</customfieldvalue>
+                    </customfieldvalues>
+                </customfield>
+                <customfield id="customfield_10021" key="com.atlassian.jira.plugin.system.customfieldtypes:textfield">
+                    <customfieldname>Sprint</customfieldname>
+                    <customfieldvalues>
+                        <customfieldvalue>Sprint 1</customfieldvalue>
+                    </customfieldvalues>
+                </customfield>
+            </customfields>
+            <labels>
+                <label>backend</label>
+                <label>setup</label>
+            </labels>
+        </item>
+        <item>
+            <title>[DEMO-2] Create user authentication</title>
+            <link>https://example.atlassian.net/browse/DEMO-2</link>
+            <project id="10000" key="DEMO">Demo Project</project>
+            <description>Implement user authentication system with JWT tokens</description>
+            <environment></environment>
+            <key id="10002">DEMO-2</key>
+            <summary>Create user authentication</summary>
+            <type id="10001" iconUrl="https://example.atlassian.net/images/icons/issuetypes/task.png">Story</type>
+            <priority id="2" iconUrl="https://example.atlassian.net/images/icons/priorities/critical.svg">High</priority>
+            <status id="3" iconUrl="https://example.atlassian.net/images/icons/statuses/todo.png" description="This issue is waiting to be started.">To Do</status>
+            <statusCategory id="4" key="indeterminate" colorName="yellow"/>
+            <assignee>john.doe</assignee>
+            <reporter>jane.smith</reporter>
+            <created>Mon, 15 Jan 2024 09:00:00 +0000</created>
+            <updated>Thu, 25 Jan 2024 14:20:00 +0000</updated>
+            <fixVersion>1.0.0</fixVersion>
+            <customfields>
+                <customfield id="customfield_10020" key="com.atlassian.jira.plugin.system.customfieldtypes:float">
+                    <customfieldname>Story Points</customfieldname>
+                    <customfieldvalues>
+                        <customfieldvalue>8.0</customfieldvalue>
+                    </customfieldvalues>
+                </customfield>
+                <customfield id="customfield_10021" key="com.atlassian.jira.plugin.system.customfieldtypes:textfield">
+                    <customfieldname>Sprint</customfieldname>
+                    <customfieldvalues>
+                        <customfieldvalue>Sprint 2</customfieldvalue>
+                    </customfieldvalues>
+                </customfield>
+            </customfields>
+            <labels>
+                <label>backend</label>
+                <label>security</label>
+            </labels>
+        </item>
+    </channel>
+</rss>

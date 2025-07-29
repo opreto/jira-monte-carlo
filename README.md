@@ -381,15 +381,17 @@ The predictions will show:
 - Visual timeline showing when changes take effect
 
 **Report Generation:**
-When velocity changes are specified, the tool generates two linked reports:
-1. `forecast-baseline.html` - Standard forecast without adjustments
-2. `forecast-adjusted.html` - Forecast with velocity changes applied
+When velocity changes are specified, the tool generates a single combined report with both baseline and adjusted forecasts. The report includes:
+- Interactive toggle to switch between baseline and adjusted views
+- Real-time chart updates when switching scenarios
+- Side-by-side comparison of key metrics
+- Clear visualization of the impact of velocity changes
 
-Each report includes:
-- Clear banner at the top describing any adjustments
-- Links to toggle between baseline and adjusted views
-- Disclaimers on affected charts (e.g., "Note: Velocity adjusted by 70% for sprints 5-7")
-- Summary table comparing key metrics between scenarios
+The combined report provides:
+- Instant switching between scenarios without page reload
+- Synchronized chart updates across all visualizations
+- Highlighted differences between baseline and adjusted forecasts
+- Single file for easy sharing and distribution
 
 ## Architecture
 

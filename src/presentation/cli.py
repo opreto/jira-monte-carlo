@@ -695,8 +695,7 @@ def main(
 
         # Import scenario report generator if needed
         if velocity_scenario:
-            from .scenario_report_generator import ScenarioReportGenerator
-        # Extract project name, JQL query, and Jira URL
+                    # Extract project name, JQL query, and Jira URL
         jql_query = None
         jira_url = None
         if str(csv_path).startswith("jira-api:"):
@@ -725,14 +724,16 @@ def main(
 
         # Generate report(s)
         if velocity_scenario and baseline_results and adjusted_results:
-            # Generate dual reports for velocity scenarios
-            scenario_generator = ScenarioReportGenerator(report_generator)
+            # Generate combined report for velocity scenarios
+            from .combined_report_generator import CombinedReportGenerator
+            
+            combined_generator = CombinedReportGenerator(report_generator)
 
             # Create comparison
             comparison_use_case = GenerateScenarioComparisonUseCase()
             comparison = comparison_use_case.execute(baseline_results, adjusted_results, velocity_scenario)
 
-            baseline_path, adjusted_path = scenario_generator.generate_reports(
+            report_path = combined_generator.generate_combined_report(
                 baseline_results=baseline_results,
                 adjusted_results=adjusted_results,
                 scenario=velocity_scenario,
@@ -751,9 +752,7 @@ def main(
                 jira_url=jira_url,
             )
 
-            report_path = adjusted_path  # Use adjusted as primary
-            console.print(f"\n[green]✓ Baseline report: {baseline_path}[/green]")
-            console.print(f"[green]✓ Adjusted report: {adjusted_path}[/green]")
+            console.print(f"\n[green]✓ Combined baseline/adjusted report: {report_path}[/green]")
         else:
             # Generate single report
             report_path = report_generator.generate(

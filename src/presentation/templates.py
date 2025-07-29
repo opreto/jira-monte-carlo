@@ -20,6 +20,141 @@ class ReportTemplates:
     <style>
 {{ styles }}
     </style>
+    {% if combined_scenario_data %}
+    <script>
+        // Store combined scenario data
+        window.scenarioData = {{ combined_scenario_data|safe }};
+        window.currentScenario = window.scenarioData.current_view || 'adjusted';
+        
+        // Function to switch between scenarios
+        function switchScenario(scenario) {
+            window.currentScenario = scenario;
+            
+            // Update UI elements
+            updateScenarioDisplay();
+            
+            // Update all charts
+            updateCharts();
+        }
+        
+        function updateScenarioDisplay() {
+            const descriptionEl = document.getElementById('scenario-description');
+            const baselineNotice = document.getElementById('baseline-notice');
+            
+            if (window.currentScenario === 'baseline') {
+                descriptionEl.style.display = 'none';
+                baselineNotice.style.display = 'block';
+            } else {
+                descriptionEl.style.display = 'block';
+                baselineNotice.style.display = 'none';
+            }
+            
+            // Update summary metrics
+            updateSummaryMetrics();
+        }
+        
+        function updateSummaryMetrics() {
+            const data = window.scenarioData[window.currentScenario];
+            if (!data) return;
+            
+            // Update percentile values in summary
+            const percentiles = data.percentiles;
+            updateTextContent('p50-value', percentiles.p50 + ' sprints');
+            updateTextContent('p70-value', percentiles.p70 + ' sprints');
+            updateTextContent('p85-value', percentiles.p85 + ' sprints');
+            updateTextContent('p95-value', percentiles.p95 + ' sprints');
+        }
+        
+        function updateTextContent(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        }
+        
+        function updateCharts() {
+            // Update each chart with new data
+            updateProbabilityChart();
+            updateConfidenceChart();
+            updateForecastTimeline();
+        }
+        
+        function updateProbabilityChart() {
+            const data = window.scenarioData[window.currentScenario];
+            if (!data || !data.probability_distribution) return;
+            
+            const chartDiv = document.getElementById('probability-distribution');
+            if (!chartDiv) return;
+            
+            // Recreate the probability distribution chart
+            const sprints = data.probability_distribution.map(d => d.sprint);
+            const probabilities = data.probability_distribution.map(d => d.probability);
+            
+            const trace = {
+                x: sprints,
+                y: probabilities,
+                type: 'bar',
+                name: window.currentScenario === 'baseline' ? 'Baseline' : 'Adjusted',
+                marker: { color: window.currentScenario === 'baseline' ? '#1f77b4' : '#ff7f0e' }
+            };
+            
+            const layout = {
+                title: 'Sprint Completion Probability Distribution',
+                xaxis: { title: 'Number of Sprints' },
+                yaxis: { title: 'Probability' }
+            };
+            
+            Plotly.newPlot(chartDiv, [trace], layout);
+        }
+        
+        function updateConfidenceChart() {
+            const data = window.scenarioData[window.currentScenario];
+            if (!data || !data.confidence_intervals) return;
+            
+            const chartDiv = document.getElementById('confidence-intervals');
+            if (!chartDiv) return;
+            
+            // Update confidence intervals chart
+            const levels = data.confidence_intervals.map(d => d.level);
+            const values = data.confidence_intervals.map(d => d.value);
+            const lower = data.confidence_intervals.map(d => d.lower);
+            const upper = data.confidence_intervals.map(d => d.upper);
+            
+            const trace = {
+                x: levels,
+                y: values,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: window.currentScenario === 'baseline' ? 'Baseline' : 'Adjusted',
+                line: { color: window.currentScenario === 'baseline' ? '#1f77b4' : '#ff7f0e' },
+                error_y: {
+                    type: 'data',
+                    symmetric: false,
+                    array: upper.map((u, i) => u - values[i]),
+                    arrayminus: values.map((v, i) => v - lower[i])
+                }
+            };
+            
+            const layout = {
+                title: 'Confidence Intervals',
+                xaxis: { title: 'Confidence Level (%)' },
+                yaxis: { title: 'Sprints to Complete' }
+            };
+            
+            Plotly.newPlot(chartDiv, [trace], layout);
+        }
+        
+        function updateForecastTimeline() {
+            // Similar updates for forecast timeline
+            // Implementation depends on the specific chart structure
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.scenarioData) {
+                updateScenarioDisplay();
+            }
+        });
+    </script>
+    {% endif %}
 </head>
 <body>
     <div class="container">
@@ -72,14 +207,22 @@ class ReportTemplates:
     
     <div class="metric-card">
         <div class="label">50% Confidence</div>
-        <div class="value">{{ "%.0f"|format(percentiles.p50) }}</div>
-        <div class="label">sprints</div>
+        <div class="value" id="p50-value">{{ "%.0f"|format(percentiles.p50) }} sprints</div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="label">70% Confidence</div>
+        <div class="value" id="p70-value">{{ "%.0f"|format(percentiles.p70) }} sprints</div>
     </div>
     
     <div class="metric-card">
         <div class="label">85% Confidence</div>
-        <div class="value">{{ "%.0f"|format(percentiles.p85) }}</div>
-        <div class="label">sprints</div>
+        <div class="value" id="p85-value">{{ "%.0f"|format(percentiles.p85) }} sprints</div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="label">95% Confidence</div>
+        <div class="value" id="p95-value">{{ "%.0f"|format(percentiles.p95) }} sprints</div>
     </div>
 </div>
 

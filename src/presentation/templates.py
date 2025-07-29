@@ -251,6 +251,17 @@ class ReportTemplates:
         Available reports: {{ reporting_capabilities.available_reports|length }} of 
         {{ reporting_capabilities.all_reports|length }} • 
         Data quality score: {{ "%.0f"|format(reporting_capabilities.data_quality_score * 100) }}%
+        {% if reporting_capabilities.unavailable_reports %}
+        <span class="tooltip">
+            <span class="tooltip-icon">ⓘ</span>
+            <span class="tooltip-text">
+                <strong>Unavailable Reports:</strong><br>
+                {% for report_name, requirements in reporting_capabilities.unavailable_reports.items() %}
+                • {{ report_name }}: Missing {{ requirements|join(', ') }}<br>
+                {% endfor %}
+            </span>
+        </span>
+        {% endif %}
     </small></p>
     {% endif %}
 </div>

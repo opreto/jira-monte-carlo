@@ -454,21 +454,13 @@ def main(
         sprint_dates = []
         sprint_names = []
 
-        # Natural sort function for sprint names
-        import re
+        # Sort sprints chronologically instead of by name for consistency with other charts
 
-        def natural_sort_key(sprint):
-            name = getattr(sprint, "name", "")
-            parts = []
-            for part in re.split(r"(\d+)", name):
-                if part.isdigit():
-                    parts.append(int(part))
-                else:
-                    parts.append(part)
-            return parts
-
-        # Sort sprints by name using natural sort
-        sorted_sprints = sorted(sprints, key=natural_sort_key)
+        # Sort sprints chronologically by start date to match sprint health charts
+        sorted_sprints = sorted(
+            sprints, 
+            key=lambda s: s.start_date if s.start_date else datetime.min
+        )
 
         for sprint in sorted_sprints:
             if hasattr(sprint, "completed_points") and sprint.completed_points > 0:
@@ -575,8 +567,21 @@ def main(
         console.print("\n[yellow]Generating HTML report...[/yellow]")
         style_service = StyleService()
         report_generator = HTMLReportGenerator(style_service, theme)
-        # Extract project name from CSV filename
-        project_name = Path(csv_path).stem
+        # Extract project name
+        if str(csv_path).startswith("jira-api:"):
+            # For API sources, try to get project info
+            analyze_use_case = AnalyzeDataSourceUseCase(data_source_factory)
+            analysis_result = analyze_use_case.execute(csv_path, source_type)
+            project_info = analysis_result.get("project_info")
+            if project_info and project_info.get("name"):
+                project_name = project_info["name"]
+            elif project_info and project_info.get("key"):
+                project_name = f"Project {project_info['key']}"
+            else:
+                project_name = "Jira Project"
+        else:
+            # For file sources, use filename
+            project_name = Path(csv_path).stem
 
         # Ensure output path is in reports directory
         output_path = Path(output)
@@ -600,7 +605,13 @@ def main(
         console.print(f"\n[green]✓ Report generated: {report_path}[/green]")
 
         # Show summary
-        show_simulation_summary(results)
+        # Determine if we have reliable sprint data
+        # For API sources with actual sprint data, we can show dates
+        is_api_source = str(csv_path).startswith(("jira-api://", "linear-api://"))
+        has_sprint_data = sprints and len(sprints) > 0
+        # Show dates if: API source with sprints OR CSV with many consistent sprints
+        show_dates = (is_api_source and has_sprint_data) or (has_sprint_data and len(sprints) >= 6)
+        show_simulation_summary(results, sprint_duration if show_dates else None, show_dates)
 
 
 def process_multiple_csvs(
@@ -761,14 +772,14 @@ def show_velocity_metrics(metrics):
     console.print(table)
 
 
-def show_simulation_summary(results):
+def show_simulation_summary(results, sprint_duration=None, has_reliable_sprint_data=False):
     table = Table(title="Simulation Results Summary")
     table.add_column("Confidence Level", style="cyan")
     table.add_column("Sprints to Complete", style="magenta")
-    table.add_column("Completion Date", style="green")
-
-    # Need sprint duration to calculate dates, use default if not available
-    sprint_duration = 14  # Default 2 weeks
+    
+    # Only show completion dates if we have reliable sprint duration data
+    if sprint_duration and has_reliable_sprint_data:
+        table.add_column("Completion Date", style="green")
 
     # Deduplicate by keeping only the lowest confidence for each sprint count
     seen_sprints = {}
@@ -779,12 +790,16 @@ def show_simulation_summary(results):
 
     # Display in confidence order
     for confidence, sprints in sorted(seen_sprints.values()):
-        # Calculate date based on sprints
-        from datetime import datetime, timedelta
-
-        days = int(sprints * sprint_duration)
-        date = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
-        table.add_row(f"{confidence*100:.0f}%", f"{sprints:.0f}", date)
+        row_data = [f"{confidence*100:.0f}%", f"{sprints:.0f}"]
+        
+        # Add date if we have reliable sprint duration
+        if sprint_duration and has_reliable_sprint_data:
+            from datetime import datetime, timedelta
+            days = int(sprints * sprint_duration)
+            date = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
+            row_data.append(date)
+            
+        table.add_row(*row_data)
 
     console.print(table)
 

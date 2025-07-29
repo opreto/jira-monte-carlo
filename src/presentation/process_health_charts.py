@@ -332,8 +332,7 @@ class ProcessHealthChartGenerator:
             y=100,
             line_dash="dot",
             line_color=self._get_color_with_alpha("success", 0.5),
-            annotation_text="Target: 100%",
-            annotation_position="left",
+            # Remove annotation to prevent overlap with y-axis label
         )
 
         fig.update_layout(

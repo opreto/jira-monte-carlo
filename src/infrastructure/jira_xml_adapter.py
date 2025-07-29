@@ -47,7 +47,7 @@ class JiraXmlDataSourceAdapter(DataSource):
                 channel = root.find("channel")
                 if channel is not None:
                     # Check for Jira-specific elements
-                    build_info = channel.find("build-info")
+                    channel.find("build-info")  # Check existence without using result
                     item = channel.find("item")
 
                     if item is not None:
@@ -88,8 +88,6 @@ class JiraXmlDataSourceAdapter(DataSource):
             issue_count = 0
             statuses = set()
             issue_types = set()
-            has_story_points = False
-            has_sprints = False
 
             from lxml import etree
 

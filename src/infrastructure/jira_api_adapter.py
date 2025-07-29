@@ -79,6 +79,9 @@ class JiraApiDataSourceAdapter(DataSource):
             # Get projects
             projects = self._api_source.get_projects() if connected else []
             
+            # Get current project info
+            project_info = self._api_source.get_project_info() if connected else None
+            
             # Get field information
             field_info = {}
             if connected and hasattr(self._api_source, '_field_map'):
@@ -93,6 +96,7 @@ class JiraApiDataSourceAdapter(DataSource):
                 "connected": connected,
                 "url": self._api_source.config.url if self._api_source else "Not configured",
                 "is_cloud": self._api_source.is_cloud if self._api_source else None,
+                "project_info": project_info,
                 "projects": projects[:10],  # First 10 projects
                 "project_count": len(projects),
                 "field_info": field_info,

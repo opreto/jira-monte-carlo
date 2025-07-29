@@ -53,6 +53,9 @@ class JiraApiDataSource:
         # Initialize API cache
         self.cache = APICache(ttl_hours=cache_ttl_hours)
         
+        # Store project info
+        self._project_info: Optional[Dict[str, str]] = None
+        
     def parse(self) -> Tuple[List[Issue], List[Sprint]]:
         """
         Fetch issues and sprints from Jira API.
@@ -66,7 +69,10 @@ class JiraApiDataSource:
             logger.info(f"Fetching issues with JQL: {jql}")
             
             # Create cache key based on JQL and project
-            cache_key = f"jira_issues_{self.config.url}_{jql}"
+            # Use hash for long JQL queries to avoid filesystem path length limits
+            import hashlib
+            jql_hash = hashlib.sha256(jql.encode()).hexdigest()[:16]
+            cache_key = f"jira_issues_{self.config.url.replace('https://', '').replace('/', '_')}_{jql_hash}"
             
             # Check cache first
             cached_data = self.cache.get(cache_key)
@@ -349,6 +355,15 @@ class JiraApiDataSource:
                 except (ValueError, TypeError):
                     story_points = None
         
+        # Get time tracking fields (in seconds, convert to hours)
+        time_estimate = fields.get("timeoriginalestimate")
+        if time_estimate:
+            time_estimate = time_estimate / 3600.0  # Convert seconds to hours
+        
+        time_spent = fields.get("timespent")
+        if time_spent:
+            time_spent = time_spent / 3600.0  # Convert seconds to hours
+        
         # Create Issue object
         issue = Issue(
             key=key,
@@ -359,6 +374,8 @@ class JiraApiDataSource:
             updated=updated,
             resolved=resolved,
             story_points=story_points,
+            time_estimate=time_estimate,
+            time_spent=time_spent,
             assignee=fields.get("assignee", {}).get("displayName") if fields.get("assignee") else None,
             reporter=fields.get("reporter", {}).get("displayName") if fields.get("reporter") else None,
             labels=fields.get("labels", []),
@@ -373,6 +390,8 @@ class JiraApiDataSource:
                 latest_sprint = sprints[-1]
                 if isinstance(latest_sprint, dict):
                     issue.custom_fields["sprint"] = latest_sprint.get("name")
+                    # Store full sprint data for date extraction
+                    issue.custom_fields["sprint_data"] = latest_sprint
                 elif isinstance(latest_sprint, str):
                     # Parse sprint string (format: "com.atlassian.greenhopper.service.sprint.Sprint@1234[name=Sprint 1,...]")
                     import re
@@ -420,8 +439,59 @@ class JiraApiDataSource:
                 logger.warning(f"Failed to parse date '{date_str}': {e}")
                 return None
     
+    def _fetch_sprint_data(self) -> Dict[str, Dict[str, Any]]:
+        """Fetch actual sprint data from Jira Agile API"""
+        sprint_map = {}
+        
+        try:
+            # Get all boards for the project
+            if not self.config.project_key:
+                return sprint_map
+                
+            boards_url = "rest/agile/1.0/board"
+            params = {"projectKeyOrId": self.config.project_key}
+            
+            try:
+                response = self.jira.get(boards_url, params=params)
+                boards = response.get("values", [])
+            except Exception as e:
+                logger.debug(f"Could not fetch boards: {e}")
+                return sprint_map
+            
+            # Get sprints from each board
+            for board in boards:
+                board_id = board.get("id")
+                if not board_id:
+                    continue
+                    
+                try:
+                    # Get all sprints for this board
+                    sprints_url = f"rest/agile/1.0/board/{board_id}/sprint"
+                    sprint_response = self.jira.get(sprints_url)
+                    sprints = sprint_response.get("values", [])
+                    
+                    # Map sprints by name
+                    for sprint in sprints:
+                        sprint_name = sprint.get("name")
+                        if sprint_name:
+                            sprint_map[sprint_name] = sprint
+                            
+                except Exception as e:
+                    logger.debug(f"Could not fetch sprints for board {board_id}: {e}")
+                    continue
+                    
+        except Exception as e:
+            logger.debug(f"Error fetching sprint data from Agile API: {e}")
+            
+        logger.info(f"Fetched {len(sprint_map)} sprints from Jira Agile API")
+        return sprint_map
+    
     def _extract_sprints(self, issues: List[Issue]) -> List[Sprint]:
         """Extract sprint information from issues"""
+        # First, get actual sprint data from Jira Agile API if available
+        sprint_data_map = self._fetch_sprint_data()
+        
+        # Group issues by sprint
         sprints_dict = {}
         
         for issue in issues:
@@ -430,11 +500,13 @@ class JiraApiDataSource:
                 continue
                 
             if sprint_name not in sprints_dict:
+                # Check if we have sprint data embedded in the issue
+                sprint_data_from_issue = issue.custom_fields.get("sprint_data", {})
                 sprints_dict[sprint_name] = {
                     "name": sprint_name,
                     "issues": [],
-                    "start_date": None,
-                    "end_date": None,
+                    "start_date": self._parse_date(sprint_data_from_issue.get("startDate")),
+                    "end_date": self._parse_date(sprint_data_from_issue.get("endDate")),
                 }
             
             sprints_dict[sprint_name]["issues"].append(issue)
@@ -445,12 +517,27 @@ class JiraApiDataSource:
             if not sprint_data["issues"]:
                 continue
             
-            # Calculate sprint dates from issue dates
-            created_dates = [i.created for i in sprint_data["issues"] if i.created]
-            resolved_dates = [i.resolved for i in sprint_data["issues"] if i.resolved]
+            # Use dates from sprint data if available
+            start_date = sprint_data.get("start_date")
+            end_date = sprint_data.get("end_date")
             
-            start_date = min(created_dates) if created_dates else None
-            end_date = max(resolved_dates) if resolved_dates else None
+            # Try API sprint data map as second option
+            if (not start_date or not end_date) and sprint_name in sprint_data_map:
+                actual_sprint = sprint_data_map[sprint_name]
+                if not start_date:
+                    start_date = self._parse_date(actual_sprint.get("startDate"))
+                if not end_date:
+                    end_date = self._parse_date(actual_sprint.get("endDate"))
+            
+            # Last resort: infer from issues
+            if not start_date or not end_date:
+                created_dates = [i.created for i in sprint_data["issues"] if i.created]
+                resolved_dates = [i.resolved for i in sprint_data["issues"] if i.resolved]
+                
+                if not start_date and created_dates:
+                    start_date = min(created_dates)
+                if not end_date and resolved_dates:
+                    end_date = max(resolved_dates)
             
             # Get completed issues
             completed_issues = [i for i in sprint_data["issues"] if i.resolved]
@@ -499,3 +586,24 @@ class JiraApiDataSource:
         except Exception as e:
             logger.error(f"Failed to fetch projects: {e}")
             return []
+    
+    def get_project_info(self) -> Optional[Dict[str, str]]:
+        """Get current project information"""
+        if self._project_info:
+            return self._project_info
+            
+        if not self.config.project_key:
+            return None
+            
+        try:
+            project = self.jira.get_project(self.config.project_key)
+            self._project_info = {
+                "key": project.get("key"),
+                "name": project.get("name"),
+                "description": project.get("description", ""),
+                "id": project.get("id"),
+            }
+            return self._project_info
+        except Exception as e:
+            logger.error(f"Error getting project info: {e}")
+            return None

@@ -33,9 +33,10 @@ class TestDataSourceFactory:
 
     def test_create_unknown_source(self):
         factory = DefaultDataSourceFactory()
-        # Can't create invalid enum, so test with a valid but unregistered type
+        # Create a mock invalid type by removing a registered type
+        del factory._sources[DataSourceType.JIRA_XML]
         with pytest.raises(ValueError, match="Unknown data source type"):
-            factory.create(DataSourceType.JIRA_XML)  # Not implemented
+            factory.create(DataSourceType.JIRA_XML)
 
     def test_get_available_sources(self):
         factory = DefaultDataSourceFactory()

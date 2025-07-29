@@ -201,19 +201,19 @@ class TestJiraApiDataSource:
     def test_test_connection_success(self, jira_data_source):
         """Test successful connection test"""
         jira_data_source.jira = Mock()
-        jira_data_source.jira.myself.return_value = {
-            "displayName": "Test User",
-            "emailAddress": "test@example.com"
+        jira_data_source.jira.get_server_info.return_value = {
+            "serverTitle": "Test JIRA",
+            "version": "8.0.0"
         }
         
         result = jira_data_source.test_connection()
         assert result is True
-        jira_data_source.jira.myself.assert_called_once()
+        jira_data_source.jira.get_server_info.assert_called_once()
     
     def test_test_connection_failure(self, jira_data_source):
         """Test failed connection test"""
         jira_data_source.jira = Mock()
-        jira_data_source.jira.myself.side_effect = Exception("Authentication failed")
+        jira_data_source.jira.get_server_info.side_effect = Exception("Authentication failed")
         
         result = jira_data_source.test_connection()
         assert result is False
@@ -238,3 +238,60 @@ class TestJiraApiDataSource:
                 jira_data_source.parse()
             
             assert "Failed to fetch data from Jira" in str(exc_info.value)
+    
+    def test_extract_sprints_with_embedded_dates(self, jira_data_source):
+        """Test extracting sprints with embedded date data from issues"""
+        from datetime import datetime
+        from src.domain.entities import Issue
+        
+        # Create test issues with sprint data including dates
+        issues = [
+            Issue(
+                key="TEST-1",
+                summary="Issue 1",
+                issue_type="Story",
+                status="Done",
+                created=datetime(2024, 1, 1),
+                resolved=datetime(2024, 1, 10),
+                story_points=5.0,
+                custom_fields={
+                    "sprint": "Sprint 1",
+                    "sprint_data": {
+                        "startDate": "2024-01-01T00:00:00.000Z",
+                        "endDate": "2024-01-14T00:00:00.000Z"
+                    }
+                }
+            ),
+            Issue(
+                key="TEST-2",
+                summary="Issue 2",
+                issue_type="Story",
+                status="Done",
+                created=datetime(2024, 1, 5),
+                resolved=datetime(2024, 1, 12),
+                story_points=3.0,
+                custom_fields={
+                    "sprint": "Sprint 1",
+                    "sprint_data": {
+                        "startDate": "2024-01-01T00:00:00.000Z",
+                        "endDate": "2024-01-14T00:00:00.000Z"
+                    }
+                }
+            ),
+        ]
+        
+        # Test sprint extraction
+        sprints = jira_data_source._extract_sprints(issues)
+        
+        assert len(sprints) == 1
+        sprint = sprints[0]
+        assert sprint.name == "Sprint 1"
+        # Compare dates without timezone info
+        assert sprint.start_date.replace(tzinfo=None) == datetime(2024, 1, 1, 0, 0, 0)
+        assert sprint.end_date.replace(tzinfo=None) == datetime(2024, 1, 14, 0, 0, 0)
+        assert sprint.completed_points == 8.0
+        assert len(sprint.completed_issues) == 2
+        
+        # Verify sprint duration is 14 days
+        duration = (sprint.end_date - sprint.start_date).days
+        assert duration == 13  # 14 days inclusive

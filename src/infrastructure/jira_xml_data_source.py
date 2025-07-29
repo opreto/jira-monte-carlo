@@ -94,7 +94,6 @@ class JiraXmlDataSource:
 
         # Track current issue data
         current_issue = None
-        in_customfields = False
         current_customfield = None
 
         for event, elem in context:
@@ -264,7 +263,6 @@ class JiraXmlDataSource:
         for event, elem in context:
             if event == "end":
                 field_id = elem.get("id")
-                field_key = elem.get("key")
 
                 # Look for field name
                 name_elem = elem.find(".//customfieldname")

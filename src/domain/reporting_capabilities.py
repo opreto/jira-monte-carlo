@@ -92,6 +92,20 @@ class ReportingCapabilities:
     def is_available(self, report_type: ReportType) -> bool:
         """Check if a report type is available"""
         return report_type in self.available_report_types
+    
+    @property
+    def unavailable_reports(self) -> Dict[str, List[str]]:
+        """Get dictionary of unavailable reports and their missing fields"""
+        unavailable = {}
+        for report in self.all_reports:
+            if not report.is_available and report.missing_fields:
+                # Convert enum values to human-readable strings
+                missing_field_names = []
+                for field in report.missing_fields:
+                    field_name = field.value.replace('_', ' ').title()
+                    missing_field_names.append(field_name)
+                unavailable[report.display_name] = missing_field_names
+        return unavailable
 
 
 # Define report requirements

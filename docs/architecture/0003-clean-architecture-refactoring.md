@@ -25,9 +25,11 @@ During architectural review, several violations of Clean Architecture principles
    - Style generation interface (`StyleGenerator`)
 
 2. **New Domain Concepts Added**:
-   - Process health domain models
+   - Process health domain models (including LeadTimeAnalysis, bounded health scores)
    - Reporting capabilities system
    - Multi-project support
+   - Lead time metrics with flow efficiency calculations
+   - Enhanced health score components with expandable detail items
 
 3. **Factory Pattern Implemented**:
    - `DefaultDataSourceFactory` for data source management

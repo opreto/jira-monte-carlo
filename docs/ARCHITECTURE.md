@@ -222,6 +222,29 @@ classDiagram
 - `src/domain/data_sources.py` - Data source abstraction
 - `src/domain/repositories.py` - Repository interfaces
 - `src/domain/forecasting.py` - Forecasting model interfaces
+- `src/domain/process_health.py` - Process health analysis domain models
+
+#### Process Health Domain Models
+
+The process health analysis system provides comprehensive metrics for team performance:
+
+```python
+# Key domain models for process health
+- LeadTimeMetrics: Tracks cycle time, lead time, wait time, and flow efficiency
+- LeadTimeAnalysis: Aggregates lead time metrics with percentiles and defect rates
+- AgingAnalysis: Categorizes work items by age (Fresh, Normal, Aging, Stale, Abandoned)
+- WIPAnalysis: Monitors work in progress with configurable limits
+- SprintHealthAnalysis: Tracks sprint completion rates and scope changes
+- BlockedItemsAnalysis: Analyzes impediments by severity
+- ProcessHealthMetrics: Calculates overall health score (0-100%) with component breakdown
+- HealthScoreComponent: Individual health metric with score, weight, and expandable detail items
+```
+
+The health scoring system uses bounded calculations (0-100%) with intelligent heuristics:
+- Lead time scoring based on industry benchmarks (<7 days excellent, <14 days good)
+- Flow efficiency bonus for teams with >70% active work time
+- WIP limits adjusted based on team size
+- Defect rate penalties for quality issues
 
 ### 2. Application Layer (Use Cases)
 
@@ -237,6 +260,8 @@ flowchart LR
         MP([ProcessMultipleCSVsUseCase])
         CS([AnalyzeCSVStructureUseCase])
         WC([ClassifyWorkUseCase])
+        PH([AnalyzeProcessHealthUseCase])
+        LT([AnalyzeLeadTimeUseCase])
     end
     
     subgraph Services
@@ -290,7 +315,8 @@ flowchart LR
 - **Bootstrap**: Central dependency injection configuration
 
 **Key Files:**
-- `src/application/use_cases.py` - Business operations
+- `src/application/use_cases.py` - Core business operations
+- `src/application/process_health_use_cases.py` - Process health analysis operations
 - `src/application/csv_processing_factory.py` - Factory for CSV processors
 - `src/application/bootstrap.py` - Dependency injection setup
 - `src/application/csv_adapters.py` - Adapters to bridge infrastructure with domain

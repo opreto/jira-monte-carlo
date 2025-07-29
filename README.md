@@ -25,13 +25,17 @@ A high-performance Monte Carlo simulation tool for agile project forecasting. Th
 - **Process Health Metrics**: Analyzes aging work items, WIP limits, sprint health, lead time, and blocked items
 - **Enhanced Reporting**: Charts include explanatory descriptions, expandable details for items, and interactive elements
 - **Lead Time Analysis**: Tracks cycle time, flow efficiency, and defect rates for quality insights
+- **Plugin Architecture**: Extensible plugin system for custom report enhancements
+- **Clickable Issue Links**: Direct links to Jira issues in HTML reports
+- **Health Score Visualization**: Gauge charts and breakdowns with 0-100% bounded scores
 
 ## Supported Data Sources
 
 - **Jira CSV**: Export from Jira with all issue fields and sprint data
-- **Jira API**: Direct connection to Jira Cloud/Server via REST API
+- **Jira API**: Direct connection to Jira Cloud/Server via REST API with automatic pagination
+- **Jira XML**: Import from Jira XML exports (useful for offline analysis)
 - **Linear CSV**: Export from Linear with cycle and estimate data
-- **Extensible**: Clean architecture allows adding new data sources easily
+- **Extensible**: Clean architecture allows adding new data sources easily through the DataSource interface
 
 ## Installation
 
@@ -73,9 +77,10 @@ jira-monte-carlo -f export.csv
 # Specify format explicitly
 jira-monte-carlo -f linear-export.csv --format linear
 jira-monte-carlo -f jira-export.csv --format jira
+jira-monte-carlo -f jira-export.xml --format jira-xml
 
 # Process multiple files (can be different formats)
-jira-monte-carlo -f jira-export.csv -f linear-export.csv
+jira-monte-carlo -f jira-export.csv -f linear-export.csv -f jira-backup.xml
 ```
 
 ### Jira API Integration
@@ -143,6 +148,13 @@ Analysis Options:
   --outlier-std-devs FLOAT       Standard deviations for outlier detection (default: 2.0)
   --min-velocity FLOAT           Minimum velocity threshold (default: 10.0)
   --include-process-health       Include process health metrics in the report
+
+Velocity Change Prediction (What-If Analysis):
+  --velocity-change TEXT         Model velocity changes (format: "sprint:N[-M],factor:F[,reason:R]")
+  --team-change TEXT             Model team size changes (format: "sprint:N,change:±C[,ramp:R]")
+  
+  Sprint ranges: Use N for single sprint, N-M for range, N+ for sprint N onwards (forever)
+  Multiple changes: Repeat flags for multiple adjustments
 
 Cache Management:
   --clear-cache                  Clear the API cache before running
@@ -229,6 +241,76 @@ uv run python -m src.presentation.cli \
 uv run python -m src.presentation.cli \
   --csv-file jira-export.csv \
   --analyze-only
+```
+
+### Velocity Change Predictions (What-If Analysis)
+
+Model the impact of team changes, vacations, and scaling on your forecasts:
+
+```bash
+# One person on vacation for sprint 3 (50% capacity reduction for small team)
+jira-monte-carlo -f data.csv \
+  --velocity-change "sprint:3,factor:0.5,reason:vacation"
+
+# Summer vacation period affecting sprints 5-7 with 30% reduced capacity
+jira-monte-carlo -f data.csv \
+  --velocity-change "sprint:5-7,factor:0.7,reason:summer-holidays"
+
+# Adding one developer starting sprint 4 with 3-sprint ramp-up
+jira-monte-carlo -f data.csv \
+  --team-change "sprint:4,change:+1,ramp:3"
+
+# Scaling up by 2 developers permanently starting sprint 6
+jira-monte-carlo -f data.csv \
+  --team-change "sprint:6,change:+2,ramp:4" \
+  --velocity-change "sprint:6+,factor:1.25,reason:team-scaled"
+
+# Team reduction - 2 developers leaving after sprint 8
+jira-monte-carlo -f data.csv \
+  --team-change "sprint:8,change:-2" \
+  --velocity-change "sprint:8+,factor:0.75,reason:team-reduced"
+
+# Complex scenario: vacation, then new hire, then permanent productivity boost
+jira-monte-carlo -f data.csv \
+  --velocity-change "sprint:2-3,factor:0.8,reason:key-dev-vacation" \
+  --team-change "sprint:4,change:+1,ramp:3" \
+  --velocity-change "sprint:7+,factor:1.1,reason:process-improvements"
+
+# Model partial capacity (e.g., someone working 50% on another project)
+jira-monte-carlo -f data.csv \
+  --velocity-change "sprint:3+,factor:0.9,reason:shared-resource"
+```
+
+**Velocity Change Syntax:**
+- `sprint:N` - Affects only sprint N
+- `sprint:N-M` - Affects sprints N through M (inclusive)
+- `sprint:N+` - Affects sprint N and all future sprints (forever)
+- `factor:F` - Velocity multiplier (0.5 = 50% capacity, 1.5 = 150% capacity)
+- `reason:R` - Optional description for the change (appears in report)
+
+**Team Change Syntax:**
+- `change:+N` - Add N team members
+- `change:-N` - Remove N team members
+- `ramp:R` - Ramp-up period in sprints (default: 3)
+  - New members start at 25% productivity, reaching 100% after ramp period
+  - Ramp-up is linear by default
+
+The predictions will show:
+- Adjusted velocity projections
+- Updated completion date confidence intervals
+- Comparison between baseline and adjusted scenarios
+- Visual timeline showing when changes take effect
+
+**Report Generation:**
+When velocity changes are specified, the tool generates two linked reports:
+1. `forecast-baseline.html` - Standard forecast without adjustments
+2. `forecast-adjusted.html` - Forecast with velocity changes applied
+
+Each report includes:
+- Clear banner at the top describing any adjustments
+- Links to toggle between baseline and adjusted views
+- Disclaimers on affected charts (e.g., "Note: Velocity adjusted by 70% for sprints 5-7")
+- Summary table comparing key metrics between scenarios
 
 ```
 
@@ -415,6 +497,8 @@ Major architectural decisions are documented in the `docs/architecture/` directo
 
 - **0001-data-source-abstraction.md**: Abstraction layer for supporting multiple data sources
 - **0002-statistical-model-abstraction.md**: Pluggable forecasting model architecture
+- **0003-clean-architecture-refactoring.md**: Ongoing refactoring to clean architecture principles
+- **0004-velocity-change-predictions.md**: Modeling team capacity changes and their impact on forecasts
 
 ## Development
 
@@ -483,8 +567,25 @@ logging.basicConfig(level=logging.DEBUG)
 ### In Progress
 - 🚧 Clean Architecture Stabilization (LADR-0003)
 - 🚧 Additional analytics for scrum masters
+- 🚧 Velocity Change Prediction System
 
 ### Planned Features
+
+#### Phase 0: Velocity Change Prediction (Priority 0)
+- **Team Capacity Planning**
+  - Model velocity impact of planned vacations/PTO
+  - Predict velocity changes from team scaling (adding/removing members)
+  - Account for onboarding ramp-up periods for new team members
+  - Support for temporary resource allocation changes
+- **What-If Scenarios**
+  - Interactive velocity adjustment interface
+  - Visualize forecast impact of velocity changes
+  - Compare multiple scenarios side-by-side
+  - Export scenario comparisons for planning meetings
+- **Historical Pattern Recognition**
+  - Learn from past vacation/scaling impacts
+  - Seasonal velocity patterns (holidays, summer slowdowns)
+  - Team-specific productivity curves
 
 #### Phase 1: Architecture Stabilization (Priority 1)
 - **Clean Architecture Completion**
@@ -645,12 +746,15 @@ logging.basicConfig(level=logging.DEBUG)
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Write tests for new functionality
-4. Ensure all tests pass
-5. Submit a pull request
+1. Create a feature branch in this repository
+2. Write tests for new functionality
+3. Ensure all tests pass
+4. Submit a pull request for review
+
+For architectural changes, please document your decisions in a LADR (Lightweight Architecture Decision Record) in the `docs/architecture` directory.
 
 ## License
 
-MIT License - see LICENSE file for details
+This software is proprietary and confidential. Copyright (c) 2024 Opreto. All rights reserved.
+
+This codebase is for internal Opreto use only and may not be copied, distributed, or used outside of Opreto without explicit written permission.

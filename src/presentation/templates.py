@@ -45,6 +45,13 @@ class ReportTemplates:
     <p class="subtitle">Generated on {{ generation_date }}</p>
 </div>
 
+{% if jql_query %}
+<div class="jql-query-container">
+    <h3>Data Selection Query (JQL)</h3>
+    <pre class="jql-query"><code>{{ jql_query }}</code></pre>
+</div>
+{% endif %}
+
 <div class="metrics-grid">
     <div class="metric-card">
         <div class="label">Remaining Work</div>
@@ -73,30 +80,45 @@ class ReportTemplates:
 
 <div class="chart-container">
     <h2>Probability Distribution</h2>
+    <div class="chart-description">
+        <strong>What it shows:</strong> The likelihood of completing work in different numbers of sprints.<br>
+        <strong>Why it matters:</strong> Helps set realistic expectations and manage stakeholder commitments.<br>
+        <strong>What to look for:</strong> The shape of the distribution (narrow = predictable, wide = uncertain) and where your target date falls on the curve.
+    </div>
     <div id="probability-distribution"></div>
 </div>
 
 <div class="chart-container">
     <h2>Forecast Timeline</h2>
+    <div class="chart-description">
+        <strong>What it shows:</strong> Projected completion dates with different confidence levels.<br>
+        <strong>Why it matters:</strong> Visualizes the range of possible outcomes and risk levels.<br>
+        <strong>What to look for:</strong> The spread between optimistic (50%) and conservative (95%) estimates indicates project uncertainty.
+    </div>
     <div id="forecast-timeline"></div>
 </div>
 
 <div class="chart-container">
     <h2>Historical Velocity Trend</h2>
+    <div class="chart-description">
+        <strong>What it shows:</strong> Team velocity over recent sprints with trend line.<br>
+        <strong>Why it matters:</strong> Reveals if team performance is improving, declining, or stable.<br>
+        <strong>What to look for:</strong> Consistency (low variance = predictable), trend direction, and any outliers that might skew forecasts.
+    </div>
     <div id="velocity-trend"></div>
 </div>
 
 <div class="chart-container">
     <h2>Remaining Work Distribution
         <div class="chart-toggle">
-            <button id="pie-toggle" class="toggle-btn active" onclick="toggleChartType('pie')">
+            <button id="pie-toggle" class="toggle-btn" onclick="toggleChartType('pie')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
                     <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
                 </svg>
                 Pie
             </button>
-            <button id="bar-toggle" class="toggle-btn" onclick="toggleChartType('bar')">
+            <button id="bar-toggle" class="toggle-btn active" onclick="toggleChartType('bar')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <rect x="2" y="13" width="6" height="8"></rect>
                     <rect x="10" y="9" width="6" height="12"></rect>
@@ -106,11 +128,21 @@ class ReportTemplates:
             </button>
         </div>
     </h2>
+    <div class="chart-description">
+        <strong>What it shows:</strong> Breakdown of remaining work by size or category.<br>
+        <strong>Why it matters:</strong> Identifies where effort is concentrated and potential bottlenecks.<br>
+        <strong>What to look for:</strong> Large items that might benefit from splitting, or categories with disproportionate work.
+    </div>
     <div id="story-size-breakdown" class="chart-transition"></div>
 </div>
 
 <div class="chart-container">
     <h2>Confidence Intervals</h2>
+    <div class="chart-description">
+        <strong>What it shows:</strong> Range of completion estimates at different confidence levels.<br>
+        <strong>Why it matters:</strong> Quantifies uncertainty and helps with risk-based planning.<br>
+        <strong>What to look for:</strong> Width of intervals (narrow = more certain) and which confidence level aligns with your risk tolerance.
+    </div>
     <div id="confidence-intervals"></div>
 </div>
 
@@ -141,6 +173,11 @@ class ReportTemplates:
 {% if process_health_metrics %}
 <div class="chart-container">
     <h2>Process Health Score</h2>
+    <div class="chart-description">
+        <strong>What it shows:</strong> Overall health of your development process across multiple dimensions.<br>
+        <strong>Why it matters:</strong> Identifies process improvement opportunities before they impact delivery.<br>
+        <strong>What to look for:</strong> Scores below 70% indicate areas needing attention. Review the breakdown for specific issues.
+    </div>
     <div id="health-score-gauge"></div>
     
     {% if process_health_metrics.health_score_breakdown %}
@@ -184,6 +221,53 @@ class ReportTemplates:
                 </ul>
             </div>
             {% endif %}
+            
+            {% if component.detail_items %}
+            <div style="margin-top: 10px;">
+                <details class="issue-details">
+                    <summary style="cursor: pointer; font-size: 14px; color: #0066cc; font-weight: 500;">
+                        View {{ component.detail_items|length }} affected items ▶
+                    </summary>
+                    <div class="issue-list" style="margin-top: 10px; max-height: 300px; overflow-y: auto;">
+                        <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                    <th style="padding: 8px; text-align: left;">Key</th>
+                                    <th style="padding: 8px; text-align: left;">Summary</th>
+                                    <th style="padding: 8px; text-align: left;">Age</th>
+                                    <th style="padding: 8px; text-align: left;">Status</th>
+                                    <th style="padding: 8px; text-align: left;">Assignee</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in component.detail_items %}
+                                <tr style="border-bottom: 1px solid #dee2e6;">
+                                    <td style="padding: 8px;">
+                                        {% if jira_url %}
+                                        <a href="{{ jira_url }}/browse/{{ item.key }}" target="_blank" style="color: #0066cc; text-decoration: none;">{{ item.key }}</a>
+                                        {% else %}
+                                        <span style="color: #0066cc;">{{ item.key }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 8px;">{{ item.summary[:50] }}{% if item.summary|length > 50 %}...{% endif %}</td>
+                                    <td style="padding: 8px;">{{ item.age_days }} days</td>
+                                    <td style="padding: 8px;">
+                                        <span class="status-badge status-{{ item.type }}" 
+                                              style="padding: 2px 8px; border-radius: 12px; font-size: 12px; 
+                                                     background: {% if item.type == 'abandoned' %}#dc3545{% else %}#ffc107{% endif %}; 
+                                                     color: white;">
+                                            {{ item.status }}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 8px;">{{ item.assignee }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+            </div>
+            {% endif %}
         </div>
         {% endfor %}
     </div>
@@ -201,11 +285,21 @@ class ReportTemplates:
 {% if process_health_metrics.aging_analysis %}
 <div class="chart-container">
     <h2>Aging Work Items</h2>
+    <div class="chart-description">
+        <strong>What it shows:</strong> Distribution of work items by age category.<br>
+        <strong>Why it matters:</strong> Old items represent risk, blocked work, or forgotten tasks.<br>
+        <strong>What to look for:</strong> Items over 30 days old (stale/abandoned) need review or closure.
+    </div>
     <div id="aging-distribution"></div>
 </div>
 
 <div class="chart-container">
     <h2>Average Age by Status</h2>
+    <div class="chart-description">
+        <strong>What it shows:</strong> How long items spend in each workflow state.<br>
+        <strong>Why it matters:</strong> Reveals bottlenecks and process inefficiencies.<br>
+        <strong>What to look for:</strong> Statuses with unusually high average age indicate workflow problems.
+    </div>
     <div id="aging-by-status"></div>
 </div>
 {% endif %}
@@ -213,6 +307,11 @@ class ReportTemplates:
 {% if process_health_metrics.wip_analysis %}
 <div class="chart-container">
     <h2>Work In Progress</h2>
+    <div class="chart-description">
+        <strong>What it shows:</strong> Current work items in each workflow state.<br>
+        <strong>Why it matters:</strong> Too much WIP reduces flow and increases cycle time.<br>
+        <strong>What to look for:</strong> WIP exceeding limits (red bars) or uneven distribution suggesting bottlenecks.
+    </div>
     <div id="wip-by-status"></div>
 </div>
 {% endif %}
@@ -220,11 +319,21 @@ class ReportTemplates:
 {% if process_health_metrics.sprint_health %}
 <div class="chart-container">
     <h2>Sprint Completion Trend</h2>
+    <div class="chart-description">
+        <strong>What it shows:</strong> Percentage of committed work completed each sprint.<br>
+        <strong>Why it matters:</strong> Measures planning accuracy and delivery predictability.<br>
+        <strong>What to look for:</strong> Consistent completion rates above 80% indicate mature planning. High variance suggests estimation issues.
+    </div>
     <div id="sprint-completion-trend"></div>
 </div>
 
 <div class="chart-container">
     <h2>Sprint Scope Changes</h2>
+    <div class="chart-description">
+        <strong>What it shows:</strong> Work added and removed during sprints.<br>
+        <strong>Why it matters:</strong> Excessive scope change disrupts team focus and predictability.<br>
+        <strong>What to look for:</strong> Net changes above 20% suggest planning or prioritization issues. The trend line shows if it's improving.
+    </div>
     <div id="sprint-scope-change"></div>
 </div>
 {% endif %}
@@ -232,6 +341,11 @@ class ReportTemplates:
 {% if process_health_metrics.blocked_items %}
 <div class="chart-container">
     <h2>Blocked Items by Severity</h2>
+    <div class="chart-description">
+        <strong>What it shows:</strong> Blocked work categorized by how long it's been blocked.<br>
+        <strong>Why it matters:</strong> Blocked items waste capacity and delay delivery.<br>
+        <strong>What to look for:</strong> High-severity blocks (>5 days) need immediate escalation.
+    </div>
     <div id="blocked-severity"></div>
 </div>
 {% endif %}
@@ -253,7 +367,7 @@ class ReportTemplates:
         Data quality score: {{ "%.0f"|format(reporting_capabilities.data_quality_score * 100) }}%
         {% if reporting_capabilities.unavailable_reports %}
         <span class="tooltip">
-            <span class="tooltip-icon">ⓘ</span>
+            <span class="tooltip-icon">i</span>
             <span class="tooltip-text">
                 <strong>Unavailable Reports:</strong><br>
                 {% for report_name, requirements in reporting_capabilities.unavailable_reports.items() %}
@@ -269,7 +383,7 @@ class ReportTemplates:
 <script>
     // Store chart data globally for toggling
     let storySizeCharts = {};
-    let currentChartType = 'pie';
+    let currentChartType = 'bar';
     
     // Render all charts
     {% for chart_id, chart_json in charts.items() %}
@@ -281,10 +395,10 @@ class ReportTemplates:
             bar: {{ chart_json.bar|safe }}
         };
         
-        // Render initial pie chart
-        if (storySizeCharts.pie) {
-            const pieData = storySizeCharts.pie;
-            Plotly.newPlot('story-size-breakdown', pieData.data, pieData.layout, {responsive: true});
+        // Render initial bar chart
+        if (storySizeCharts.bar) {
+            const barData = storySizeCharts.bar;
+            Plotly.newPlot('story-size-breakdown', barData.data, barData.layout, {responsive: true});
         }
         {% else %}
         // Regular chart rendering

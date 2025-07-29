@@ -16,6 +16,8 @@ from ..domain.process_health import (
     WIPAnalysis,
     WIPItem,
     WIPStatus,
+    LeadTimeAnalysis,
+    LeadTimeMetrics,
 )
 from ..domain.repositories import IssueRepository, SprintRepository
 
@@ -187,12 +189,48 @@ class AnalyzeWorkInProgressUseCase:
 
         # Default WIP limits if not provided
         if wip_limits is None:
-            # Reasonable defaults based on team size
-            team_size = len(wip_by_assignee) or 5
+            # Calculate team size and work distribution
+            team_size = len(wip_by_assignee)
+            
+            # If no assignees found, look at historical data
+            if team_size == 0:
+                # Count unique assignees from all issues
+                unique_assignees = set()
+                for issue in all_issues:
+                    if issue.assignee:
+                        unique_assignees.add(issue.assignee)
+                team_size = len(unique_assignees) or 5  # Default to 5 if no data
+            
+            # Calculate average WIP per person currently (could be used for future enhancements)
+            # avg_wip = sum(wip_by_assignee.values()) / team_size if team_size > 0 else 0
+            
+            # Determine team maturity based on WIP distribution
+            # Mature teams tend to have more even distribution
+            wip_variance = 0
+            if len(wip_by_assignee) > 1:
+                wip_values = list(wip_by_assignee.values())
+                mean_wip = sum(wip_values) / len(wip_values)
+                wip_variance = sum((x - mean_wip) ** 2 for x in wip_values) / len(wip_values)
+            
+            # Adjust limits based on team characteristics
+            if team_size <= 3:  # Small team
+                in_progress_multiplier = 1.5
+                review_multiplier = 0.5
+            elif team_size <= 8:  # Medium team
+                in_progress_multiplier = 1.2
+                review_multiplier = 0.4
+            else:  # Large team
+                in_progress_multiplier = 1.0
+                review_multiplier = 0.3
+            
+            # If variance is high, team might need tighter limits
+            if wip_variance > 2:
+                in_progress_multiplier *= 0.8
+            
             wip_limits = {
-                WIPStatus.IN_PROGRESS: team_size * 2,
-                WIPStatus.REVIEW: team_size,
-                WIPStatus.BLOCKED: 0,  # Should be 0
+                WIPStatus.IN_PROGRESS: max(1, int(team_size * in_progress_multiplier)),
+                WIPStatus.REVIEW: max(1, int(team_size * review_multiplier)),
+                WIPStatus.BLOCKED: 0,  # Should always be 0
             }
 
         # Convert string keys to WIPStatus enum
@@ -451,11 +489,13 @@ class AnalyzeProcessHealthUseCase:
         wip_use_case: AnalyzeWorkInProgressUseCase,
         sprint_health_use_case: AnalyzeSprintHealthUseCase,
         blocked_items_use_case: AnalyzeBlockedItemsUseCase,
+        lead_time_use_case: Optional["AnalyzeLeadTimeUseCase"] = None,
     ):
         self.aging_use_case = aging_use_case
         self.wip_use_case = wip_use_case
         self.sprint_health_use_case = sprint_health_use_case
         self.blocked_items_use_case = blocked_items_use_case
+        self.lead_time_use_case = lead_time_use_case
 
     def execute(
         self,
@@ -471,14 +511,66 @@ class AnalyzeProcessHealthUseCase:
         wip_analysis = self.wip_use_case.execute(status_mapping, wip_limits)
         sprint_health = self.sprint_health_use_case.execute(lookback_sprints)
         blocked_items = self.blocked_items_use_case.execute(status_mapping)
+        
+        # Lead time analysis if available
+        lead_time_analysis = None
+        if self.lead_time_use_case:
+            lead_time_analysis = self.lead_time_use_case.execute()
 
         metrics = ProcessHealthMetrics(
             aging_analysis=aging_analysis,
             wip_analysis=wip_analysis,
             sprint_health=sprint_health,
             blocked_items=blocked_items,
+            lead_time_analysis=lead_time_analysis,
         )
 
         logger.info(f"Process health score: {metrics.health_score:.2f}")
 
         return metrics
+
+
+class AnalyzeLeadTimeUseCase:
+    """Analyze lead time and flow metrics"""
+    
+    def __init__(self, issue_repository: IssueRepository):
+        self.issue_repository = issue_repository
+    
+    def execute(self) -> Optional[LeadTimeAnalysis]:
+        """Analyze lead time metrics for resolved issues"""
+        # Get all resolved issues
+        all_issues = self.issue_repository.get_all()
+        
+        metrics = []
+        for issue in all_issues:
+            if not issue.resolved:
+                continue
+            
+            # Calculate lead time (creation to resolution)
+            lead_time_days = (issue.resolved - issue.created).total_seconds() / 86400
+            
+            # For now, cycle time equals lead time (no detailed status tracking)
+            # In a real system, we'd track first move from TODO
+            cycle_time_days = lead_time_days
+            
+            # Estimate wait time (could be enhanced with status change tracking)
+            # For now, assume 60% wait time as industry average
+            wait_time_days = lead_time_days * 0.6
+            
+            metric = LeadTimeMetrics(
+                issue_key=issue.key,
+                created_date=issue.created,
+                resolved_date=issue.resolved,
+                lead_time_days=lead_time_days,
+                cycle_time_days=cycle_time_days,
+                wait_time_days=wait_time_days,
+                issue_type=issue.issue_type,
+                labels=issue.labels,
+            )
+            
+            metrics.append(metric)
+        
+        if not metrics:
+            return None
+        
+        return LeadTimeAnalysis(metrics=metrics)

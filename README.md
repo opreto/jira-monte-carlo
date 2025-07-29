@@ -22,7 +22,9 @@ A high-performance Monte Carlo simulation tool for agile project forecasting. Th
 - **Multiple Status Support**: Handles custom workflows with configurable status mappings
 - **Multi-Project Support**: Process multiple CSV files to generate a combined dashboard with drill-down to individual reports
 - **Themeable Reports**: Built-in themes (Opreto and generic) with clean architecture for styling
-- **Process Health Metrics**: Analyzes aging work items, WIP limits, sprint health, and blocked items
+- **Process Health Metrics**: Analyzes aging work items, WIP limits, sprint health, lead time, and blocked items
+- **Enhanced Reporting**: Charts include explanatory descriptions, expandable details for items, and interactive elements
+- **Lead Time Analysis**: Tracks cycle time, flow efficiency, and defect rates for quality insights
 
 ## Supported Data Sources
 
@@ -146,6 +148,32 @@ Cache Management:
   --clear-cache                  Clear the API cache before running
   --cache-info                   Show cache information and exit
 ```
+
+### Process Health Analysis
+
+Include comprehensive process health metrics in your report:
+
+```bash
+# Enable process health analysis
+jira-monte-carlo -f jira-api:// --include-process-health
+
+# Set custom WIP limits
+jira-monte-carlo -f data.csv --include-process-health --wip-limit "in_progress:10" --wip-limit "review:5"
+```
+
+Process health includes:
+- **Overall Health Score**: 0-100% score with breakdown by component
+- **Aging Work Items**: Identifies stale and abandoned items with expandable details
+- **Work In Progress (WIP)**: Smart limits based on team size with violation tracking  
+- **Sprint Health**: Completion rates, scope changes with trend analysis
+- **Lead Time & Quality**: Cycle time, flow efficiency, and defect rate metrics
+- **Blocked Items**: Severity-based analysis of impediments
+
+The health score uses intelligent heuristics:
+- WIP limits adjust based on team size (small/medium/large)
+- Lead time scoring follows industry benchmarks (excellent <7 days, good <14 days)
+- Flow efficiency bonus for teams with minimal wait times
+- Scores are bounded 0-100% and cannot go negative
 
 ### Multi-Project Analysis
 

@@ -607,3 +607,7 @@ class JiraApiDataSource:
         except Exception as e:
             logger.error(f"Error getting project info: {e}")
             return None
+    
+    def get_jql_query(self) -> str:
+        """Get the JQL query being used"""
+        return self._build_jql_query()

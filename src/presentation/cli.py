@@ -1,4 +1,5 @@
 import logging
+import os
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -18,6 +19,7 @@ from ..application.process_health_use_cases import (
     AnalyzeBlockedItemsUseCase,
     AnalyzeSprintHealthUseCase,
     AnalyzeWorkInProgressUseCase,
+    AnalyzeLeadTimeUseCase,
 )
 from ..application.style_service import StyleService
 from ..application.use_cases import (
@@ -532,12 +534,14 @@ def main(
             wip_use_case = AnalyzeWorkInProgressUseCase(issue_repo)
             sprint_health_use_case = AnalyzeSprintHealthUseCase(issue_repo, sprint_repo)
             blocked_items_use_case = AnalyzeBlockedItemsUseCase(issue_repo)
+            lead_time_use_case = AnalyzeLeadTimeUseCase(issue_repo)
 
             # Only run analyses for available capabilities
             aging_analysis = None
             wip_analysis = None
             sprint_health = None
             blocked_items = None
+            lead_time_analysis = None
 
             if reporting_capabilities.is_available(ReportType.AGING_WORK_ITEMS):
                 aging_analysis = aging_use_case.execute(status_mapping)
@@ -550,6 +554,9 @@ def main(
 
             if reporting_capabilities.is_available(ReportType.BLOCKED_ITEMS):
                 blocked_items = blocked_items_use_case.execute(status_mapping)
+            
+            # Always run lead time analysis - it's valuable and usually available
+            lead_time_analysis = lead_time_use_case.execute()
 
             # Create metrics directly
             from ..domain.process_health import ProcessHealthMetrics
@@ -559,6 +566,7 @@ def main(
                 wip_analysis=wip_analysis,
                 sprint_health=sprint_health,
                 blocked_items=blocked_items,
+                lead_time_analysis=lead_time_analysis,
             )
 
             console.print(f"[green]Process health score: {process_health_metrics.health_score:.0%}[/green]")
@@ -567,7 +575,9 @@ def main(
         console.print("\n[yellow]Generating HTML report...[/yellow]")
         style_service = StyleService()
         report_generator = HTMLReportGenerator(style_service, theme)
-        # Extract project name
+        # Extract project name, JQL query, and Jira URL
+        jql_query = None
+        jira_url = None
         if str(csv_path).startswith("jira-api:"):
             # For API sources, try to get project info
             analyze_use_case = AnalyzeDataSourceUseCase(data_source_factory)
@@ -579,6 +589,10 @@ def main(
                 project_name = f"Project {project_info['key']}"
             else:
                 project_name = "Jira Project"
+            # Get JQL query if available
+            jql_query = analysis_result.get("jql_query")
+            # Get Jira URL from environment
+            jira_url = os.getenv("JIRA_URL")
         else:
             # For file sources, use filename
             project_name = Path(csv_path).stem
@@ -600,6 +614,8 @@ def main(
             story_size_breakdown=story_size_breakdown,
             process_health_metrics=process_health_metrics,
             reporting_capabilities=reporting_capabilities,
+            jql_query=jql_query,
+            jira_url=jira_url,
         )
 
         console.print(f"\n[green]✓ Report generated: {report_path}[/green]")

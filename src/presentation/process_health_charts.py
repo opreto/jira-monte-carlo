@@ -386,6 +386,28 @@ class ProcessHealthChartGenerator:
                 hovertemplate="<b>%{x}</b><br>Removed: %{y:.0f} points<extra></extra>",
             )
         )
+        
+        # Calculate net change trend line
+        net_changes = [added - (-removed) for added, removed in zip(added_points, removed_points)]
+        
+        # Add trend line for net scope change
+        if len(sprint_names) > 1:
+            import numpy as np
+            x_numeric = list(range(len(sprint_names)))
+            z = np.polyfit(x_numeric, net_changes, 1)
+            p = np.poly1d(z)
+            trend_values = [p(x) for x in x_numeric]
+            
+            fig.add_trace(
+                go.Scatter(
+                    name="Net Change Trend",
+                    x=sprint_names,
+                    y=trend_values,
+                    mode="lines",
+                    line=dict(color=self.chart_colors["primary"], width=3, dash="dash"),
+                    hovertemplate="<b>%{x}</b><br>Trend: %{y:.1f} points<extra></extra>",
+                )
+            )
 
         fig.update_layout(
             title=dict(

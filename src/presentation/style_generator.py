@@ -260,6 +260,23 @@ a:hover {
     align-items: center;
 }
 
+/* Chart descriptions */
+.chart-description {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: rgba(var(--color-primary-rgb), 0.05);
+    border-radius: var(--border-radius-sm);
+    border-left: 3px solid var(--color-primary);
+}
+
+.chart-description strong {
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+
 /* Chart toggle buttons */
 .chart-toggle {
     display: inline-flex;
@@ -353,9 +370,19 @@ a:hover {
 }
 
 .tooltip-icon {
-    color: var(--color-info);
+    color: var(--color-primary);
     font-weight: bold;
     margin-left: 0.25rem;
+    font-size: 1.1rem;
+    cursor: help;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    border-radius: 50%;
+    background-color: rgba(var(--color-primary-rgb), 0.1);
+    border: 1px solid var(--color-primary);
 }
 
 .tooltip-text {
@@ -392,6 +419,97 @@ a:hover {
     border-width: 5px;
     border-style: solid;
     border-color: var(--color-surface) transparent transparent transparent;
+}
+
+/* JQL Query Display */
+.jql-query-container {
+    background: var(--color-surface);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-md);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.jql-query-container h3 {
+    margin-top: 0;
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.jql-query {
+    background-color: var(--color-background);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-md);
+    overflow-x: auto;
+    margin: 0;
+}
+
+.jql-query code {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Expandable Issue Details */
+.issue-details {
+    margin-top: var(--spacing-sm);
+}
+
+.issue-details summary {
+    outline: none;
+    user-select: none;
+    transition: color 0.2s;
+}
+
+.issue-details summary:hover {
+    color: var(--color-primary-dark);
+}
+
+.issue-details summary::-webkit-details-marker {
+    display: none;
+}
+
+.issue-details[open] summary {
+    margin-bottom: var(--spacing-sm);
+}
+
+.issue-list {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background-color: var(--color-background);
+    padding: var(--spacing-sm);
+}
+
+.issue-list table {
+    font-family: var(--font-family-body);
+}
+
+.issue-list th {
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+.issue-list tr:hover {
+    background-color: var(--color-surface);
+}
+
+.status-badge {
+    display: inline-block;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
 }"""
 
     def _generate_utility_styles(self) -> str:

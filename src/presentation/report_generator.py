@@ -38,6 +38,8 @@ class HTMLReportGenerator:
         story_size_breakdown: Optional[Dict[float, int]] = None,
         process_health_metrics: Optional[ProcessHealthMetrics] = None,
         reporting_capabilities: Optional[ReportingCapabilities] = None,
+        jql_query: Optional[str] = None,
+        jira_url: Optional[str] = None,
     ) -> Path:
         # Generate charts - handle None simulation_results
         charts = {}
@@ -143,6 +145,8 @@ class HTMLReportGenerator:
             "process_health_metrics": process_health_metrics,
             "process_health_charts": process_health_charts,
             "reporting_capabilities": reporting_capabilities,
+            "jql_query": jql_query,
+            "jira_url": jira_url,
         }
 
         # Render HTML

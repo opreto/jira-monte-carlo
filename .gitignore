@@ -70,9 +70,6 @@ dist/
 *.pdf
 opretostyleguide-1.pdf
 
-# Proprietary documentation
-"The Architect Handbook.md"
-
 # Data directory - only README allowed
 data/*
 !data/README.md

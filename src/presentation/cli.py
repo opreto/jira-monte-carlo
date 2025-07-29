@@ -693,9 +693,7 @@ def main(
         style_service = StyleService()
         report_generator = HTMLReportGenerator(style_service, theme)
 
-        # Import scenario report generator if needed
-        if velocity_scenario:
-                    # Extract project name, JQL query, and Jira URL
+        # Extract project name, JQL query, and Jira URL
         jql_query = None
         jira_url = None
         if str(csv_path).startswith("jira-api:"):

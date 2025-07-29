@@ -391,8 +391,6 @@ Each report includes:
 - Disclaimers on affected charts (e.g., "Note: Velocity adjusted by 70% for sprints 5-7")
 - Summary table comparing key metrics between scenarios
 
-```
-
 ## Architecture
 
 The project follows Clean Architecture principles:

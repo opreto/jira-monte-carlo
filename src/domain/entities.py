@@ -36,8 +36,14 @@ class Issue:
 
     @property
     def age(self) -> float:
-        end_date = self.resolved if self.resolved else datetime.now()
-        return (end_date - self.created).days
+        # Use timezone-naive datetime for consistency
+        end_date = self.resolved if self.resolved else datetime.now().replace(tzinfo=None)
+        if self.created and self.created.tzinfo:
+            # Remove timezone info if present
+            created = self.created.replace(tzinfo=None)
+        else:
+            created = self.created
+        return (end_date - created).days if created else 0
 
 
 @dataclass

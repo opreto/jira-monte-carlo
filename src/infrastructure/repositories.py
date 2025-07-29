@@ -63,7 +63,16 @@ class InMemorySprintRepository(SprintRepository):
         ]
 
     def get_last_n_sprints(self, n: int) -> List[Sprint]:
-        completed_sprints = [sprint for sprint in self.sprints if sprint.end_date and sprint.end_date < datetime.now()]
+        # Handle timezone-aware comparisons
+        now = datetime.now()
+        completed_sprints = []
+        for sprint in self.sprints:
+            if sprint.end_date:
+                # Make both dates timezone-naive for comparison
+                end_date = sprint.end_date.replace(tzinfo=None) if sprint.end_date.tzinfo else sprint.end_date
+                now_naive = now.replace(tzinfo=None)
+                if end_date < now_naive:
+                    completed_sprints.append(sprint)
         return completed_sprints[-n:] if len(completed_sprints) >= n else completed_sprints
 
 

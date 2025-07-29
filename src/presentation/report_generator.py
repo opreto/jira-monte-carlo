@@ -8,7 +8,10 @@ import plotly.graph_objects as go
 from ..application.style_service import StyleService
 from ..domain.entities import SimulationConfig, SimulationResult
 from ..domain.forecasting import ModelInfo
+from ..domain.process_health import ProcessHealthMetrics
+from ..domain.reporting_capabilities import ReportingCapabilities
 from ..domain.value_objects import HistoricalData, VelocityMetrics
+from .process_health_charts import ProcessHealthChartGenerator
 from .templates import ReportTemplates
 
 
@@ -20,6 +23,7 @@ class HTMLReportGenerator:
         self.chart_colors = self.style_generator.get_chart_colors()
         self.base_template = ReportTemplates.get_base_template()
         self.report_template = ReportTemplates.get_single_report_template()
+        self.process_health_charts = ProcessHealthChartGenerator(self.chart_colors)
 
     def generate(
         self,
@@ -32,6 +36,8 @@ class HTMLReportGenerator:
         project_name: Optional[str] = None,
         model_info: Optional["ModelInfo"] = None,
         story_size_breakdown: Optional[Dict[float, int]] = None,
+        process_health_metrics: Optional[ProcessHealthMetrics] = None,
+        reporting_capabilities: Optional[ReportingCapabilities] = None,
     ) -> Path:
         # Generate charts - handle None simulation_results
         charts = {}
@@ -76,6 +82,51 @@ class HTMLReportGenerator:
             empty_json = go.Figure().to_json()
             charts["story_size_breakdown"] = {"pie": empty_json, "bar": empty_json}
 
+        # Process health charts
+        process_health_charts = {}
+        if process_health_metrics:
+            # Aging analysis charts
+            if process_health_metrics.aging_analysis:
+                process_health_charts[
+                    "aging_distribution"
+                ] = self.process_health_charts.create_aging_distribution_chart(process_health_metrics.aging_analysis)
+                process_health_charts["aging_by_status"] = self.process_health_charts.create_aging_by_status_chart(
+                    process_health_metrics.aging_analysis
+                )
+
+            # WIP analysis charts
+            if process_health_metrics.wip_analysis:
+                process_health_charts["wip_by_status"] = self.process_health_charts.create_wip_by_status_chart(
+                    process_health_metrics.wip_analysis
+                )
+
+            # Sprint health charts
+            if process_health_metrics.sprint_health:
+                process_health_charts[
+                    "sprint_completion_trend"
+                ] = self.process_health_charts.create_sprint_health_trend_chart(process_health_metrics.sprint_health)
+                process_health_charts[
+                    "sprint_scope_change"
+                ] = self.process_health_charts.create_sprint_scope_change_chart(process_health_metrics.sprint_health)
+
+            # Blocked items charts
+            if process_health_metrics.blocked_items:
+                process_health_charts[
+                    "blocked_severity"
+                ] = self.process_health_charts.create_blocked_items_severity_chart(process_health_metrics.blocked_items)
+
+            # Overall health score
+            process_health_charts["health_score_gauge"] = self.process_health_charts.create_process_health_score_gauge(
+                process_health_metrics.health_score
+            )
+
+            # Health score breakdown
+            process_health_charts[
+                "health_score_breakdown"
+            ] = self.process_health_charts.create_health_score_breakdown_chart(
+                process_health_metrics.health_score_breakdown
+            )
+
         # Prepare data for template
         context = {
             "generation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -89,6 +140,9 @@ class HTMLReportGenerator:
             "percentiles": self._format_percentiles(simulation_results),
             "summary_stats": self._calculate_summary_stats(simulation_results, velocity_metrics, config),
             "model_info": model_info,
+            "process_health_metrics": process_health_metrics,
+            "process_health_charts": process_health_charts,
+            "reporting_capabilities": reporting_capabilities,
         }
 
         # Render HTML

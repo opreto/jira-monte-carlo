@@ -7,10 +7,17 @@ import polars as pl
 from rich.console import Console
 from rich.table import Table
 
+from ..application.capability_analyzer import AnalyzeCapabilitiesUseCase
 from ..application.csv_analysis import AnalyzeCSVStructureUseCase
 from ..application.forecasting_use_cases import GenerateForecastUseCase
 from ..application.import_data import AnalyzeDataSourceUseCase, ImportDataUseCase
 from ..application.multi_project_import import ProcessMultipleDataSourcesUseCase
+from ..application.process_health_use_cases import (
+    AnalyzeAgingWorkItemsUseCase,
+    AnalyzeBlockedItemsUseCase,
+    AnalyzeSprintHealthUseCase,
+    AnalyzeWorkInProgressUseCase,
+)
 from ..application.style_service import StyleService
 from ..application.use_cases import (
     AnalyzeHistoricalDataUseCase,
@@ -18,7 +25,6 @@ from ..application.use_cases import (
     CalculateVelocityUseCase,
     RunMonteCarloSimulationUseCase,
 )
-from ..domain.analysis import CSVAnalysisResult
 from ..domain.data_sources import DataSourceType
 from ..domain.entities import SimulationConfig
 from ..domain.forecasting import ModelType, MonteCarloConfiguration
@@ -108,6 +114,16 @@ logger = logging.getLogger(__name__)
     default="monte_carlo",
     help="Forecasting model to use (default: monte_carlo)",
 )
+@click.option(
+    "--include-process-health",
+    is_flag=True,
+    help="Include process health metrics in the report",
+)
+@click.option(
+    "--wip-limit",
+    multiple=True,
+    help="WIP limits in format 'status:limit' (e.g., 'in_progress:10')",
+)
 def main(
     csv_files: tuple,
     num_simulations: int,
@@ -131,6 +147,8 @@ def main(
     outlier_std_devs: float,
     min_velocity: float,
     model: str,
+    include_process_health: bool,
+    wip_limit: tuple,
 ):
     console.print("[bold blue]Statistical Forecasting Tool[/bold blue]")
 
@@ -409,29 +427,103 @@ def main(
                 sprint_names=sprint_names,
             )
 
-    # Generate report
-    console.print("\n[yellow]Generating HTML report...[/yellow]")
-    style_service = StyleService()
-    report_generator = HTMLReportGenerator(style_service, theme)
-    # Extract project name from CSV filename
-    project_name = Path(csv_path).stem
+        # Analyze capabilities and process health if requested
+        capabilities_use_case = AnalyzeCapabilitiesUseCase(
+            issue_repository=issue_repo,
+            sprint_repository=sprint_repo,
+            field_mapping=field_mapping,
+        )
+        reporting_capabilities = capabilities_use_case.execute()
 
-    report_path = report_generator.generate(
-        simulation_results=results,
-        velocity_metrics=velocity_metrics,
-        historical_data=historical_data,
-        remaining_work=remaining_work,
-        config=config,
-        output_path=Path(output),
-        project_name=project_name,
-        model_info=model_info,
-        story_size_breakdown=story_size_breakdown,
-    )
+        # Process health analysis
+        process_health_metrics = None
+        if include_process_health:
+            console.print("\n[yellow]Analyzing process health metrics...[/yellow]")
 
-    console.print(f"\n[green]✓ Report generated: {report_path}[/green]")
+            # Check if we have the required data for process health
+            from ..domain.reporting_capabilities import ReportType
 
-    # Show summary
-    show_simulation_summary(results)
+            if not reporting_capabilities.is_available(ReportType.AGING_WORK_ITEMS):
+                console.print("[red]Warning: Aging analysis not available - missing created date data[/red]")
+            if not reporting_capabilities.is_available(ReportType.WORK_IN_PROGRESS):
+                console.print("[red]Warning: WIP analysis not available - missing required fields[/red]")
+
+            # Parse WIP limits
+            parsed_wip_limits = {}
+            for limit_str in wip_limit:
+                if ":" in limit_str:
+                    status, limit = limit_str.split(":", 1)
+                    try:
+                        parsed_wip_limits[status] = int(limit)
+                    except ValueError:
+                        console.print(f"[red]Warning: Invalid WIP limit '{limit_str}'[/red]")
+
+            # Create process health use cases
+            aging_use_case = AnalyzeAgingWorkItemsUseCase(issue_repo)
+            wip_use_case = AnalyzeWorkInProgressUseCase(issue_repo)
+            sprint_health_use_case = AnalyzeSprintHealthUseCase(issue_repo, sprint_repo)
+            blocked_items_use_case = AnalyzeBlockedItemsUseCase(issue_repo)
+
+            # Only run analyses for available capabilities
+            aging_analysis = None
+            wip_analysis = None
+            sprint_health = None
+            blocked_items = None
+
+            if reporting_capabilities.is_available(ReportType.AGING_WORK_ITEMS):
+                aging_analysis = aging_use_case.execute(status_mapping)
+
+            if reporting_capabilities.is_available(ReportType.WORK_IN_PROGRESS):
+                wip_analysis = wip_use_case.execute(status_mapping, parsed_wip_limits)
+
+            if reporting_capabilities.is_available(ReportType.SPRINT_HEALTH):
+                sprint_health = sprint_health_use_case.execute(lookback_sprints)
+
+            if reporting_capabilities.is_available(ReportType.BLOCKED_ITEMS):
+                blocked_items = blocked_items_use_case.execute(status_mapping)
+
+            # Create metrics directly
+            from ..domain.process_health import ProcessHealthMetrics
+
+            process_health_metrics = ProcessHealthMetrics(
+                aging_analysis=aging_analysis,
+                wip_analysis=wip_analysis,
+                sprint_health=sprint_health,
+                blocked_items=blocked_items,
+            )
+
+            console.print(f"[green]Process health score: {process_health_metrics.health_score:.0%}[/green]")
+
+        # Generate report
+        console.print("\n[yellow]Generating HTML report...[/yellow]")
+        style_service = StyleService()
+        report_generator = HTMLReportGenerator(style_service, theme)
+        # Extract project name from CSV filename
+        project_name = Path(csv_path).stem
+
+        # Ensure output path is in reports directory
+        output_path = Path(output)
+        if not output_path.parent.exists():
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        report_path = report_generator.generate(
+            simulation_results=results,
+            velocity_metrics=velocity_metrics,
+            historical_data=historical_data,
+            remaining_work=remaining_work,
+            config=config,
+            output_path=output_path,
+            project_name=project_name,
+            model_info=model_info,
+            story_size_breakdown=story_size_breakdown,
+            process_health_metrics=process_health_metrics,
+            reporting_capabilities=reporting_capabilities,
+        )
+
+        console.print(f"\n[green]✓ Report generated: {report_path}[/green]")
+
+        # Show summary
+        show_simulation_summary(results)
 
 
 def process_multiple_csvs(
@@ -620,7 +712,7 @@ def show_simulation_summary(results):
     console.print(table)
 
 
-def analyze_csv_structure(csv_path: Path) -> CSVAnalysisResult:
+def analyze_csv_structure(csv_path: Path):
     """Analyze CSV structure to detect columns and patterns"""
     # Read CSV headers and sample rows
     df = pl.read_csv(csv_path, n_rows=1000)  # Read first 1000 rows for analysis

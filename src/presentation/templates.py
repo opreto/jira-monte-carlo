@@ -34,7 +34,11 @@ class ReportTemplates:
         """Get single project report template"""
         template_str = """
 <div class="header">
-    <h1>{% if model_info and model_info.report_title %}{{ model_info.report_title }}{% else %}Statistical Forecasting Report{% endif %}{% if project_name %}: {{ project_name }}{% endif %}</h1>
+    <h1>
+        {% if model_info and model_info.report_title %}{{ model_info.report_title }}
+        {% else %}Statistical Forecasting Report{% endif %}
+        {% if project_name %}: {{ project_name }}{% endif %}
+    </h1>
     {% if model_info and model_info.report_subtitle %}
     <p class="subtitle">{{ model_info.report_subtitle }}</p>
     {% endif %}
@@ -134,12 +138,110 @@ class ReportTemplates:
     </table>
 </div>
 
+{% if process_health_metrics %}
+<div class="chart-container">
+    <h2>Process Health Score</h2>
+    <div id="health-score-gauge"></div>
+    
+    <!-- Health Score Breakdown Chart -->
+    <div id="health-score-breakdown" style="margin-top: 20px;"></div>
+    
+    <!-- Health Score Breakdown Details -->
+    <div style="margin-top: 30px;">
+        <h3 style="margin-bottom: 15px;">Score Breakdown & Insights</h3>
+        {% for component in process_health_metrics.health_score_breakdown %}
+        <div style="margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.02); border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h4 style="margin: 0; font-size: 16px;">{{ component.name }}</h4>
+                <span style="font-size: 20px; font-weight: bold; 
+                    color: {% if component.score >= 0.8 %}#28a745
+                    {% elif component.score >= 0.6 %}#ffc107
+                    {% else %}#dc3545{% endif %};">
+                    {{ (component.score * 100)|round|int }}%
+                </span>
+            </div>
+            <p style="margin: 5px 0; color: #666; font-size: 14px;">{{ component.description }}</p>
+            
+            {% if component.insights %}
+            <div style="margin-top: 10px;">
+                <strong style="font-size: 14px;">Current State:</strong>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    {% for insight in component.insights %}
+                    <li style="font-size: 14px; color: #666;">{{ insight }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            {% if component.recommendations %}
+            <div style="margin-top: 10px;">
+                <strong style="font-size: 14px; color: #333;">Recommendations:</strong>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    {% for recommendation in component.recommendations %}
+                    <li style="font-size: 14px; color: #333; font-style: italic;">{{ recommendation }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% if process_health_metrics.aging_analysis %}
+<div class="chart-container">
+    <h2>Aging Work Items</h2>
+    <div id="aging-distribution"></div>
+</div>
+
+<div class="chart-container">
+    <h2>Average Age by Status</h2>
+    <div id="aging-by-status"></div>
+</div>
+{% endif %}
+
+{% if process_health_metrics.wip_analysis %}
+<div class="chart-container">
+    <h2>Work In Progress</h2>
+    <div id="wip-by-status"></div>
+</div>
+{% endif %}
+
+{% if process_health_metrics.sprint_health %}
+<div class="chart-container">
+    <h2>Sprint Completion Trend</h2>
+    <div id="sprint-completion-trend"></div>
+</div>
+
+<div class="chart-container">
+    <h2>Sprint Scope Changes</h2>
+    <div id="sprint-scope-change"></div>
+</div>
+{% endif %}
+
+{% if process_health_metrics.blocked_items %}
+<div class="chart-container">
+    <h2>Blocked Items by Severity</h2>
+    <div id="blocked-severity"></div>
+</div>
+{% endif %}
+{% endif %}
+
 <div class="footer">
-    <p>{% if model_info and model_info.name %}{{ model_info.name }}{% else %}Statistical Forecasting{% endif %} by Opreto Agile Analytics</p>
+    <p>
+        {% if model_info and model_info.name %}{{ model_info.name }}
+        {% else %}Statistical Forecasting{% endif %} by Opreto Agile Analytics
+    </p>
     {% if model_info and model_info.methodology_description %}
     <p>{{ model_info.methodology_description }}</p>
     {% endif %}
     <p>Based on {{ "{:,}".format(num_simulations) }} iterations • Analysis of historical data and velocity metrics</p>
+    {% if reporting_capabilities %}
+    <p><small>
+        Available reports: {{ reporting_capabilities.available_reports|length }} of {{ reporting_capabilities.all_reports|length }} • 
+        Data quality score: {{ "%.0f"|format(reporting_capabilities.data_quality_score * 100) }}%
+    </small></p>
+    {% endif %}
 </div>
 
 <script>
@@ -169,6 +271,16 @@ class ReportTemplates:
         {% endif %}
     } catch (e) {
         console.error('Error rendering chart {{ chart_id }}:', e);
+    }
+    {% endfor %}
+    
+    // Render process health charts
+    {% for chart_id, chart_json in process_health_charts.items() %}
+    try {
+        const phChartData = {{ chart_json|safe }};
+        Plotly.newPlot('{{ chart_id.replace("_", "-") }}', phChartData.data, phChartData.layout, {responsive: true});
+    } catch (e) {
+        console.error('Error rendering process health chart {{ chart_id }}:', e);
     }
     {% endfor %}
     
@@ -215,8 +327,13 @@ class ReportTemplates:
         """Get multi-project dashboard template"""
         template_str = """
 <div class="header">
-    <h1>{% if model_info and model_info.report_title %}Multi-Project {{ model_info.name }} Dashboard{% else %}Multi-Project Forecasting Dashboard{% endif %}</h1>
-    <p class="subtitle">{% if model_info and model_info.report_subtitle %}{{ model_info.report_subtitle }} • {% endif %}Analyzing {{ multi_report.projects|length }} projects • 
+    <h1>
+        {% if model_info and model_info.report_title %}Multi-Project {{ model_info.name }} Dashboard
+        {% else %}Multi-Project Forecasting Dashboard{% endif %}
+    </h1>
+    <p class="subtitle">
+        {% if model_info and model_info.report_subtitle %}{{ model_info.report_subtitle }} • {% endif %}
+        Analyzing {{ multi_report.projects|length }} projects • 
         Generated {{ multi_report.generated_at.strftime('%Y-%m-%d %H:%M') }}</p>
 </div>
 
@@ -344,7 +461,10 @@ class ReportTemplates:
 </script>
 
 <div class="footer">
-    <p>{% if model_info and model_info.methodology_description %}{{ model_info.methodology_description }}{% else %}Statistical Forecasting{% endif %} by Opreto Agile Analytics</p>
+    <p>
+        {% if model_info and model_info.methodology_description %}{{ model_info.methodology_description }}
+        {% else %}Statistical Forecasting{% endif %} by Opreto Agile Analytics
+    </p>
 </div>
 """
         return Template(template_str)

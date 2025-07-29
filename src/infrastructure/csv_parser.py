@@ -97,6 +97,7 @@ class JiraCSVParser:
             created = self._parse_date(row.get(self.field_mapping.created_field))
             if not created:
                 # Use a default date if created field is missing
+                # This will be detected by capability analyzer as fake data
                 created = datetime.now() - timedelta(days=365)  # Default to 1 year ago
 
             updated = self._parse_date(row.get(self.field_mapping.updated_field))

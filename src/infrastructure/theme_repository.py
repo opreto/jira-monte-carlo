@@ -1,4 +1,5 @@
 """Theme repository implementation"""
+
 import json
 from pathlib import Path
 from typing import Dict, Optional
@@ -350,9 +351,9 @@ class FileThemeRepository(ThemeRepository):
                 },
                 "info": {"hex": theme.colors.info.hex, "rgb": theme.colors.info.rgb, "name": theme.colors.info.name},
             },
-            "chart_colors": self._serialize_chart_colors(theme.colors.chart_colors)
-            if theme.colors.chart_colors
-            else None,
+            "chart_colors": (
+                self._serialize_chart_colors(theme.colors.chart_colors) if theme.colors.chart_colors else None
+            ),
             "typography": {
                 "heading1": self._serialize_typography(theme.typography.heading1),
                 "heading2": self._serialize_typography(theme.typography.heading2),

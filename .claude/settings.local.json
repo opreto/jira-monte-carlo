@@ -282,7 +282,9 @@
       "Bash(make:*)",
       "Bash(sed:*)",
       "Bash(chmod:*)",
-      "Bash(.venv/bin/pip install:*)"
+      "Bash(.venv/bin/pip install:*)",
+      "Bash(perl:*)",
+      "Bash(mypy:*)"
     ],
     "deny": []
   }

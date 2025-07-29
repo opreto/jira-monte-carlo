@@ -1,4 +1,5 @@
 """Domain entities for reporting capabilities based on available data"""
+
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Optional, Set
@@ -92,7 +93,7 @@ class ReportingCapabilities:
     def is_available(self, report_type: ReportType) -> bool:
         """Check if a report type is available"""
         return report_type in self.available_report_types
-    
+
     @property
     def unavailable_reports(self) -> Dict[str, List[str]]:
         """Get dictionary of unavailable reports and their missing fields"""
@@ -101,8 +102,8 @@ class ReportingCapabilities:
             if not report.is_available and report.missing_fields:
                 # Convert enum values to human-readable strings
                 missing_field_names = []
-                for field in report.missing_fields:
-                    field_name = field.value.replace('_', ' ').title()
+                for missing_field in report.missing_fields:
+                    field_name = missing_field.value.replace("_", " ").title()
                     missing_field_names.append(field_name)
                 unavailable[report.display_name] = missing_field_names
         return unavailable

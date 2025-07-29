@@ -3,6 +3,9 @@
 from datetime import datetime, timedelta
 from unittest.mock import Mock
 
+from src.application.process_health_use_cases import (
+    AnalyzeLeadTimeUseCase,
+)
 from src.domain.entities import Issue
 from src.domain.process_health import (
     AgingAnalysis,
@@ -11,9 +14,6 @@ from src.domain.process_health import (
     LeadTimeAnalysis,
     LeadTimeMetrics,
     ProcessHealthMetrics,
-)
-from src.application.process_health_use_cases import (
-    AnalyzeLeadTimeUseCase,
 )
 
 

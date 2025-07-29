@@ -1,4 +1,5 @@
 """Clean architecture compliant style service"""
+
 from typing import Any, Dict, Optional
 
 from ..domain.style_generation import StyleGenerator

@@ -1,4 +1,5 @@
 """Tests for data source abstraction"""
+
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch

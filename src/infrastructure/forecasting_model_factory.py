@@ -1,4 +1,5 @@
 """Factory implementation for forecasting models"""
+
 import logging
 from typing import Dict, List, Optional, Type
 

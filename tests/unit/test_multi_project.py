@@ -1,4 +1,5 @@
 """Tests for multi-project domain entities"""
+
 from datetime import datetime
 from pathlib import Path
 

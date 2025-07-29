@@ -1,4 +1,5 @@
 """Jira REST API data source implementation"""
+
 import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -6,7 +7,6 @@ from typing import Any, Dict, List, Optional, Tuple
 from ..domain.data_sources import DataSource, DataSourceInfo, DataSourceType
 from ..domain.entities import Issue, Sprint
 from ..domain.value_objects import FieldMapping
-
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,5 @@
 """Domain entities for styling and theming"""
+
 from dataclasses import dataclass
 from typing import Optional
 

@@ -1,4 +1,5 @@
 """Monte Carlo implementation of the forecasting model"""
+
 import logging
 import random
 import statistics

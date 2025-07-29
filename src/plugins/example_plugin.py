@@ -1,4 +1,5 @@
 """Example plugin showing how to extend report capabilities"""
+
 from typing import List, Optional, Set
 
 from ..application.capability_analyzer import ReportCapabilityChecker
@@ -13,16 +14,13 @@ from ..domain.reporting_capabilities import (
 
 class CustomSprintHealthChecker(ReportCapabilityChecker):
     """Custom sprint health capability checker with enhanced logic"""
-    
+
     def __init__(self, report_type: ReportType, base_capability: ReportCapability):
         self.report_type = report_type
         self.base_capability = base_capability
-    
+
     def check_availability(
-        self, 
-        issues: List[Issue], 
-        sprints: List[Sprint],
-        available_fields: Set[DataRequirement]
+        self, issues: List[Issue], sprints: List[Sprint], available_fields: Set[DataRequirement]
     ) -> Optional[ReportCapability]:
         """Enhanced sprint health availability check"""
         # Custom logic: Check if we have enough historical sprints
@@ -37,19 +35,19 @@ class CustomSprintHealthChecker(ReportCapabilityChecker):
                 missing_fields=set(),
                 degraded_mode=False,
             )
-        
+
         # Check standard requirements
         missing_required = self.base_capability.required_fields - available_fields
-        
+
         # Can run in degraded mode without sprint dates
         degraded_mode = False
         if DataRequirement.SPRINT_DATES in missing_required:
             # We can still analyze sprint health without exact dates
             missing_required.discard(DataRequirement.SPRINT_DATES)
             degraded_mode = True
-        
+
         is_available = len(missing_required) == 0
-        
+
         return ReportCapability(
             report_type=self.base_capability.report_type,
             display_name=self.base_capability.display_name,
@@ -65,10 +63,7 @@ class CustomSprintHealthChecker(ReportCapabilityChecker):
 def register_plugin():
     """Register this plugin's capability checkers"""
     # Register custom sprint health checker
-    report_plugin_registry.register(
-        ReportType.SPRINT_HEALTH,
-        CustomSprintHealthChecker
-    )
+    report_plugin_registry.register(ReportType.SPRINT_HEALTH, CustomSprintHealthChecker)
 
 
 # Auto-register when imported

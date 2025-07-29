@@ -70,6 +70,19 @@ uv pip install -e ".[dev]"
 
 Run the Monte Carlo simulation on your project data:
 
+**Option 1: Connect directly to Jira API (Recommended)**
+```bash
+# Set up .env file with your Jira credentials (see Jira API Integration section)
+
+# Analyze your project in real-time
+jira-monte-carlo -f jira-api://MYPROJECT -o forecast.html
+
+# Add velocity adjustments for vacation planning
+jira-monte-carlo -f jira-api://MYPROJECT \
+  --velocity-change "sprint:10,factor:0.7,reason:team vacation"
+```
+
+**Option 2: Use exported CSV/XML files**
 ```bash
 # Simplest usage - auto-detects format
 jira-monte-carlo -f export.csv
@@ -96,11 +109,14 @@ ATLASSIAN_API_TOKEN=your-api-token
 JIRA_PROJECT_KEY=PROJ
 EOF
 
-# Generate report from Jira API
+# Generate report from Jira API (uses JIRA_PROJECT_KEY from .env)
 jira-monte-carlo -f jira-api:// -o reports/forecast.html
 
-# Use a specific project
+# Use a specific project (overrides .env)
 jira-monte-carlo -f jira-api://PROJECT-KEY -o reports/forecast.html
+
+# Multiple projects in one dashboard
+jira-monte-carlo -f jira-api://PROJ1 -f jira-api://PROJ2 -o dashboard.html
 
 # Clear cache to fetch fresh data
 jira-monte-carlo --clear-cache
@@ -245,8 +261,26 @@ uv run python -m src.presentation.cli \
 
 ### Velocity Change Predictions (What-If Analysis)
 
-Model the impact of team changes, vacations, and scaling on your forecasts:
+Model the impact of team changes, vacations, and scaling on your forecasts. This feature works with CSV files and **especially well with the Jira API** for real-time forecasting:
 
+**Using with Jira API (Recommended):**
+```bash
+# Model vacation impact on live Jira data
+jira-monte-carlo -f jira-api://DM \
+  --velocity-change "sprint:17,factor:0.74,reason:vacations (1 engineer 3 days + 1 full sprint)"
+
+# Complex scenario with team scaling
+jira-monte-carlo -f jira-api://MYPROJECT \
+  --velocity-change "sprint:26,factor:0.8,reason:holidays" \
+  --team-change "sprint:27,change:+2,ramp:4" \
+  --velocity-change "sprint:27+,factor:1.2,reason:team scaled up"
+
+# Analyze impact on multiple projects
+jira-monte-carlo -f jira-api://PROJ1 -f jira-api://PROJ2 \
+  --velocity-change "sprint:10-12,factor:0.7,reason:summer vacation period"
+```
+
+**Using with CSV files:**
 ```bash
 # One person on vacation for sprint 3 (50% capacity reduction for small team)
 jira-monte-carlo -f data.csv \

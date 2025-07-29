@@ -1,4 +1,5 @@
 """Use cases for CSV analysis and field detection"""
+
 import logging
 import random
 import re

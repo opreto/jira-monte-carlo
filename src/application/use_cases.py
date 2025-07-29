@@ -148,9 +148,11 @@ class RunMonteCarloSimulationUseCase:
         return SimulationResult(
             percentiles=percentiles,
             mean_completion_date=forecast_result.expected_completion_date,
-            std_dev_days=statistics.stdev(forecast_result.sample_predictions)
-            if len(forecast_result.sample_predictions) > 1
-            else 0.0,
+            std_dev_days=(
+                statistics.stdev(forecast_result.sample_predictions)
+                if len(forecast_result.sample_predictions) > 1
+                else 0.0
+            ),
             probability_distribution=probability_distribution,
             completion_dates=completion_dates,
             confidence_intervals=confidence_intervals,

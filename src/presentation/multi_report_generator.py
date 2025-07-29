@@ -1,4 +1,5 @@
 """Multi-project HTML report generator"""
+
 from pathlib import Path
 from typing import Dict, Optional
 

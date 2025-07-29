@@ -1,4 +1,5 @@
 """Bootstrap module for dependency injection and application initialization"""
+
 from pathlib import Path
 from typing import Optional
 
@@ -15,9 +16,9 @@ from ..infrastructure.repositories import (
 )
 from ..infrastructure.theme_repository import FileThemeRepository
 from ..presentation.style_generator import StyleGenerator
+from .clean_style_service import CleanStyleService
 from .csv_adapters import EnhancedSprintExtractorAdapter
 from .csv_processing_factory import CSVProcessingFactory
-from .clean_style_service import CleanStyleService
 from .style_service_factory import StyleServiceFactory
 
 

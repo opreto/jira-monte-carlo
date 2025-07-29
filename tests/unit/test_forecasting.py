@@ -1,4 +1,5 @@
 """Tests for forecasting model abstraction"""
+
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 

@@ -43,7 +43,7 @@ class Issue:
                 end_date = end_date.replace(tzinfo=None)
         else:
             end_date = datetime.now().replace(tzinfo=None)
-            
+
         if self.created:
             created = self.created
             if created.tzinfo:

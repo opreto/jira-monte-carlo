@@ -1,4 +1,5 @@
 """HTML templates for reports"""
+
 from jinja2 import Template
 
 

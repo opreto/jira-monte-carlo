@@ -1,4 +1,5 @@
 """Domain entities and value objects for CSV analysis"""
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum

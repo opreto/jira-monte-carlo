@@ -1,4 +1,5 @@
 """Infrastructure implementation of CSV analysis with column aggregation"""
+
 import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple

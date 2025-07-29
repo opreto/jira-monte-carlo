@@ -1,4 +1,5 @@
 """Adapters to bridge infrastructure implementations with domain interfaces"""
+
 from datetime import datetime
 from typing import Dict, List
 
@@ -92,10 +93,10 @@ class EnhancedSprintExtractorAdapter(SprintExtractor):
         This adapter method converts the infrastructure call to match the interface.
         """
         # Import here to avoid circular dependency
-        from ..infrastructure.csv_analyzer import EnhancedSprintExtractor
-
         # Convert pandas to polars as expected by infrastructure
         import polars as pl
+
+        from ..infrastructure.csv_analyzer import EnhancedSprintExtractor
 
         df_polars = pl.from_pandas(df)
 

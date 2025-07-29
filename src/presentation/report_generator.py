@@ -90,9 +90,9 @@ class HTMLReportGenerator:
         if process_health_metrics:
             # Aging analysis charts
             if process_health_metrics.aging_analysis:
-                process_health_charts[
-                    "aging_distribution"
-                ] = self.process_health_charts.create_aging_distribution_chart(process_health_metrics.aging_analysis)
+                process_health_charts["aging_distribution"] = (
+                    self.process_health_charts.create_aging_distribution_chart(process_health_metrics.aging_analysis)
+                )
                 process_health_charts["aging_by_status"] = self.process_health_charts.create_aging_by_status_chart(
                     process_health_metrics.aging_analysis
                 )
@@ -105,18 +105,18 @@ class HTMLReportGenerator:
 
             # Sprint health charts
             if process_health_metrics.sprint_health:
-                process_health_charts[
-                    "sprint_completion_trend"
-                ] = self.process_health_charts.create_sprint_health_trend_chart(process_health_metrics.sprint_health)
-                process_health_charts[
-                    "sprint_scope_change"
-                ] = self.process_health_charts.create_sprint_scope_change_chart(process_health_metrics.sprint_health)
+                process_health_charts["sprint_completion_trend"] = (
+                    self.process_health_charts.create_sprint_health_trend_chart(process_health_metrics.sprint_health)
+                )
+                process_health_charts["sprint_scope_change"] = (
+                    self.process_health_charts.create_sprint_scope_change_chart(process_health_metrics.sprint_health)
+                )
 
             # Blocked items charts
             if process_health_metrics.blocked_items:
-                process_health_charts[
-                    "blocked_severity"
-                ] = self.process_health_charts.create_blocked_items_severity_chart(process_health_metrics.blocked_items)
+                process_health_charts["blocked_severity"] = (
+                    self.process_health_charts.create_blocked_items_severity_chart(process_health_metrics.blocked_items)
+                )
 
             # Overall health score
             process_health_charts["health_score_gauge"] = self.process_health_charts.create_process_health_score_gauge(
@@ -124,10 +124,10 @@ class HTMLReportGenerator:
             )
 
             # Health score breakdown
-            process_health_charts[
-                "health_score_breakdown"
-            ] = self.process_health_charts.create_health_score_breakdown_chart(
-                process_health_metrics.health_score_breakdown
+            process_health_charts["health_score_breakdown"] = (
+                self.process_health_charts.create_health_score_breakdown_chart(
+                    process_health_metrics.health_score_breakdown
+                )
             )
 
         # Prepare data for template

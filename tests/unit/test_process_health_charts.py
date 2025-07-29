@@ -1,8 +1,9 @@
 """Tests for process health chart generation"""
 
-import pytest
 import json
 from datetime import datetime, timedelta
+
+import pytest
 
 from src.domain.process_health import (
     AgingAnalysis,

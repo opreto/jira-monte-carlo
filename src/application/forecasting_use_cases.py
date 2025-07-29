@@ -1,4 +1,5 @@
 """Use cases for forecasting using the model abstraction"""
+
 import logging
 from typing import Optional
 

@@ -1,4 +1,5 @@
 """Jira CSV data source implementation"""
+
 import csv
 import logging
 from datetime import timedelta

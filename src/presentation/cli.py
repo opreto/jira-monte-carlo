@@ -9,17 +9,17 @@ from rich.console import Console
 from rich.table import Table
 
 from ..application.capability_analyzer import AnalyzeCapabilitiesUseCase
-from ..application.plugin_registry import report_plugin_registry
 from ..application.csv_analysis import AnalyzeCSVStructureUseCase
 from ..application.forecasting_use_cases import GenerateForecastUseCase
 from ..application.import_data import AnalyzeDataSourceUseCase, ImportDataUseCase
 from ..application.multi_project_import import ProcessMultipleDataSourcesUseCase
+from ..application.plugin_registry import report_plugin_registry
 from ..application.process_health_use_cases import (
     AnalyzeAgingWorkItemsUseCase,
     AnalyzeBlockedItemsUseCase,
+    AnalyzeLeadTimeUseCase,
     AnalyzeSprintHealthUseCase,
     AnalyzeWorkInProgressUseCase,
-    AnalyzeLeadTimeUseCase,
 )
 from ..application.style_service import StyleService
 from ..application.use_cases import (
@@ -38,11 +38,10 @@ from ..domain.entities import SimulationConfig
 from ..domain.forecasting import ModelType, MonteCarloConfiguration
 from ..domain.reporting_capabilities import REPORT_REQUIREMENTS
 from ..domain.value_objects import FieldMapping
-from ..domain.velocity_adjustments import VelocityAdjustment, TeamChange
-from ..infrastructure.velocity_adjustment_parser import VelocityAdjustmentParser
 from ..infrastructure.data_source_factory import DefaultDataSourceFactory
 from ..infrastructure.forecasting_model_factory import DefaultModelFactory
 from ..infrastructure.repositories import FileConfigRepository, InMemoryIssueRepository, InMemorySprintRepository
+from ..infrastructure.velocity_adjustment_parser import VelocityAdjustmentParser
 from .multi_report_generator import MultiProjectReportGenerator
 from .report_generator import HTMLReportGenerator
 
@@ -186,12 +185,13 @@ def main(
     cache_info: bool,
 ):
     console.print("[bold blue]Statistical Forecasting Tool[/bold blue]")
-    
+
     # Handle cache operations
     if cache_info or clear_cache:
         from ..infrastructure.cache import APICache
+
         cache = APICache()
-        
+
         if cache_info:
             # Show cache information
             info = cache.get_info()
@@ -200,26 +200,26 @@ def main(
             console.print(f"TTL: {info['ttl_hours']} hours")
             console.print(f"Entries: {info['num_entries']}")
             console.print(f"Total size: {info['total_size_mb']:.2f} MB")
-            
-            if info['entries']:
+
+            if info["entries"]:
                 cache_table = Table(title="Cached Entries")
                 cache_table.add_column("Key", style="cyan")
                 cache_table.add_column("Age (min)", style="magenta")
                 cache_table.add_column("Size (KB)", style="green")
                 cache_table.add_column("Status", style="yellow")
-                
-                for entry in info['entries']:
-                    status = "Expired" if entry['expired'] else "Valid"
+
+                for entry in info["entries"]:
+                    status = "Expired" if entry["expired"] else "Valid"
                     cache_table.add_row(
-                        entry['key'][:50] + "..." if len(entry['key']) > 50 else entry['key'],
-                        str(entry['age_minutes']),
+                        entry["key"][:50] + "..." if len(entry["key"]) > 50 else entry["key"],
+                        str(entry["age_minutes"]),
                         f"{entry['size_kb']:.1f}",
-                        status
+                        status,
                     )
-                
+
                 console.print(cache_table)
             return
-        
+
         if clear_cache:
             cache.clear()
             console.print("[green]✓ Cache cleared[/green]")
@@ -388,18 +388,18 @@ def main(
     # Run simulation
     model_info = model_factory.create(model_type).get_model_info()
     console.print(f"\n[yellow]Running {model_info.name} forecast...[/yellow]")
-    
+
     # Variables to track baseline and adjusted results
     baseline_results = None
     adjusted_results = None
-    
+
     # Parse velocity adjustments if provided
     velocity_scenario = None
     if velocity_change or team_change:
         parser = VelocityAdjustmentParser()
         adjustments = []
         team_changes = []
-        
+
         # Parse velocity changes
         for vc in velocity_change:
             try:
@@ -409,7 +409,7 @@ def main(
             except ValueError as e:
                 console.print(f"[red]Error parsing velocity change: {e}[/red]")
                 return
-        
+
         # Parse team changes
         for tc in team_change:
             try:
@@ -419,13 +419,11 @@ def main(
             except ValueError as e:
                 console.print(f"[red]Error parsing team change: {e}[/red]")
                 return
-        
+
         # Create scenario
         scenario_use_case = CreateVelocityScenarioUseCase()
         velocity_scenario = scenario_use_case.execute(
-            name="User Scenario",
-            velocity_adjustments=adjustments,
-            team_changes=team_changes
+            name="User Scenario", velocity_adjustments=adjustments, team_changes=team_changes
         )
 
     # Get sprint duration from actual sprint data if available
@@ -458,33 +456,36 @@ def main(
 
         # For now, use the new model abstraction for velocity scenarios
         if velocity_scenario:
-            console.print("\n[yellow]Note: Velocity scenarios are currently only supported with the new model abstraction[/yellow]")
+            console.print(
+                "\n[yellow]Note: Velocity scenarios are currently only supported "
+                "with the new model abstraction[/yellow]"
+            )
             # Fall through to new model abstraction path
             model_type = ModelType.MONTE_CARLO
             forecasting_model = model_factory.create(model_type)
             model_config = MonteCarloConfiguration(
-                num_simulations=num_simulations,
-                confidence_levels=[50, 70, 85, 95]
+                num_simulations=num_simulations, confidence_levels=[0.5, 0.7, 0.85, 0.95]
             )
-            
+
             # Apply velocity adjustments
             adjust_use_case = ApplyVelocityAdjustmentsUseCase(forecasting_model)
             baseline_result, adjusted_result = adjust_use_case.execute(
                 remaining_work, velocity_metrics, velocity_scenario, model_config
             )
-            
+
             # Store both results for dual report generation
             baseline_forecast = baseline_result
             adjusted_forecast = adjusted_result
-            
+
             # Use adjusted result as primary
             forecast_result = adjusted_result
-            
+
             # Convert both results to legacy SimulationResult format
             import statistics
             from datetime import datetime, timedelta
+
             from ..domain.entities import SimulationResult
-            
+
             # Helper function to convert forecast result
             def convert_to_legacy(forecast_result):
                 percentiles = {}
@@ -492,29 +493,30 @@ def main(
                 for interval in forecast_result.prediction_intervals:
                     percentiles[interval.confidence_level] = interval.predicted_value
                     confidence_intervals[interval.confidence_level] = (interval.lower_bound, interval.upper_bound)
-                
+
                 today = datetime.now()
                 completion_dates = [
-                    today + timedelta(days=int(s * sprint_duration)) 
-                    for s in forecast_result.sample_predictions[:100]
+                    today + timedelta(days=int(s * sprint_duration)) for s in forecast_result.sample_predictions[:100]
                 ]
-                
+
                 return SimulationResult(
                     percentiles=percentiles,
                     mean_completion_date=forecast_result.expected_completion_date,
-                    std_dev_days=statistics.stdev(forecast_result.sample_predictions)
-                    if len(forecast_result.sample_predictions) > 1
-                    else 0.0,
+                    std_dev_days=(
+                        statistics.stdev(forecast_result.sample_predictions)
+                        if len(forecast_result.sample_predictions) > 1
+                        else 0.0
+                    ),
                     probability_distribution=[],
                     completion_dates=completion_dates,
                     confidence_intervals=confidence_intervals,
                     completion_sprints=forecast_result.sample_predictions[:1000],
-                    model_info=forecast_result.model_info,
                 )
-            
+
             baseline_results = convert_to_legacy(baseline_forecast)
             adjusted_results = convert_to_legacy(adjusted_forecast)
             results = adjusted_results  # Use adjusted as primary
+            model_info = forecasting_model.get_model_info()
         else:
             simulation_use_case = RunMonteCarloSimulationUseCase(issue_repo)
             results = simulation_use_case.execute(remaining_work, velocity_metrics, config)
@@ -554,9 +556,11 @@ def main(
         results = SimulationResult(
             percentiles=percentiles,
             mean_completion_date=forecast_result.expected_completion_date,
-            std_dev_days=statistics.stdev(forecast_result.sample_predictions)
-            if len(forecast_result.sample_predictions) > 1
-            else 0.0,
+            std_dev_days=(
+                statistics.stdev(forecast_result.sample_predictions)
+                if len(forecast_result.sample_predictions) > 1
+                else 0.0
+            ),
             probability_distribution=[],  # Simplified for now
             completion_dates=completion_dates,
             confidence_intervals=confidence_intervals,
@@ -577,10 +581,7 @@ def main(
         # Sort sprints chronologically instead of by name for consistency with other charts
 
         # Sort sprints chronologically by start date to match sprint health charts
-        sorted_sprints = sorted(
-            sprints, 
-            key=lambda s: s.start_date if s.start_date else datetime.min
-        )
+        sorted_sprints = sorted(sprints, key=lambda s: s.start_date if s.start_date else datetime.min)
 
         for sprint in sorted_sprints:
             if hasattr(sprint, "completed_points") and sprint.completed_points > 0:
@@ -610,10 +611,8 @@ def main(
         for report_type, checker_class in report_plugin_registry.get_all_checkers().items():
             # Instantiate checker with appropriate base capability
             if report_type in REPORT_REQUIREMENTS:
-                registered_checkers[report_type] = checker_class(
-                    report_type, REPORT_REQUIREMENTS[report_type]
-                )
-        
+                registered_checkers[report_type] = checker_class(report_type, REPORT_REQUIREMENTS[report_type])
+
         capabilities_use_case = AnalyzeCapabilitiesUseCase(
             issue_repository=issue_repo,
             sprint_repository=sprint_repo,
@@ -624,7 +623,7 @@ def main(
 
         # Process health analysis - automatic based on data availability
         from ..domain.reporting_capabilities import ReportType
-        
+
         process_health_metrics = None
         # Always analyze process health - let the data availability determine what's shown
         # The --include-process-health flag is now deprecated but kept for compatibility
@@ -672,7 +671,7 @@ def main(
 
             if reporting_capabilities.is_available(ReportType.BLOCKED_ITEMS):
                 blocked_items = blocked_items_use_case.execute(status_mapping)
-            
+
             # Always run lead time analysis - it's valuable and usually available
             lead_time_analysis = lead_time_use_case.execute()
 
@@ -693,7 +692,7 @@ def main(
         console.print("\n[yellow]Generating HTML report...[/yellow]")
         style_service = StyleService()
         report_generator = HTMLReportGenerator(style_service, theme)
-        
+
         # Import scenario report generator if needed
         if velocity_scenario:
             from .scenario_report_generator import ScenarioReportGenerator
@@ -728,13 +727,11 @@ def main(
         if velocity_scenario and baseline_results and adjusted_results:
             # Generate dual reports for velocity scenarios
             scenario_generator = ScenarioReportGenerator(report_generator)
-            
+
             # Create comparison
             comparison_use_case = GenerateScenarioComparisonUseCase()
-            comparison = comparison_use_case.execute(
-                baseline_results, adjusted_results, velocity_scenario
-            )
-            
+            comparison = comparison_use_case.execute(baseline_results, adjusted_results, velocity_scenario)
+
             baseline_path, adjusted_path = scenario_generator.generate_reports(
                 baseline_results=baseline_results,
                 adjusted_results=adjusted_results,
@@ -753,7 +750,7 @@ def main(
                 jql_query=jql_query,
                 jira_url=jira_url,
             )
-            
+
             report_path = adjusted_path  # Use adjusted as primary
             console.print(f"\n[green]✓ Baseline report: {baseline_path}[/green]")
             console.print(f"[green]✓ Adjusted report: {adjusted_path}[/green]")
@@ -949,7 +946,7 @@ def show_simulation_summary(results, sprint_duration=None, has_reliable_sprint_d
     table = Table(title="Simulation Results Summary")
     table.add_column("Confidence Level", style="cyan")
     table.add_column("Sprints to Complete", style="magenta")
-    
+
     # Only show completion dates if we have reliable sprint duration data
     if sprint_duration and has_reliable_sprint_data:
         table.add_column("Completion Date", style="green")
@@ -964,14 +961,15 @@ def show_simulation_summary(results, sprint_duration=None, has_reliable_sprint_d
     # Display in confidence order
     for confidence, sprints in sorted(seen_sprints.values()):
         row_data = [f"{confidence*100:.0f}%", f"{sprints:.0f}"]
-        
+
         # Add date if we have reliable sprint duration
         if sprint_duration and has_reliable_sprint_data:
             from datetime import datetime, timedelta
+
             days = int(sprints * sprint_duration)
             date = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
             row_data.append(date)
-            
+
         table.add_row(*row_data)
 
     console.print(table)

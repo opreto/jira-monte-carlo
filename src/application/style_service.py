@@ -1,4 +1,5 @@
 """Application service for managing styles and themes"""
+
 from pathlib import Path
 from typing import Optional
 

@@ -1,4 +1,5 @@
 """Use cases for process health metrics analysis"""
+
 import logging
 from collections import defaultdict
 from datetime import datetime
@@ -10,17 +11,16 @@ from ..domain.process_health import (
     AgingItem,
     BlockedItem,
     BlockedItemsAnalysis,
+    LeadTimeAnalysis,
+    LeadTimeMetrics,
     ProcessHealthMetrics,
     SprintHealth,
     SprintHealthAnalysis,
     WIPAnalysis,
     WIPItem,
     WIPStatus,
-    LeadTimeAnalysis,
-    LeadTimeMetrics,
 )
 from ..domain.repositories import IssueRepository, SprintRepository
-
 
 logger = logging.getLogger(__name__)
 
@@ -191,7 +191,7 @@ class AnalyzeWorkInProgressUseCase:
         if wip_limits is None:
             # Calculate team size and work distribution
             team_size = len(wip_by_assignee)
-            
+
             # If no assignees found, look at historical data
             if team_size == 0:
                 # Count unique assignees from all issues
@@ -200,10 +200,10 @@ class AnalyzeWorkInProgressUseCase:
                     if issue.assignee:
                         unique_assignees.add(issue.assignee)
                 team_size = len(unique_assignees) or 5  # Default to 5 if no data
-            
+
             # Calculate average WIP per person currently (could be used for future enhancements)
             # avg_wip = sum(wip_by_assignee.values()) / team_size if team_size > 0 else 0
-            
+
             # Determine team maturity based on WIP distribution
             # Mature teams tend to have more even distribution
             wip_variance = 0
@@ -211,7 +211,7 @@ class AnalyzeWorkInProgressUseCase:
                 wip_values = list(wip_by_assignee.values())
                 mean_wip = sum(wip_values) / len(wip_values)
                 wip_variance = sum((x - mean_wip) ** 2 for x in wip_values) / len(wip_values)
-            
+
             # Adjust limits based on team characteristics
             if team_size <= 3:  # Small team
                 in_progress_multiplier = 1.5
@@ -222,11 +222,11 @@ class AnalyzeWorkInProgressUseCase:
             else:  # Large team
                 in_progress_multiplier = 1.0
                 review_multiplier = 0.3
-            
+
             # If variance is high, team might need tighter limits
             if wip_variance > 2:
                 in_progress_multiplier *= 0.8
-            
+
             wip_limits = {
                 WIPStatus.IN_PROGRESS: max(1, int(team_size * in_progress_multiplier)),
                 WIPStatus.REVIEW: max(1, int(team_size * review_multiplier)),
@@ -301,44 +301,45 @@ class AnalyzeSprintHealthUseCase:
         for sprint in sprints:
             # Use the sprint's own completed data
             completed_points = sprint.completed_points
-            
+
             # For committed points, we need to be smarter
             # The issue is that we don't have historical data about what was committed at sprint start
             # So we'll use a heuristic based on the completed work
-            
+
             if completed_points > 0:
                 # Without historical commitment data, we need to estimate
                 # Use a variable completion rate based on sprint performance
                 # Better performing sprints (higher velocity) tend to have better completion rates
-                
+
                 # Get average velocity for context
                 all_velocities = [s.completed_points for s in sprints if s.completed_points > 0]
                 avg_velocity = sum(all_velocities) / len(all_velocities) if all_velocities else 40.0
-                
+
                 # Calculate a completion rate that varies based on sprint performance
                 # Sprints with velocity close to average: ~80% completion
-                # High velocity sprints: ~85-90% completion  
+                # High velocity sprints: ~85-90% completion
                 # Low velocity sprints: ~60-75% completion
                 velocity_ratio = completed_points / avg_velocity if avg_velocity > 0 else 1.0
-                
+
                 if velocity_ratio > 1.2:  # High performing sprint
                     base_completion = 0.85 + (min(velocity_ratio - 1.2, 0.3) * 0.15)  # 85-90%
                 elif velocity_ratio < 0.8:  # Low performing sprint
                     base_completion = 0.60 + (velocity_ratio * 0.1875)  # 60-75%
                 else:  # Average sprint
                     base_completion = 0.75 + ((velocity_ratio - 0.8) * 0.25)  # 75-80%
-                
+
                 # Add some random variation (±5%)
                 import random
+
                 random.seed(hash(sprint.name))  # Consistent randomness per sprint
                 variation = (random.random() - 0.5) * 0.1
                 completion_rate_estimate = max(0.5, min(0.95, base_completion + variation))
-                
+
                 committed_points = completed_points / completion_rate_estimate
             else:
                 # Sprint completed nothing - assume some work was committed
                 committed_points = 20.0  # Default commitment
-            
+
             # For scope changes, use variable estimates based on sprint size
             # Larger sprints tend to have more scope changes
             scope_factor = min(completed_points / 50.0, 1.5) if completed_points > 0 else 1.0
@@ -511,7 +512,7 @@ class AnalyzeProcessHealthUseCase:
         wip_analysis = self.wip_use_case.execute(status_mapping, wip_limits)
         sprint_health = self.sprint_health_use_case.execute(lookback_sprints)
         blocked_items = self.blocked_items_use_case.execute(status_mapping)
-        
+
         # Lead time analysis if available
         lead_time_analysis = None
         if self.lead_time_use_case:
@@ -532,31 +533,31 @@ class AnalyzeProcessHealthUseCase:
 
 class AnalyzeLeadTimeUseCase:
     """Analyze lead time and flow metrics"""
-    
+
     def __init__(self, issue_repository: IssueRepository):
         self.issue_repository = issue_repository
-    
+
     def execute(self) -> Optional[LeadTimeAnalysis]:
         """Analyze lead time metrics for resolved issues"""
         # Get all resolved issues
         all_issues = self.issue_repository.get_all()
-        
+
         metrics = []
         for issue in all_issues:
             if not issue.resolved:
                 continue
-            
+
             # Calculate lead time (creation to resolution)
             lead_time_days = (issue.resolved - issue.created).total_seconds() / 86400
-            
+
             # For now, cycle time equals lead time (no detailed status tracking)
             # In a real system, we'd track first move from TODO
             cycle_time_days = lead_time_days
-            
+
             # Estimate wait time (could be enhanced with status change tracking)
             # For now, assume 60% wait time as industry average
             wait_time_days = lead_time_days * 0.6
-            
+
             metric = LeadTimeMetrics(
                 issue_key=issue.key,
                 created_date=issue.created,
@@ -567,10 +568,10 @@ class AnalyzeLeadTimeUseCase:
                 issue_type=issue.issue_type,
                 labels=issue.labels,
             )
-            
+
             metrics.append(metric)
-        
+
         if not metrics:
             return None
-        
+
         return LeadTimeAnalysis(metrics=metrics)

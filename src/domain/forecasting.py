@@ -1,4 +1,5 @@
 """Domain interfaces and entities for forecasting models"""
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime

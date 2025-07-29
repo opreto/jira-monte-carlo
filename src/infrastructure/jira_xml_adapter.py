@@ -159,4 +159,3 @@ class JiraXmlDataSourceAdapter(DataSource):
             reporter_field="reporter",
             labels_field="labels",
         )
-

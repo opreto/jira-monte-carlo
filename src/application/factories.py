@@ -1,4 +1,5 @@
 """Application layer factories for dependency injection"""
+
 from pathlib import Path
 from typing import Optional, Type
 

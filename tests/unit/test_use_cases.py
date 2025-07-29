@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from unittest.mock import Mock
 
-
 from src.application.use_cases import (
     AnalyzeHistoricalDataUseCase,
     CalculateRemainingWorkUseCase,

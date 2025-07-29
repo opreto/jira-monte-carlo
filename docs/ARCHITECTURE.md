@@ -223,6 +223,7 @@ classDiagram
 - `src/domain/repositories.py` - Repository interfaces
 - `src/domain/forecasting.py` - Forecasting model interfaces
 - `src/domain/process_health.py` - Process health analysis domain models
+- `src/domain/velocity_adjustments.py` - Velocity change prediction models
 
 #### Process Health Domain Models
 
@@ -245,6 +246,38 @@ The health scoring system uses bounded calculations (0-100%) with intelligent he
 - Flow efficiency bonus for teams with >70% active work time
 - WIP limits adjusted based on team size
 - Defect rate penalties for quality issues
+
+#### Velocity Change Prediction Domain Models
+
+The velocity change prediction system models team capacity changes:
+
+```python
+# Key domain models for velocity predictions
+- VelocityAdjustment: Models sprint-specific velocity changes
+  - sprint_start: First affected sprint
+  - sprint_end: Last affected sprint (None for "forever")
+  - factor: Velocity multiplier (0.5 = 50% capacity)
+  - reason: Optional description
+  
+- TeamChange: Models team size changes with ramp-up
+  - sprint: When the change occurs
+  - change: Number of people (+2, -1, etc.)
+  - productivity_curve: Linear, exponential, or step
+  - ramp_up_sprints: Time to reach full productivity
+  
+- VelocityScenario: Complete scenario with adjustments
+  - name: Scenario identifier
+  - velocity_adjustments: List of velocity changes
+  - team_changes: List of team size changes
+  - description: Human-readable summary
+```
+
+The system supports:
+- Single sprint adjustments (sprint:5)
+- Sprint ranges (sprint:5-10)
+- Permanent changes (sprint:5+)
+- Team scaling with productivity curves
+- Bounded adjustments (never negative)
 
 ### 2. Application Layer (Use Cases)
 
@@ -317,6 +350,7 @@ flowchart LR
 **Key Files:**
 - `src/application/use_cases.py` - Core business operations
 - `src/application/process_health_use_cases.py` - Process health analysis operations
+- `src/application/velocity_prediction_use_cases.py` - Velocity change prediction operations
 - `src/application/csv_processing_factory.py` - Factory for CSV processors
 - `src/application/bootstrap.py` - Dependency injection setup
 - `src/application/csv_adapters.py` - Adapters to bridge infrastructure with domain
@@ -402,6 +436,7 @@ classDiagram
 - `src/infrastructure/cache.py` - API response caching system
 - `src/infrastructure/repositories.py` - Repository implementations
 - `src/infrastructure/data_source_factory.py` - Factory for data sources
+- `src/infrastructure/velocity_adjustment_parser.py` - CLI parser for velocity changes
 
 ### 4. Presentation Layer (User Interface)
 
@@ -492,6 +527,7 @@ flowchart TB
 - `src/presentation/report_generator.py` - HTML report generation
 - `src/presentation/style_generator.py` - CSS generation from themes
 - `src/presentation/multi_project_report_generator.py` - Multi-project reports
+- `src/presentation/scenario_report_generator.py` - Dual report generation for scenarios
 
 ## Data Flow
 
@@ -513,6 +549,7 @@ sequenceDiagram
     User->>CLI: Run simulation command
     activate CLI
     CLI->>CLI: Parse arguments
+    Note over CLI: Parse velocity change flags if present
     CLI->>Bootstrap: Get dependencies
     activate Bootstrap
     Bootstrap->>Factory: Create CSV factory
@@ -552,9 +589,22 @@ sequenceDiagram
     Domain-->>UseCase: Return SimulationResult
     deactivate UseCase
     
+    opt Velocity Changes Present
+        CLI->>UseCase: Apply velocity adjustments
+        activate UseCase
+        UseCase->>Domain: Calculate adjusted metrics
+        Domain-->>UseCase: Return adjusted results
+        deactivate UseCase
+    end
+    
     UseCase-->>CLI: Return results
     CLI->>ReportGen: Generate HTML report
     activate ReportGen
+    opt Velocity Scenario
+        ReportGen->>ReportGen: Generate dual reports
+        Note over ReportGen: forecast-baseline.html
+        Note over ReportGen: forecast-adjusted.html
+    end
     ReportGen-->>CLI: Report generated
     deactivate ReportGen
     CLI-->>User: Display summary & save report
@@ -624,6 +674,26 @@ class MonteCarloModel(ForecastingModel):
 class ProbabilisticModel(ForecastingModel):
     def forecast(self, data: ForecastData) -> SimulationResult:
         # Alternative implementation
+```
+
+### 6. Command Pattern (Velocity Adjustments)
+Encapsulates velocity change requests as objects.
+
+```python
+@dataclass
+class VelocityAdjustment:
+    """Command object for velocity changes"""
+    sprint_start: int
+    sprint_end: Optional[int]  # None means forever
+    factor: float
+    reason: Optional[str]
+    
+    def applies_to_sprint(self, sprint_num: int) -> bool:
+        if sprint_num < self.sprint_start:
+            return False
+        if self.sprint_end is None:
+            return True
+        return sprint_num <= self.sprint_end
 ```
 
 ### 5. Dependency Injection
@@ -845,14 +915,34 @@ The system now supports plugin-driven capability detection through dependency in
 4. **Example Implementation**:
    See `src/plugins/example_plugin.py` for a complete example of a custom sprint health checker.
 
+### Adding Velocity Prediction Models
+1. Implement custom productivity curves
+2. Add new team change patterns
+3. Create specialized scenario types
+
 ### Other Extension Points
 - **Report Formats**: Implement `ReportGenerator` interface
 - **Chart Renderers**: Implement `ChartRenderer` interface
 - **Storage Backends**: Implement repository interfaces
 - **Work Classifiers**: Implement `WorkClassifier` interface
 - **Repository Analyzers**: Implement `RepositoryAnalyzer` interface
+- **Scenario Generators**: Create domain-specific scenarios
 
 ## Future Architecture Considerations
+
+### Velocity Change Prediction Enhancements
+- **Machine Learning Integration**
+  - Learn from historical vacation impacts
+  - Predict seasonal velocity patterns
+  - Team-specific productivity models
+- **Interactive Scenario Builder**
+  - Visual timeline editor
+  - Real-time forecast updates
+  - Scenario comparison tools
+- **Advanced Team Modeling**
+  - Skill-based capacity planning
+  - Cross-team dependencies
+  - Fractional allocation support
 
 ### Mobile-Friendly Output
 - Responsive chart generation abstraction

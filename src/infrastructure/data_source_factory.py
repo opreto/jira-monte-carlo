@@ -1,4 +1,5 @@
 """Data source factory implementation"""
+
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Type

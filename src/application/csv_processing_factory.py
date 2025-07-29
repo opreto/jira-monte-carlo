@@ -1,4 +1,5 @@
 """Factory for creating CSV processing components with clean architecture"""
+
 from typing import Dict, List, Optional, Type
 
 from ..domain.csv_processing import CSVAnalyzer, CSVParser, SprintExtractor

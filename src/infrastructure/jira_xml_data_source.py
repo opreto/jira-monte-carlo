@@ -282,4 +282,3 @@ class JiraXmlDataSource:
 
         logger.info(f"Detected custom fields: {field_mapping}")
         return field_mapping
-

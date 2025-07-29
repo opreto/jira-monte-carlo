@@ -1,4 +1,5 @@
 """Domain entities and value objects for multi-project/CSV support"""
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path

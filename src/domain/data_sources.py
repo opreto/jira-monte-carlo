@@ -1,4 +1,5 @@
 """Domain interfaces for data sources"""
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -92,7 +93,7 @@ class DataSourceFactory(ABC):
 @dataclass
 class IssueData:
     """Data transfer object for issue information during parsing"""
-    
+
     key: Optional[str] = None
     summary: Optional[str] = None
     issue_type: Optional[str] = None

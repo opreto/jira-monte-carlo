@@ -2,7 +2,6 @@ import csv
 import tempfile
 from pathlib import Path
 
-
 from src.domain.value_objects import FieldMapping
 from src.infrastructure.csv_parser import CSVFieldAnalyzer, JiraCSVParser
 

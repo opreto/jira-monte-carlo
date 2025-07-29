@@ -1,4 +1,5 @@
 """Factory for creating style service with proper dependency injection"""
+
 from pathlib import Path
 from typing import Optional
 

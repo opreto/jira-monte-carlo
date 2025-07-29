@@ -34,5 +34,5 @@ jobs:
     
     - name: Run Template Tests
       run: |
-        pip install pytest
+        pip install pytest pytest-cov
         pytest tests/test_template_validator.py -v

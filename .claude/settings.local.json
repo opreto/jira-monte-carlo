@@ -284,7 +284,8 @@
       "Bash(chmod:*)",
       "Bash(.venv/bin/pip install:*)",
       "Bash(perl:*)",
-      "Bash(mypy:*)"
+      "Bash(mypy:*)",
+      "Bash(git filter-branch:*)"
     ],
     "deny": []
   }

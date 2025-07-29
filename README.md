@@ -630,49 +630,30 @@ logging.basicConfig(level=logging.DEBUG)
 
 ### Recently Completed
 - ✅ Monte Carlo simulation engine
-- ✅ Multi-source data import (Jira, Linear)
-- ✅ Sprint velocity analysis
-- ✅ Beautiful HTML reports with charts
-- ✅ Multi-project dashboard
+- ✅ Multi-source data import (Jira, Linear, Jira XML)
+- ✅ Jira API direct integration with caching
+- ✅ Sprint velocity analysis with outlier detection
+- ✅ Beautiful HTML reports with interactive Plotly charts
+- ✅ Multi-project dashboard with drill-down reports
 - ✅ Sprint names on X-axis for velocity charts
 - ✅ Story size breakdown chart for remaining work
-- ✅ Process health metrics (aging, WIP, sprint health, blocked items)
-- ✅ Data source abstraction layer
-- ✅ Forecasting model abstraction
-- ✅ Clean architecture foundation (partially implemented)
+- ✅ Process health metrics (aging, WIP, sprint health, blocked items, lead time)
+- ✅ Data source abstraction layer (LADR-0001)
+- ✅ Forecasting model abstraction (LADR-0002)
+- ✅ Clean architecture refactoring (LADR-0003)
+- ✅ Velocity change prediction system (LADR-0004)
+- ✅ Plugin architecture with registry
+- ✅ Themeable reports (Opreto and generic themes)
+- ✅ Clickable issue links in reports
+- ✅ Health score visualization with gauges
 
 ### In Progress
-- 🚧 Clean Architecture Stabilization (LADR-0003)
 - 🚧 Additional analytics for scrum masters
-- 🚧 Velocity Change Prediction System
+- 🚧 Mobile-responsive report design
 
 ### Planned Features
 
-#### Phase 0: Velocity Change Prediction (Priority 0)
-- **Team Capacity Planning**
-  - Model velocity impact of planned vacations/PTO
-  - Predict velocity changes from team scaling (adding/removing members)
-  - Account for onboarding ramp-up periods for new team members
-  - Support for temporary resource allocation changes
-- **What-If Scenarios**
-  - Interactive velocity adjustment interface
-  - Visualize forecast impact of velocity changes
-  - Compare multiple scenarios side-by-side
-  - Export scenario comparisons for planning meetings
-- **Historical Pattern Recognition**
-  - Learn from past vacation/scaling impacts
-  - Seasonal velocity patterns (holidays, summer slowdowns)
-  - Team-specific productivity curves
-
-#### Phase 1: Architecture Stabilization (Priority 1)
-- **Clean Architecture Completion**
-  - Complete removal of infrastructure dependencies from application layer
-  - Implement consistent dependency injection throughout
-  - Document extension points for future features
-  - Create factory for CSV processing components
-  - Update CLI to use dependency injection consistently
-
-#### Phase 2: Mobile Experience (Priority 2)
+#### Phase 1: Mobile Experience (Priority 1)
 - **Responsive Design**
   - Implement responsive chart rendering
   - Create mobile-optimized templates
@@ -681,15 +662,17 @@ logging.basicConfig(level=logging.DEBUG)
   - Optimize data transfer for mobile networks
   - Progressive web app (PWA) capabilities
 
-#### Phase 3: Plugin Architecture (Priority 3)
-- **Extensibility Framework**
-  - Plugin system for new report types
-  - Report plugin registry
-  - Chart renderer abstraction
-  - Custom metric definitions
-  - Theme plugin support
+#### Phase 2: Architecture Improvements (Priority 2)
+- **Performance Optimizations**
+  - Parallel CSV processing for multi-file imports
+  - Caching for large datasets beyond API responses
+  - Incremental report updates
+- **Dependency Injection Refinement**
+  - Complete DI container implementation
+  - Remove remaining static dependencies
+  - Improve testability with better mocking
 
-#### Phase 4: Work Classification System (Priority 4)
+#### Phase 3: Work Classification System (Priority 3)
 - **Opreto Work Type Methodology**
   - Implement 7-type classification:
     - New Functionality (50-60% target)
@@ -775,10 +758,10 @@ logging.basicConfig(level=logging.DEBUG)
 
 #### Technical Improvements
 
-- **Performance Optimizations**
-  - Parallel CSV processing
-  - Caching for large datasets
-  - Incremental updates
+- **Performance & Scalability**
+  - Streaming processing for very large files
+  - Distributed simulation runs
+  - Real-time progress updates
 
 - **Data Source Expansion**
   - Azure DevOps integration

@@ -652,6 +652,58 @@ a:hover {
     background: #d97706;
     box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
+
+/* Combined Report Styles */
+.combined-banner {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    border-color: #6b7280;
+}
+.combined-banner h3 {
+    color: #374151;
+}
+.scenario-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.scenario-toggle {
+    display: flex;
+    gap: 20px;
+}
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+.toggle-label:hover {
+    background: #d1d5db;
+}
+.toggle-label input[type="radio"] {
+    cursor: pointer;
+}
+.toggle-label:has(input[type="radio"]:checked) {
+    background: #3b82f6;
+    color: white;
+}
+.scenario-description {
+    padding: 15px;
+    background: rgba(59, 130, 246, 0.05);
+    border-radius: 8px;
+    border-left: 4px solid #3b82f6;
+}
+.baseline-notice {
+    padding: 15px;
+    background: rgba(34, 197, 94, 0.05);
+    border-radius: 8px;
+    border-left: 4px solid #22c55e;
+}
 """
 
     def get_chart_colors(self) -> dict:

@@ -41,6 +41,7 @@ class HTMLReportGenerator:
         jql_query: Optional[str] = None,
         jira_url: Optional[str] = None,
         scenario_banner: Optional[str] = None,
+        combined_scenario_data: Optional[str] = None,
     ) -> Path:
         # Generate charts - handle None simulation_results
         charts = {}
@@ -149,6 +150,7 @@ class HTMLReportGenerator:
             "jql_query": jql_query,
             "jira_url": jira_url,
             "scenario_banner": scenario_banner,
+            "combined_scenario_data": combined_scenario_data,
         }
 
         # Render HTML

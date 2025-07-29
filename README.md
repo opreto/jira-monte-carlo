@@ -406,11 +406,55 @@ logging.basicConfig(level=logging.DEBUG)
 - ✅ Multi-project dashboard
 - ✅ Sprint names on X-axis for velocity charts
 - ✅ Story size breakdown chart for remaining work
+- ✅ Process health metrics (aging, WIP, sprint health, blocked items)
+- ✅ Data source abstraction layer
+- ✅ Forecasting model abstraction
+- ✅ Clean architecture foundation (partially implemented)
 
 ### In Progress
+- 🚧 Clean Architecture Stabilization (LADR-0003)
 - 🚧 Additional analytics for scrum masters
 
 ### Planned Features
+
+#### Phase 1: Architecture Stabilization (Priority 1)
+- **Clean Architecture Completion**
+  - Complete removal of infrastructure dependencies from application layer
+  - Implement consistent dependency injection throughout
+  - Document extension points for future features
+  - Create factory for CSV processing components
+  - Update CLI to use dependency injection consistently
+
+#### Phase 2: Mobile Experience (Priority 2)
+- **Responsive Design**
+  - Implement responsive chart rendering
+  - Create mobile-optimized templates
+  - Add server-side rendering for complex visualizations
+  - Support touch gestures for chart interaction
+  - Optimize data transfer for mobile networks
+  - Progressive web app (PWA) capabilities
+
+#### Phase 3: Plugin Architecture (Priority 3)
+- **Extensibility Framework**
+  - Plugin system for new report types
+  - Report plugin registry
+  - Chart renderer abstraction
+  - Custom metric definitions
+  - Theme plugin support
+
+#### Phase 4: Work Classification System (Priority 4)
+- **Opreto Work Type Methodology**
+  - Implement 7-type classification:
+    - New Functionality (50-60% target)
+    - Technical Debt (15-20% target)
+    - Maintenance & Support (~10% target)
+    - Research & Spikes (5-10% target)
+    - Experience Work (5-10% target)
+    - Platform/Infrastructure (5-10% target)
+    - Process & Quality (flexible)
+  - Work type distribution reports
+  - Alerts for allocation imbalances
+  - Historical trend analysis by work type
 
 #### Analytics & Metrics
 - **Sprint Health Metrics**
@@ -453,13 +497,36 @@ logging.basicConfig(level=logging.DEBUG)
   - Team capacity planning
   - Portfolio health dashboard
 
+#### Git Repository Integration
+- **Code-Level Insights**
+  - Repository analyzer interface design
+  - Git client abstraction (GitHub, GitLab, Bitbucket)
+  - Commit frequency and size metrics
+  - Branch lifetime analysis
+  - Code ownership mapping
+  - PR review engagement
+  - Test coverage trends
+  - Integration with issue tracking
+
+#### Opreto-Specific Features
+- **Architect Dashboard**
+  - Weekly architect overview
+  - Definition of Done compliance
+  - Team velocity by member
+  - Blockers requiring escalation
+  - Time tracking anomalies
+  - Executive sprint summaries
+  - Technical maturity scoring
+  - LADR compliance tracking
+
+- **Team Intelligence**
+  - Onboarding effectiveness metrics
+  - 30/60/90 day velocity curves
+  - Pairing frequency analysis
+  - Team composition optimization
+  - Skills gap identification
+
 #### Technical Improvements
-- **Clean Architecture Refactoring** (LADR-0003)
-  - Create domain interfaces for external dependencies
-  - Implement dependency injection
-  - Remove infrastructure imports from application layer
-  - Split large modules into single-responsibility components
-  - Improve testability with mockable interfaces
 
 - **Performance Optimizations**
   - Parallel CSV processing
@@ -501,7 +568,11 @@ logging.basicConfig(level=logging.DEBUG)
 - SaaS offering with team collaboration
 - Real-time Jira webhook integration
 - AI-powered insights and recommendations
-- Mobile app for on-the-go analytics
+- Native mobile apps for iOS/Android
+- ML-powered velocity predictions
+- Technical debt accumulation forecasting
+- Risk prediction based on patterns
+- Client value demonstration tools
 
 ## Contributing
 

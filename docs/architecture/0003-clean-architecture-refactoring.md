@@ -1,7 +1,8 @@
 # Clean Architecture Refactoring
 
 Date: 2025-07-27
-Status: PROPOSED
+Last Updated: 2025-07-29
+Status: IN_PROGRESS
 
 ## Context
 
@@ -12,18 +13,40 @@ During architectural review, several violations of Clean Architecture principles
 3. Direct instantiation of infrastructure components in application services
 4. Some modules have too many responsibilities (SRP violation)
 
-## Current Violations
+## Current State (as of 2025-07-29)
 
-### Dependency Rule Violations
+### Progress Made
 
-- `src/application/multi_project_use_cases.py` imports:
+1. **Domain Interfaces Created**:
+   - Repository interfaces (`IssueRepository`, `SprintRepository`, `ConfigRepository`)
+   - CSV processing interfaces (`CSVParser`, `CSVAnalyzer`, `SprintExtractor`)
+   - Forecasting interfaces (`ForecastingModel`, `ForecastingModelFactory`)
+   - Data source abstraction (`DataSource`, `DataSourceFactory`)
+   - Style generation interface (`StyleGenerator`)
+
+2. **New Domain Concepts Added**:
+   - Process health domain models
+   - Reporting capabilities system
+   - Multi-project support
+
+3. **Factory Pattern Implemented**:
+   - `DefaultDataSourceFactory` for data source management
+   - `DefaultModelFactory` for forecasting models
+
+### Remaining Violations
+
+#### Dependency Rule Violations
+
+- `src/application/multi_project_use_cases.py` still imports:
   - `..infrastructure.csv_parser.JiraCSVParser`
   - `..infrastructure.csv_analyzer.SmartCSVParser`
+  - `..infrastructure.repositories.EnhancedSprintExtractor`
 - `src/application/style_service.py` imports:
   - `..infrastructure.theme_repository.FileThemeRepository`
-  - `..presentation.style_generator.StyleGenerator`
 - `src/application/use_cases.py` imports:
   - `..infrastructure.monte_carlo_model.MonteCarloModel`
+- `src/application/multi_project_import.py` imports:
+  - `..infrastructure.repositories.InMemoryIssueRepository`
 
 ### SOLID Violations
 
@@ -104,11 +127,60 @@ use_case = ProcessCSVUseCase(parser)  # Uses interface
 
 ## Migration Plan
 
-1. Create new interfaces (DONE)
-2. Create clean versions of services
-3. Update infrastructure to implement interfaces
-4. Gradually migrate from old to new services
-5. Remove old implementations
+1. ✅ Create new interfaces (MOSTLY COMPLETE)
+2. 🔄 Create clean versions of services (IN PROGRESS)
+3. ✅ Update infrastructure to implement interfaces (MOSTLY COMPLETE)
+4. 🔄 Gradually migrate from old to new services (IN PROGRESS)
+5. ⏳ Remove old implementations (PENDING)
+
+## Future Architecture Considerations
+
+### Mobile-Friendly Output
+- Need responsive chart generation abstraction
+- Consider server-side rendering for complex visualizations
+- Separate mobile vs desktop template strategies
+- Chart library abstraction to support mobile-optimized renderers
+
+### Git Repository Analysis
+- New domain concept: `RepositoryAnalyzer` interface
+- Infrastructure: Git client abstraction (support multiple providers)
+- Domain models for commit data, branch metrics, code ownership
+- Integration with existing work type classification
+
+### Opreto-Specific Reporting
+- Work type classification system (feature/debt/maintenance/research/DevEx/infra/process)
+- LADR tracking and compliance metrics
+- Team composition and onboarding analytics
+- Definition of Done compliance tracking
+
+### Proposed Domain Extensions
+
+```python
+# src/domain/repository_analysis.py
+class RepositoryAnalyzer(ABC):
+    """Interface for analyzing git repositories"""
+    @abstractmethod
+    def analyze_commit_patterns(self, repo_path: str) -> CommitAnalysis:
+        pass
+    
+    @abstractmethod
+    def calculate_code_ownership(self, repo_path: str) -> OwnershipMap:
+        pass
+
+# src/domain/work_classification.py
+class WorkClassifier(ABC):
+    """Interface for classifying work items by type"""
+    @abstractmethod
+    def classify(self, issue: Issue) -> WorkType:
+        pass
+
+# src/domain/responsive_output.py
+class ResponsiveRenderer(ABC):
+    """Interface for device-adaptive rendering"""
+    @abstractmethod
+    def render(self, chart_data: ChartData, device_type: DeviceType) -> str:
+        pass
+```
 
 ## Consequences
 
@@ -118,13 +190,39 @@ use_case = ProcessCSVUseCase(parser)  # Uses interface
 - Better testability
 - Easier to add new data sources or output formats
 - Follows industry best practices
+- Clear extension points for future features
 
 ### Negative
 
 - Initial refactoring effort
 - Need to update existing code
 - Slightly more complex initialization
+- Some technical debt from partial implementation
+
+## Next Steps
+
+1. **Immediate (Sprint 1)**:
+   - Complete migration of remaining application layer violations
+   - Create factory for CSV processing components
+   - Update CLI to use dependency injection consistently
+
+2. **Short-term (Sprint 2-3)**:
+   - Add responsive rendering abstraction for mobile support
+   - Design repository analysis domain model
+   - Implement work classification system
+
+3. **Medium-term (Sprint 4-5)**:
+   - Full git integration architecture
+   - Advanced reporting plugin system
+   - Performance optimization for large datasets
+
+## Architecture Principles Going Forward
+
+1. **Plugin Architecture**: All new features should be pluggable
+2. **Mobile-First**: Consider responsive design in all new components
+3. **Analytics-Ready**: Domain models should support future ML/AI insights
+4. **Opreto-Aligned**: Architecture should reflect Opreto's engineering practices
 
 ## Status
 
-PROPOSED - Ready for implementation
+IN_PROGRESS - Core interfaces created, migration ongoing

@@ -231,34 +231,6 @@ The dashboard includes:
 - Workload distribution pie chart
 - Links to drill down into individual project reports
 
-### Example
-
-```bash
-# Simple usage with all defaults (recommended)
-uv run python -m src.presentation.cli --csv-file "All Work with Sprints (JIRA).csv"
-
-# Use generic theme instead of default Opreto theme
-uv run python -m src.presentation.cli --csv-file data.csv --theme generic
-
-# Override specific options while using other defaults
-uv run python -m src.presentation.cli \
-  --csv-file data/sprint-data.csv \
-  --lookback-sprints 12 \
-  --num-simulations 20000
-
-# Custom field mapping for non-standard Jira setup
-uv run python -m src.presentation.cli \
-  --csv-file jira-export.csv \
-  --story-points-field "Story Points" \
-  --sprint-field "Sprint Name" \
-  --done-statuses "Complete,Deployed"
-
-# Analyze CSV structure only
-uv run python -m src.presentation.cli \
-  --csv-file jira-export.csv \
-  --analyze-only
-```
-
 ### Velocity Change Predictions (What-If Analysis)
 
 Model the impact of team changes, vacations, and scaling on your forecasts. This feature works with CSV files and **especially well with the Jira API** for real-time forecasting:

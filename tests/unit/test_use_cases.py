@@ -75,13 +75,24 @@ class TestRunMonteCarloSimulationUseCase:
         issue_repo = Mock()
 
         velocity_metrics = VelocityMetrics(
-            average=20.0, median=20.0, std_dev=5.0, min_value=10.0, max_value=30.0, trend=0.5
+            average=20.0,
+            median=20.0,
+            std_dev=5.0,
+            min_value=10.0,
+            max_value=30.0,
+            trend=0.5,
         )
 
-        config = SimulationConfig(num_simulations=1000, confidence_levels=[0.5, 0.85, 0.95], sprint_duration_days=14)
+        config = SimulationConfig(
+            num_simulations=1000,
+            confidence_levels=[0.5, 0.85, 0.95],
+            sprint_duration_days=14,
+        )
 
         use_case = RunMonteCarloSimulationUseCase(issue_repo)
-        results = use_case.execute(remaining_work=100.0, velocity_metrics=velocity_metrics, config=config)
+        results = use_case.execute(
+            remaining_work=100.0, velocity_metrics=velocity_metrics, config=config
+        )
 
         # Assert structure
         assert len(results.percentiles) == 3
@@ -117,13 +128,21 @@ class TestCalculateRemainingWorkUseCase:
         issue_repo.get_by_status.return_value = issues
 
         use_case = CalculateRemainingWorkUseCase(issue_repo)
-        remaining = use_case.execute(todo_statuses=["To Do"], velocity_field="story_points")
+        remaining = use_case.execute(
+            todo_statuses=["To Do"], velocity_field="story_points"
+        )
 
         assert remaining == 40.0
 
     def test_calculate_remaining_work_count(self):
         issues = [
-            Issue(key=f"TEST-{i}", summary=f"Issue {i}", issue_type="Story", status="To Do", created=datetime.now())
+            Issue(
+                key=f"TEST-{i}",
+                summary=f"Issue {i}",
+                issue_type="Story",
+                status="To Do",
+                created=datetime.now(),
+            )
             for i in range(1, 6)
         ]
 

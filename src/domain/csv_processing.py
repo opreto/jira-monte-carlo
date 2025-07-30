@@ -29,13 +29,18 @@ class CSVAnalyzer(ABC):
         pass
 
     @abstractmethod
-    def extract_sprints(self, df: pd.DataFrame, field_mapping: FieldMapping) -> List[Sprint]:
+    def extract_sprints(
+        self, df: pd.DataFrame, field_mapping: FieldMapping
+    ) -> List[Sprint]:
         """Extract sprint information from CSV data"""
         pass
 
     @abstractmethod
     def extract_velocity(
-        self, df: pd.DataFrame, field_mapping: FieldMapping, config: VelocityAnalysisConfig
+        self,
+        df: pd.DataFrame,
+        field_mapping: FieldMapping,
+        config: VelocityAnalysisConfig,
     ) -> VelocityMetrics:
         """Extract velocity metrics from CSV data"""
         pass

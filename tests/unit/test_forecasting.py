@@ -5,7 +5,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.application.forecasting_use_cases import CompareForecastModelsUseCase, GenerateForecastUseCase
+from src.application.forecasting_use_cases import (
+    CompareForecastModelsUseCase,
+    GenerateForecastUseCase,
+)
 from src.domain.forecasting import (
     ForecastingModel,
     ForecastResult,
@@ -66,20 +69,27 @@ class TestModelConfiguration:
 
 class TestPredictionInterval:
     def test_prediction_interval_creation(self):
-        interval = PredictionInterval(confidence_level=0.85, lower_bound=2.0, predicted_value=3.0, upper_bound=5.0)
+        interval = PredictionInterval(
+            confidence_level=0.85, lower_bound=2.0, predicted_value=3.0, upper_bound=5.0
+        )
         assert interval.confidence_level == 0.85
         assert interval.lower_bound == 2.0
         assert interval.predicted_value == 3.0
         assert interval.upper_bound == 5.0
 
     def test_range_width(self):
-        interval = PredictionInterval(confidence_level=0.85, lower_bound=2.0, predicted_value=3.0, upper_bound=5.0)
+        interval = PredictionInterval(
+            confidence_level=0.85, lower_bound=2.0, predicted_value=3.0, upper_bound=5.0
+        )
         assert interval.range_width == 3.0
 
 
 class TestForecastResult:
     def test_forecast_result_creation(self):
-        intervals = [PredictionInterval(0.5, 2.0, 3.0, 4.0), PredictionInterval(0.85, 2.0, 4.0, 6.0)]
+        intervals = [
+            PredictionInterval(0.5, 2.0, 3.0, 4.0),
+            PredictionInterval(0.85, 2.0, 4.0, 6.0),
+        ]
         result = ForecastResult(
             prediction_intervals=intervals,
             expected_sprints=3.5,
@@ -92,9 +102,14 @@ class TestForecastResult:
         assert result.model_type == ModelType.MONTE_CARLO
 
     def test_get_prediction_at_confidence(self):
-        intervals = [PredictionInterval(0.5, 2.0, 3.0, 4.0), PredictionInterval(0.85, 2.0, 4.0, 6.0)]
+        intervals = [
+            PredictionInterval(0.5, 2.0, 3.0, 4.0),
+            PredictionInterval(0.85, 2.0, 4.0, 6.0),
+        ]
         result = ForecastResult(
-            prediction_intervals=intervals, expected_sprints=3.5, expected_completion_date=datetime.now()
+            prediction_intervals=intervals,
+            expected_sprints=3.5,
+            expected_completion_date=datetime.now(),
         )
 
         interval = result.get_prediction_at_confidence(0.5)
@@ -109,9 +124,14 @@ class TestForecastResult:
         assert interval is None
 
     def test_get_percentile(self):
-        intervals = [PredictionInterval(0.5, 2.0, 3.0, 4.0), PredictionInterval(0.85, 2.0, 4.0, 6.0)]
+        intervals = [
+            PredictionInterval(0.5, 2.0, 3.0, 4.0),
+            PredictionInterval(0.85, 2.0, 4.0, 6.0),
+        ]
         result = ForecastResult(
-            prediction_intervals=intervals, expected_sprints=3.5, expected_completion_date=datetime.now()
+            prediction_intervals=intervals,
+            expected_sprints=3.5,
+            expected_completion_date=datetime.now(),
         )
 
         assert result.get_percentile(0.5) == 3.0
@@ -133,7 +153,12 @@ class TestMonteCarloModel:
     def test_validate_inputs(self):
         model = MonteCarloModel()
         velocity_metrics = VelocityMetrics(
-            average=20.0, median=18.0, std_dev=5.0, min_value=10.0, max_value=30.0, trend=0.5
+            average=20.0,
+            median=18.0,
+            std_dev=5.0,
+            min_value=10.0,
+            max_value=30.0,
+            trend=0.5,
         )
 
         # Valid inputs
@@ -152,9 +177,16 @@ class TestMonteCarloModel:
     def test_forecast_basic(self):
         model = MonteCarloModel()
         velocity_metrics = VelocityMetrics(
-            average=20.0, median=18.0, std_dev=5.0, min_value=10.0, max_value=30.0, trend=0.5
+            average=20.0,
+            median=18.0,
+            std_dev=5.0,
+            min_value=10.0,
+            max_value=30.0,
+            trend=0.5,
         )
-        config = MonteCarloConfiguration(num_simulations=1000, confidence_levels=[0.5, 0.85])
+        config = MonteCarloConfiguration(
+            num_simulations=1000, confidence_levels=[0.5, 0.85]
+        )
 
         result = model.forecast(100.0, velocity_metrics, config)
 
@@ -168,9 +200,16 @@ class TestMonteCarloModel:
     def test_forecast_without_variance(self):
         model = MonteCarloModel()
         velocity_metrics = VelocityMetrics(
-            average=20.0, median=20.0, std_dev=0.0, min_value=20.0, max_value=20.0, trend=0.0
+            average=20.0,
+            median=20.0,
+            std_dev=0.0,
+            min_value=20.0,
+            max_value=20.0,
+            trend=0.0,
         )
-        config = MonteCarloConfiguration(num_simulations=100, use_historical_variance=False)
+        config = MonteCarloConfiguration(
+            num_simulations=100, use_historical_variance=False
+        )
 
         result = model.forecast(100.0, velocity_metrics, config)
 
@@ -236,7 +275,9 @@ class TestGenerateForecastUseCase:
         )
 
         mock_result = ForecastResult(
-            prediction_intervals=[], expected_sprints=3.0, expected_completion_date=datetime.now()
+            prediction_intervals=[],
+            expected_sprints=3.0,
+            expected_completion_date=datetime.now(),
         )
         mock_model.forecast.return_value = mock_result
 
@@ -298,7 +339,9 @@ class TestCompareForecastModelsUseCase:
         mock_model.get_model_info.return_value = model_info
 
         mock_result = ForecastResult(
-            prediction_intervals=[], expected_sprints=3.0, expected_completion_date=datetime.now()
+            prediction_intervals=[],
+            expected_sprints=3.0,
+            expected_completion_date=datetime.now(),
         )
         mock_model.forecast.return_value = mock_result
 
@@ -321,7 +364,9 @@ class TestCompareForecastModelsUseCase:
         # Mock model
         mock_model = Mock(spec=ForecastingModel)
         mock_result = ForecastResult(
-            prediction_intervals=[], expected_sprints=3.0, expected_completion_date=datetime.now()
+            prediction_intervals=[],
+            expected_sprints=3.0,
+            expected_completion_date=datetime.now(),
         )
 
         # Create a mock that handles the chained calls
@@ -332,7 +377,10 @@ class TestCompareForecastModelsUseCase:
         mock_factory.get_default_config.return_value = MonteCarloConfiguration()
 
         # Patch GenerateForecastUseCase
-        with patch("src.application.forecasting_use_cases.GenerateForecastUseCase", return_value=mock_use_case):
+        with patch(
+            "src.application.forecasting_use_cases.GenerateForecastUseCase",
+            return_value=mock_use_case,
+        ):
             use_case = CompareForecastModelsUseCase(mock_factory)
             velocity_metrics = VelocityMetrics(20, 18, 5, 10, 30, 0.5)
 

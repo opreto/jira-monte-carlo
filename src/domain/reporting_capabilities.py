@@ -122,7 +122,11 @@ REPORT_REQUIREMENTS: Dict[ReportType, ReportCapability] = {
         report_type=ReportType.VELOCITY_TREND,
         display_name="Velocity Trend",
         description="Historical velocity analysis with trends",
-        required_fields={DataRequirement.STATUS, DataRequirement.STORY_POINTS, DataRequirement.SPRINT},
+        required_fields={
+            DataRequirement.STATUS,
+            DataRequirement.STORY_POINTS,
+            DataRequirement.SPRINT,
+        },
         optional_fields={DataRequirement.SPRINT_DATES},
     ),
     ReportType.WORK_IN_PROGRESS: ReportCapability(
@@ -143,7 +147,11 @@ REPORT_REQUIREMENTS: Dict[ReportType, ReportCapability] = {
         report_type=ReportType.SPRINT_HEALTH,
         display_name="Sprint Health Metrics",
         description="Sprint completion rates and scope changes",
-        required_fields={DataRequirement.STATUS, DataRequirement.SPRINT, DataRequirement.STORY_POINTS},
+        required_fields={
+            DataRequirement.STATUS,
+            DataRequirement.SPRINT,
+            DataRequirement.STORY_POINTS,
+        },
         optional_fields={DataRequirement.SPRINT_DATES, DataRequirement.CREATED_DATE},
     ),
     ReportType.BLOCKED_ITEMS: ReportCapability(
@@ -171,14 +179,22 @@ REPORT_REQUIREMENTS: Dict[ReportType, ReportCapability] = {
         report_type=ReportType.CUMULATIVE_FLOW,
         display_name="Cumulative Flow Diagram",
         description="Work items by status over time",
-        required_fields={DataRequirement.STATUS, DataRequirement.CREATED_DATE, DataRequirement.UPDATED_DATE},
+        required_fields={
+            DataRequirement.STATUS,
+            DataRequirement.CREATED_DATE,
+            DataRequirement.UPDATED_DATE,
+        },
         optional_fields={DataRequirement.RESOLVED_DATE},
     ),
     ReportType.SPRINT_PREDICTABILITY: ReportCapability(
         report_type=ReportType.SPRINT_PREDICTABILITY,
         display_name="Sprint Predictability",
         description="Consistency of sprint velocity",
-        required_fields={DataRequirement.SPRINT, DataRequirement.STORY_POINTS, DataRequirement.STATUS},
+        required_fields={
+            DataRequirement.SPRINT,
+            DataRequirement.STORY_POINTS,
+            DataRequirement.STATUS,
+        },
         optional_fields={DataRequirement.SPRINT_DATES},
     ),
     ReportType.ESTIMATION_ACCURACY: ReportCapability(

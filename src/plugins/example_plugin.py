@@ -20,7 +20,10 @@ class CustomSprintHealthChecker(ReportCapabilityChecker):
         self.base_capability = base_capability
 
     def check_availability(
-        self, issues: List[Issue], sprints: List[Sprint], available_fields: Set[DataRequirement]
+        self,
+        issues: List[Issue],
+        sprints: List[Sprint],
+        available_fields: Set[DataRequirement],
     ) -> Optional[ReportCapability]:
         """Enhanced sprint health availability check"""
         # Custom logic: Check if we have enough historical sprints

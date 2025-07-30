@@ -12,10 +12,38 @@ class TestJiraCSVParser:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
             writer = csv.writer(f)
             writer.writerow(
-                ["Issue key", "Summary", "Issue Type", "Status", "Created", "Resolved", "Custom field (Story Points)"]
+                [
+                    "Issue key",
+                    "Summary",
+                    "Issue Type",
+                    "Status",
+                    "Created",
+                    "Resolved",
+                    "Custom field (Story Points)",
+                ]
             )
-            writer.writerow(["TEST-1", "Test Issue 1", "Story", "Done", "01/Jan/23 10:00 AM", "05/Jan/23 2:00 PM", "5"])
-            writer.writerow(["TEST-2", "Test Issue 2", "Bug", "In Progress", "02/Jan/23 11:00 AM", "", "3"])
+            writer.writerow(
+                [
+                    "TEST-1",
+                    "Test Issue 1",
+                    "Story",
+                    "Done",
+                    "01/Jan/23 10:00 AM",
+                    "05/Jan/23 2:00 PM",
+                    "5",
+                ]
+            )
+            writer.writerow(
+                [
+                    "TEST-2",
+                    "Test Issue 2",
+                    "Bug",
+                    "In Progress",
+                    "02/Jan/23 11:00 AM",
+                    "",
+                    "3",
+                ]
+            )
             temp_path = Path(f.name)
 
         try:
@@ -94,7 +122,11 @@ class TestJiraCSVParser:
     def test_parse_labels(self):
         parser = JiraCSVParser(FieldMapping())
 
-        assert parser._parse_labels("bug, frontend, urgent") == ["bug", "frontend", "urgent"]
+        assert parser._parse_labels("bug, frontend, urgent") == [
+            "bug",
+            "frontend",
+            "urgent",
+        ]
         assert parser._parse_labels("single") == ["single"]
         assert parser._parse_labels("") == []
         assert parser._parse_labels(None) == []

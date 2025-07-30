@@ -162,7 +162,10 @@ class TestHealthScoreEnhancements:
             )
 
         aging_analysis = AgingAnalysis(
-            items_by_category={AgingCategory.ABANDONED: aging_items, AgingCategory.NORMAL: []},
+            items_by_category={
+                AgingCategory.ABANDONED: aging_items,
+                AgingCategory.NORMAL: [],
+            },
             average_age_by_status={"In Progress": 105.0},
             oldest_items=aging_items[:3],
             blocked_items=[],
@@ -253,7 +256,9 @@ class TestHealthScoreNonNegative:
         health_metrics = ProcessHealthMetrics(lead_time_analysis=lead_time_analysis)
 
         breakdown = health_metrics.health_score_breakdown
-        lead_time_component = next((c for c in breakdown if c.name == "Lead Time & Quality"), None)
+        lead_time_component = next(
+            (c for c in breakdown if c.name == "Lead Time & Quality"), None
+        )
 
         assert lead_time_component is not None
         assert 0 <= lead_time_component.score <= 1  # Must be bounded
@@ -277,7 +282,9 @@ class TestHealthScoreNonNegative:
         health_metrics = ProcessHealthMetrics(lead_time_analysis=lead_time_analysis)
 
         breakdown = health_metrics.health_score_breakdown
-        lead_time_component = next((c for c in breakdown if c.name == "Lead Time & Quality"), None)
+        lead_time_component = next(
+            (c for c in breakdown if c.name == "Lead Time & Quality"), None
+        )
 
         # Should get bonus for excellent flow efficiency
         assert lead_time_component.score > 0.9

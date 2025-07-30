@@ -75,7 +75,9 @@ class DataSourceFactory(ABC):
     """Factory for creating data source instances"""
 
     @abstractmethod
-    def create(self, source_type: DataSourceType, field_mapping: Optional[FieldMapping] = None) -> DataSource:
+    def create(
+        self, source_type: DataSourceType, field_mapping: Optional[FieldMapping] = None
+    ) -> DataSource:
         """Create a data source instance"""
         pass
 

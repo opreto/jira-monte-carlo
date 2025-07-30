@@ -69,7 +69,9 @@ class ScenarioReportGenerator:
             output_path=adjusted_path,
             project_name=project_name,
             model_info=model_info,
-            scenario_banner=self._create_adjusted_banner(scenario, comparison, baseline_path),
+            scenario_banner=self._create_adjusted_banner(
+                scenario, comparison, baseline_path
+            ),
             **kwargs,
         )
 
@@ -87,7 +89,10 @@ class ScenarioReportGenerator:
         """
 
     def _create_adjusted_banner(
-        self, scenario: VelocityScenario, comparison: ScenarioComparison, baseline_path: Path
+        self,
+        scenario: VelocityScenario,
+        comparison: ScenarioComparison,
+        baseline_path: Path,
     ) -> str:
         """Create banner for adjusted report"""
         baseline_link = baseline_path.name

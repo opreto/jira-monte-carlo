@@ -19,7 +19,11 @@ logger = logging.getLogger(__name__)
 class GenerateForecastUseCase:
     """Generate forecast using configurable forecasting model"""
 
-    def __init__(self, forecasting_model: ForecastingModel, issue_repo: Optional[IssueRepository] = None):
+    def __init__(
+        self,
+        forecasting_model: ForecastingModel,
+        issue_repo: Optional[IssueRepository] = None,
+    ):
         """
         Initialize with a specific forecasting model
 
@@ -31,7 +35,10 @@ class GenerateForecastUseCase:
         self.issue_repo = issue_repo
 
     def execute(
-        self, remaining_work: float, velocity_metrics: VelocityMetrics, config: ModelConfiguration
+        self,
+        remaining_work: float,
+        velocity_metrics: VelocityMetrics,
+        config: ModelConfiguration,
     ) -> ForecastResult:
         """
         Generate forecast for remaining work
@@ -45,7 +52,9 @@ class GenerateForecastUseCase:
             ForecastResult with predictions
         """
         # Validate inputs
-        errors = self.forecasting_model.validate_inputs(remaining_work, velocity_metrics)
+        errors = self.forecasting_model.validate_inputs(
+            remaining_work, velocity_metrics
+        )
         if errors:
             raise ValueError(f"Invalid inputs for forecasting: {'; '.join(errors)}")
 
@@ -63,10 +72,15 @@ class GenerateForecastUseCase:
         )
 
         # Generate forecast
-        result = self.forecasting_model.forecast(remaining_work, velocity_metrics, config)
+        result = self.forecasting_model.forecast(
+            remaining_work, velocity_metrics, config
+        )
 
         # Log summary results
-        logger.info(f"Forecast complete: expected completion in " f"{result.expected_sprints:.1f} sprints")
+        logger.info(
+            f"Forecast complete: expected completion in "
+            f"{result.expected_sprints:.1f} sprints"
+        )
 
         return result
 
@@ -78,7 +92,10 @@ class CompareForecastModelsUseCase:
         self.model_factory = model_factory
 
     def execute(
-        self, remaining_work: float, velocity_metrics: VelocityMetrics, model_types: Optional[list[ModelType]] = None
+        self,
+        remaining_work: float,
+        velocity_metrics: VelocityMetrics,
+        model_types: Optional[list[ModelType]] = None,
     ) -> dict[ModelType, ForecastResult]:
         """
         Run multiple models and compare results

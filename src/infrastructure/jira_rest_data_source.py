@@ -14,7 +14,12 @@ logger = logging.getLogger(__name__)
 class JiraRESTDataSource(DataSource):
     """Data source for Jira REST API"""
 
-    def __init__(self, base_url: str, auth_token: str, field_mapping: Optional[FieldMapping] = None):
+    def __init__(
+        self,
+        base_url: str,
+        auth_token: str,
+        field_mapping: Optional[FieldMapping] = None,
+    ):
         """
         Initialize Jira REST data source
 

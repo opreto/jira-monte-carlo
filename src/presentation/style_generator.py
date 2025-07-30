@@ -46,9 +46,9 @@ class StyleGenerator:
     --color-info: {self.theme.colors.info.hex};
     
     /* RGB values for opacity */
-    --color-primary-rgb: {self.theme.colors.primary.rgb or '102, 126, 234'};
-    --color-secondary-rgb: {self.theme.colors.secondary.rgb or '78, 205, 196'};
-    --color-accent-rgb: {self.theme.colors.accent.rgb or '255, 107, 107'};
+    --color-primary-rgb: {self.theme.colors.primary.rgb or "102, 126, 234"};
+    --color-secondary-rgb: {self.theme.colors.secondary.rgb or "78, 205, 196"};
+    --color-accent-rgb: {self.theme.colors.accent.rgb or "255, 107, 107"};
     
     /* Spacing */
     --spacing-xs: {self.theme.spacing.xs};
@@ -100,7 +100,7 @@ h1 {{
     font-size: {self.theme.typography.heading1.font_size};
     font-weight: {self.theme.typography.heading1.font_weight};
     line-height: {self.theme.typography.heading1.line_height};
-    letter-spacing: {self.theme.typography.heading1.letter_spacing or 'normal'};
+    letter-spacing: {self.theme.typography.heading1.letter_spacing or "normal"};
     margin: 0 0 var(--spacing-md) 0;
     color: var(--color-text-primary);
 }}
@@ -110,7 +110,7 @@ h2 {{
     font-size: {self.theme.typography.heading2.font_size};
     font-weight: {self.theme.typography.heading2.font_weight};
     line-height: {self.theme.typography.heading2.line_height};
-    letter-spacing: {self.theme.typography.heading2.letter_spacing or 'normal'};
+    letter-spacing: {self.theme.typography.heading2.letter_spacing or "normal"};
     margin: 0 0 var(--spacing-md) 0;
     color: var(--color-text-primary);
 }}
@@ -135,7 +135,7 @@ h3 {{
     font-family: {self.theme.typography.button.font_family};
     font-size: {self.theme.typography.button.font_size};
     font-weight: {self.theme.typography.button.font_weight};
-    letter-spacing: {self.theme.typography.button.letter_spacing or 'normal'};
+    letter-spacing: {self.theme.typography.button.letter_spacing or "normal"};
 }}"""
 
     def _generate_component_styles(self) -> str:
@@ -752,7 +752,9 @@ a:hover {
                 "neutral": cc.neutral.hex,  # Blue/Gray = Neutral info
                 # RGBA functions for transparency
                 "high_confidence_rgba": lambda alpha: cc.high_confidence.to_rgba(alpha),
-                "medium_confidence_rgba": lambda alpha: cc.medium_confidence.to_rgba(alpha),
+                "medium_confidence_rgba": lambda alpha: cc.medium_confidence.to_rgba(
+                    alpha
+                ),
                 "low_confidence_rgba": lambda alpha: cc.low_confidence.to_rgba(alpha),
                 "neutral_rgba": lambda alpha: cc.neutral.to_rgba(alpha),
                 # Data visualization colors
@@ -790,7 +792,9 @@ a:hover {
                 "primary": self.theme.colors.primary.hex,
                 "primary_rgba": lambda alpha: self.theme.colors.primary.to_rgba(alpha),
                 "secondary": self.theme.colors.secondary.hex,
-                "secondary_rgba": lambda alpha: self.theme.colors.secondary.to_rgba(alpha),
+                "secondary_rgba": lambda alpha: self.theme.colors.secondary.to_rgba(
+                    alpha
+                ),
                 "accent": self.theme.colors.accent.hex,
                 "accent_rgba": lambda alpha: self.theme.colors.accent.to_rgba(alpha),
                 "success": self.theme.colors.success.hex,

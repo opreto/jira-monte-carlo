@@ -39,14 +39,18 @@ class VelocityAdjustment:
             sprint_range = "sprint after next"
         else:
             sprint_range = f"sprint +{self.sprint_start - 1}"
-            
+
         if self.sprint_end is None:
             sprint_range = f"from {sprint_range} onwards"
         elif self.sprint_end != self.sprint_start:
             if self.sprint_end == self.sprint_start + 1:
                 sprint_range = f"next {self.sprint_end - self.sprint_start + 1} sprints"
             else:
-                end_desc = f"sprint +{self.sprint_end - 1}" if self.sprint_end > 2 else "sprint after next"
+                end_desc = (
+                    f"sprint +{self.sprint_end - 1}"
+                    if self.sprint_end > 2
+                    else "sprint after next"
+                )
                 sprint_range = f"{sprint_range} through {end_desc}"
 
         percentage = int(self.factor * 100)
@@ -98,16 +102,14 @@ class TeamChange:
         else:
             sprint_desc = f"sprint +{self.sprint - 1}"
             after_desc = f"after sprint +{self.sprint - 1}"
-            
+
         if self.change > 0:
             return (
                 f"Adding {self.change} developer{'s' if self.change > 1 else ''} "
                 f"starting {sprint_desc} (ramp-up: {self.ramp_up_sprints} sprints)"
             )
         else:
-            return (
-                f"Removing {abs(self.change)} developer{'s' if abs(self.change) > 1 else ''} {after_desc}"
-            )
+            return f"Removing {abs(self.change)} developer{'s' if abs(self.change) > 1 else ''} {after_desc}"
 
 
 @dataclass
@@ -118,7 +120,9 @@ class VelocityScenario:
     adjustments: List[VelocityAdjustment]
     team_changes: List[TeamChange]
 
-    def get_adjusted_velocity(self, sprint_number: int, base_velocity: float, team_size: int) -> Tuple[float, str]:
+    def get_adjusted_velocity(
+        self, sprint_number: int, base_velocity: float, team_size: int
+    ) -> Tuple[float, str]:
         """
         Calculate adjusted velocity for a given sprint
         Returns: (adjusted_velocity, reason_description)
@@ -148,12 +152,16 @@ class VelocityScenario:
                     adjusted_velocity *= team_factor
 
                     if sprints_since < change.ramp_up_sprints:
-                        reasons.append(f"New team member(s) at {int(productivity * 100)}% productivity")
+                        reasons.append(
+                            f"New team member(s) at {int(productivity * 100)}% productivity"
+                        )
                     else:
                         reasons.append(f"Team scaled up by {change.change}")
                 else:
                     # Removing team members
-                    team_factor = (current_team_size + change.change) / current_team_size
+                    team_factor = (
+                        current_team_size + change.change
+                    ) / current_team_size
                     adjusted_velocity *= team_factor
                     reasons.append(f"Team reduced by {abs(change.change)}")
 
@@ -199,13 +207,21 @@ class ScenarioComparison:
 
         impact_parts = []
         if p50_diff > 0:
-            impact_parts.append(f"{p50_diff} sprint{'s' if p50_diff != 1 else ''} delay at 50% confidence")
+            impact_parts.append(
+                f"{p50_diff} sprint{'s' if p50_diff != 1 else ''} delay at 50% confidence"
+            )
         elif p50_diff < 0:
-            impact_parts.append(f"{abs(p50_diff)} sprint{'s' if abs(p50_diff) != 1 else ''} earlier at 50% confidence")
+            impact_parts.append(
+                f"{abs(p50_diff)} sprint{'s' if abs(p50_diff) != 1 else ''} earlier at 50% confidence"
+            )
 
         if p85_diff > 0:
-            impact_parts.append(f"{p85_diff} sprint{'s' if p85_diff != 1 else ''} delay at 85% confidence")
+            impact_parts.append(
+                f"{p85_diff} sprint{'s' if p85_diff != 1 else ''} delay at 85% confidence"
+            )
         elif p85_diff < 0:
-            impact_parts.append(f"{abs(p85_diff)} sprint{'s' if abs(p85_diff) != 1 else ''} earlier at 85% confidence")
+            impact_parts.append(
+                f"{abs(p85_diff)} sprint{'s' if abs(p85_diff) != 1 else ''} earlier at 85% confidence"
+            )
 
         return " and ".join(impact_parts)

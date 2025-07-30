@@ -288,7 +288,8 @@
       "Bash(git filter-branch:*)",
       "Bash(git branch:*)",
       "mcp__context7__resolve-library-id",
-      "mcp__context7__get-library-docs"
+      "mcp__context7__get-library-docs",
+      "Bash(ruff format:*)"
     ],
     "deny": []
   }

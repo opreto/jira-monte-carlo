@@ -65,7 +65,9 @@ class JiraXmlDataSource:
             # Create Sprint objects
             sprints = self._create_sprints(sprints_dict)
 
-            logger.info(f"Parsed {len(issues)} issues and {len(sprints)} sprints from XML")
+            logger.info(
+                f"Parsed {len(issues)} issues and {len(sprints)} sprints from XML"
+            )
             return issues, sprints
 
         except Exception as e:
@@ -236,7 +238,9 @@ class JiraXmlDataSource:
             completed_issues_list = [i for i in sprint_data["issues"] if i.resolved]
 
             # Calculate completed points
-            completed_points = sum(i.story_points or 0 for i in completed_issues_list if i.story_points)
+            completed_points = sum(
+                i.story_points or 0 for i in completed_issues_list if i.story_points
+            )
 
             sprint = Sprint(
                 name=sprint_name,
@@ -258,7 +262,12 @@ class JiraXmlDataSource:
         field_mapping = {}
 
         # Quick scan for custom field definitions
-        context = etree.iterparse(str(self.file_path), events=("start", "end"), tag="customfield", encoding="utf-8")
+        context = etree.iterparse(
+            str(self.file_path),
+            events=("start", "end"),
+            tag="customfield",
+            encoding="utf-8",
+        )
 
         for event, elem in context:
             if event == "end":

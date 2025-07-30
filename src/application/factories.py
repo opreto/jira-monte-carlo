@@ -65,7 +65,9 @@ class StyleServiceFactory:
         """Register style generator implementation"""
         self._style_generator_class = generator_class
 
-    def create_theme_repository(self, config_dir: Optional[Path] = None) -> ThemeRepository:
+    def create_theme_repository(
+        self, config_dir: Optional[Path] = None
+    ) -> ThemeRepository:
         """Create theme repository instance"""
         if not self._theme_repository_class:
             raise ValueError("No theme repository registered")

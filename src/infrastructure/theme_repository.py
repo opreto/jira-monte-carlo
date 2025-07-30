@@ -76,7 +76,9 @@ class FileThemeRepository(ThemeRepository):
             name="generic",
             colors=ColorPalette(
                 primary=Color(hex="#667eea", rgb="102, 126, 234", name="Purple"),
-                primary_dark=Color(hex="#764ba2", rgb="118, 75, 162", name="Dark Purple"),
+                primary_dark=Color(
+                    hex="#764ba2", rgb="118, 75, 162", name="Dark Purple"
+                ),
                 secondary=Color(hex="#4ecdc4", rgb="78, 205, 196", name="Teal"),
                 accent=Color(hex="#ff6b6b", rgb="255, 107, 107", name="Red"),
                 background=Color(hex="#f5f5f5", name="Light Gray"),
@@ -89,10 +91,18 @@ class FileThemeRepository(ThemeRepository):
                 info=Color(hex="#d1ecf1", name="Light Blue"),
                 chart_colors=ChartColors(
                     # Semantic colors for confidence levels
-                    high_confidence=Color(hex="#28a745", rgb="40, 167, 69", name="Success Green"),
-                    medium_confidence=Color(hex="#ffc107", rgb="255, 193, 7", name="Warning Amber"),
-                    low_confidence=Color(hex="#dc3545", rgb="220, 53, 69", name="Danger Red"),
-                    neutral=Color(hex="#6c757d", rgb="108, 117, 125", name="Neutral Gray"),
+                    high_confidence=Color(
+                        hex="#28a745", rgb="40, 167, 69", name="Success Green"
+                    ),
+                    medium_confidence=Color(
+                        hex="#ffc107", rgb="255, 193, 7", name="Warning Amber"
+                    ),
+                    low_confidence=Color(
+                        hex="#dc3545", rgb="220, 53, 69", name="Danger Red"
+                    ),
+                    neutral=Color(
+                        hex="#6c757d", rgb="108, 117, 125", name="Neutral Gray"
+                    ),
                     # Data series colors (colorblind-friendly)
                     data1=Color(hex="#667eea", rgb="102, 126, 234", name="Purple"),
                     data2=Color(hex="#4ecdc4", rgb="78, 205, 196", name="Teal"),
@@ -100,8 +110,12 @@ class FileThemeRepository(ThemeRepository):
                     data4=Color(hex="#feca57", rgb="254, 202, 87", name="Yellow"),
                     data5=Color(hex="#48dbfb", rgb="72, 219, 251", name="Light Blue"),
                     # Gradient colors
-                    gradient_start=Color(hex="#667eea", rgb="102, 126, 234", name="Purple"),
-                    gradient_mid=Color(hex="#a855f7", rgb="168, 85, 247", name="Mid Purple"),
+                    gradient_start=Color(
+                        hex="#667eea", rgb="102, 126, 234", name="Purple"
+                    ),
+                    gradient_mid=Color(
+                        hex="#a855f7", rgb="168, 85, 247", name="Mid Purple"
+                    ),
                     gradient_end=Color(hex="#ec4899", rgb="236, 72, 153", name="Pink"),
                 ),
             ),
@@ -162,9 +176,15 @@ class FileThemeRepository(ThemeRepository):
                 info=Color(hex="#D1ECF1", name="Light Blue"),
                 chart_colors=ChartColors(
                     # Semantic colors following BI best practices
-                    high_confidence=Color(hex="#00A86B", rgb="0, 168, 107", name="Jade Green"),
-                    medium_confidence=Color(hex="#FFA500", rgb="255, 165, 0", name="Orange"),
-                    low_confidence=Color(hex="#DC143C", rgb="220, 20, 60", name="Crimson"),
+                    high_confidence=Color(
+                        hex="#00A86B", rgb="0, 168, 107", name="Jade Green"
+                    ),
+                    medium_confidence=Color(
+                        hex="#FFA500", rgb="255, 165, 0", name="Orange"
+                    ),
+                    low_confidence=Color(
+                        hex="#DC143C", rgb="220, 20, 60", name="Crimson"
+                    ),
                     neutral=Color(hex="#03564c", rgb="3, 86, 76", name="Teal"),
                     # Data series colors (colorblind-friendly, professional)
                     data1=Color(hex="#03564c", rgb="3, 86, 76", name="Primary Teal"),
@@ -173,9 +193,13 @@ class FileThemeRepository(ThemeRepository):
                     data4=Color(hex="#FF8C00", rgb="255, 140, 0", name="Dark Orange"),
                     data5=Color(hex="#4B0082", rgb="75, 0, 130", name="Indigo"),
                     # Gradient colors for distributions
-                    gradient_start=Color(hex="#00A86B", rgb="0, 168, 107", name="Jade Green"),
+                    gradient_start=Color(
+                        hex="#00A86B", rgb="0, 168, 107", name="Jade Green"
+                    ),
                     gradient_mid=Color(hex="#FFA500", rgb="255, 165, 0", name="Orange"),
-                    gradient_end=Color(hex="#DC143C", rgb="220, 20, 60", name="Crimson"),
+                    gradient_end=Color(
+                        hex="#DC143C", rgb="220, 20, 60", name="Crimson"
+                    ),
                 ),
             ),
             typography=TypographySystem(
@@ -214,7 +238,9 @@ class FileThemeRepository(ThemeRepository):
                     letter_spacing="0.02em",
                 ),
             ),
-            spacing=Spacing(xs="0.25rem", sm="0.5rem", md="1rem", lg="2rem", xl="3rem", xxl="4rem"),
+            spacing=Spacing(
+                xs="0.25rem", sm="0.5rem", md="1rem", lg="2rem", xl="3rem", xxl="4rem"
+            ),
             shadows=Shadows(
                 sm="0 1px 3px rgba(2, 45, 44, 0.08)",
                 md="0 2px 6px rgba(2, 45, 44, 0.12)",
@@ -222,7 +248,12 @@ class FileThemeRepository(ThemeRepository):
                 xl="0 8px 24px rgba(2, 45, 44, 0.18)",
             ),
             borders=Borders(
-                radius_sm="4px", radius_md="8px", radius_lg="16px", radius_full="9999px", width="1px", color="#E5E7EB"
+                radius_sm="4px",
+                radius_md="8px",
+                radius_lg="16px",
+                radius_full="9999px",
+                width="1px",
+                color="#E5E7EB",
             ),
             custom_css="""
 /* Opreto Custom Styles */
@@ -349,10 +380,16 @@ class FileThemeRepository(ThemeRepository):
                     "rgb": theme.colors.error.rgb,
                     "name": theme.colors.error.name,
                 },
-                "info": {"hex": theme.colors.info.hex, "rgb": theme.colors.info.rgb, "name": theme.colors.info.name},
+                "info": {
+                    "hex": theme.colors.info.hex,
+                    "rgb": theme.colors.info.rgb,
+                    "name": theme.colors.info.name,
+                },
             },
             "chart_colors": (
-                self._serialize_chart_colors(theme.colors.chart_colors) if theme.colors.chart_colors else None
+                self._serialize_chart_colors(theme.colors.chart_colors)
+                if theme.colors.chart_colors
+                else None
             ),
             "typography": {
                 "heading1": self._serialize_typography(theme.typography.heading1),
@@ -370,7 +407,12 @@ class FileThemeRepository(ThemeRepository):
                 "xl": theme.spacing.xl,
                 "xxl": theme.spacing.xxl,
             },
-            "shadows": {"sm": theme.shadows.sm, "md": theme.shadows.md, "lg": theme.shadows.lg, "xl": theme.shadows.xl},
+            "shadows": {
+                "sm": theme.shadows.sm,
+                "md": theme.shadows.md,
+                "lg": theme.shadows.lg,
+                "xl": theme.shadows.xl,
+            },
             "borders": {
                 "radius_sm": theme.borders.radius_sm,
                 "radius_md": theme.borders.radius_md,
@@ -415,11 +457,31 @@ class FileThemeRepository(ThemeRepository):
                 "rgb": chart_colors.neutral.rgb,
                 "name": chart_colors.neutral.name,
             },
-            "data1": {"hex": chart_colors.data1.hex, "rgb": chart_colors.data1.rgb, "name": chart_colors.data1.name},
-            "data2": {"hex": chart_colors.data2.hex, "rgb": chart_colors.data2.rgb, "name": chart_colors.data2.name},
-            "data3": {"hex": chart_colors.data3.hex, "rgb": chart_colors.data3.rgb, "name": chart_colors.data3.name},
-            "data4": {"hex": chart_colors.data4.hex, "rgb": chart_colors.data4.rgb, "name": chart_colors.data4.name},
-            "data5": {"hex": chart_colors.data5.hex, "rgb": chart_colors.data5.rgb, "name": chart_colors.data5.name},
+            "data1": {
+                "hex": chart_colors.data1.hex,
+                "rgb": chart_colors.data1.rgb,
+                "name": chart_colors.data1.name,
+            },
+            "data2": {
+                "hex": chart_colors.data2.hex,
+                "rgb": chart_colors.data2.rgb,
+                "name": chart_colors.data2.name,
+            },
+            "data3": {
+                "hex": chart_colors.data3.hex,
+                "rgb": chart_colors.data3.rgb,
+                "name": chart_colors.data3.name,
+            },
+            "data4": {
+                "hex": chart_colors.data4.hex,
+                "rgb": chart_colors.data4.rgb,
+                "name": chart_colors.data4.name,
+            },
+            "data5": {
+                "hex": chart_colors.data5.hex,
+                "rgb": chart_colors.data5.rgb,
+                "name": chart_colors.data5.name,
+            },
             "gradient_start": {
                 "hex": chart_colors.gradient_start.hex,
                 "rgb": chart_colors.gradient_start.rgb,

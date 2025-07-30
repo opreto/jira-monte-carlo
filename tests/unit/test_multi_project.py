@@ -37,7 +37,12 @@ class TestProjectData:
             ),
         ]
 
-        project = ProjectData(name="Test Project", file_path=Path("test.csv"), issues=issues, remaining_work=8.0)
+        project = ProjectData(
+            name="Test Project",
+            file_path=Path("test.csv"),
+            issues=issues,
+            remaining_work=8.0,
+        )
 
         assert project.name == "Test Project"
         assert project.total_issues == 3
@@ -52,7 +57,10 @@ class TestProjectData:
         story_breakdown = {1.0: 5, 3.0: 3, 5.0: 2, 8.0: 1}
 
         project = ProjectData(
-            name="Test Project", file_path=Path("test.csv"), remaining_work=50.0, story_size_breakdown=story_breakdown
+            name="Test Project",
+            file_path=Path("test.csv"),
+            remaining_work=50.0,
+            story_size_breakdown=story_breakdown,
         )
 
         assert project.story_size_breakdown == story_breakdown
@@ -77,9 +85,13 @@ class TestAggregatedMetrics:
 class TestMultiProjectReport:
     def test_multi_project_report(self):
         # Create test projects
-        project1 = ProjectData(name="Project A", file_path=Path("a.csv"), remaining_work=50.0)
+        project1 = ProjectData(
+            name="Project A", file_path=Path("a.csv"), remaining_work=50.0
+        )
 
-        project2 = ProjectData(name="Project B", file_path=Path("b.csv"), remaining_work=75.0)
+        project2 = ProjectData(
+            name="Project B", file_path=Path("b.csv"), remaining_work=75.0
+        )
 
         # Create aggregated metrics
         metrics = AggregatedMetrics(
@@ -90,7 +102,9 @@ class TestMultiProjectReport:
             combined_velocity=30.0,
         )
 
-        report = MultiProjectReport(projects=[project1, project2], aggregated_metrics=metrics)
+        report = MultiProjectReport(
+            projects=[project1, project2], aggregated_metrics=metrics
+        )
 
         assert report.has_multiple_projects is True
         assert report.get_project_by_name("Project A") == project1

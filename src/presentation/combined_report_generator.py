@@ -47,18 +47,18 @@ class CombinedReportGenerator:
             historical_data,
             remaining_work,
             config,
-            "baseline"
+            "baseline",
         )
-        
+
         adjusted_data = self._prepare_chart_data(
             adjusted_results,
             velocity_metrics,
             historical_data,
             remaining_work,
             config,
-            "adjusted"
+            "adjusted",
         )
-        
+
         # Add summary stats to scenario data
         baseline_data["summary_stats"] = self.base_generator._calculate_summary_stats(
             baseline_results, velocity_metrics, config
@@ -72,7 +72,7 @@ class CombinedReportGenerator:
             "description": scenario.get_summary(),
             "comparison": comparison.get_impact_summary(),
             "adjustments": [adj.get_description() for adj in scenario.adjustments],
-            "team_changes": [tc.get_description() for tc in scenario.team_changes]
+            "team_changes": [tc.get_description() for tc in scenario.team_changes],
         }
 
         # Use the base generator but with modified data
@@ -80,7 +80,7 @@ class CombinedReportGenerator:
             "baseline": baseline_data,
             "adjusted": adjusted_data,
             "scenario": scenario_info,
-            "current_view": "adjusted"  # Default to showing adjusted view
+            "current_view": "adjusted",  # Default to showing adjusted view
         }
 
         # Generate the report with combined data
@@ -107,28 +107,36 @@ class CombinedReportGenerator:
         historical_data: list,
         remaining_work: float,
         config: SimulationConfig,
-        label: str
+        label: str,
     ) -> Dict[str, Any]:
         """Prepare chart data for a single scenario"""
         # Extract key metrics
         percentiles = results.percentiles
-        completion_sprints = results.completion_sprints[:1000] if results.completion_sprints else []
-        
+        completion_sprints = (
+            results.completion_sprints[:1000] if results.completion_sprints else []
+        )
+
         # Prepare probability distribution data
         prob_data = []
-        
+
         # First try to reconstruct from completion_sprints if available
         if completion_sprints:
             from collections import Counter
+
             sprint_counts = Counter(int(s) for s in completion_sprints)
             total = len(completion_sprints)
             for sprint in sorted(sprint_counts.keys()):
                 prob = sprint_counts[sprint] / total
                 prob_data.append({"sprint": sprint, "probability": prob})
-            logger.info(f"Reconstructed probability distribution from {len(completion_sprints)} completion sprints")
-        
+            logger.info(
+                f"Reconstructed probability distribution from {len(completion_sprints)} completion sprints"
+            )
+
         # Fallback to original probability_distribution if no completion sprints
-        elif hasattr(results, 'probability_distribution') and results.probability_distribution:
+        elif (
+            hasattr(results, "probability_distribution")
+            and results.probability_distribution
+        ):
             # Handle both dict and list formats
             if isinstance(results.probability_distribution, dict):
                 for sprint, prob in results.probability_distribution.items():
@@ -137,45 +145,57 @@ class CombinedReportGenerator:
                 prob_data.sort(key=lambda x: x["sprint"])
             else:
                 # If it's a list (legacy histogram format), skip it as it's not useful
-                logger.warning("Skipping legacy histogram format probability_distribution")
+                logger.warning(
+                    "Skipping legacy histogram format probability_distribution"
+                )
 
         # Prepare confidence intervals
         confidence_data = []
         for level, (lower, upper) in results.confidence_intervals.items():
-            confidence_data.append({
-                "level": int(level * 100),
-                "lower": lower,
-                "upper": upper,
-                "value": percentiles.get(level, 0)
-            })
+            confidence_data.append(
+                {
+                    "level": int(level * 100),
+                    "lower": lower,
+                    "upper": upper,
+                    "value": percentiles.get(level, 0),
+                }
+            )
 
         # Log what we're preparing
-        logger.info(f"Preparing {label} data - prob_data length: {len(prob_data)}, confidence_data length: {len(confidence_data)}")
-        if hasattr(results, 'probability_distribution'):
-            logger.info(f"{label} has probability_distribution attribute, type: {type(results.probability_distribution)}")
+        logger.info(
+            f"Preparing {label} data - prob_data length: {len(prob_data)}, confidence_data length: {len(confidence_data)}"
+        )
+        if hasattr(results, "probability_distribution"):
+            logger.info(
+                f"{label} has probability_distribution attribute, type: {type(results.probability_distribution)}"
+            )
         else:
             logger.warning(f"{label} missing probability_distribution attribute")
-        
+
         return {
             "label": label,
             "percentiles": {
                 "p50": percentiles.get(0.5, 0),
                 "p70": percentiles.get(0.7, 0),
                 "p85": percentiles.get(0.85, 0),
-                "p95": percentiles.get(0.95, 0)
+                "p95": percentiles.get(0.95, 0),
             },
             "completion_sprints": completion_sprints,
             "probability_distribution": prob_data,
             "confidence_intervals": confidence_data,
-            "mean_completion": results.mean_completion_date.isoformat() if results.mean_completion_date else None,
-            "std_dev_days": results.std_dev_days
+            "mean_completion": results.mean_completion_date.isoformat()
+            if results.mean_completion_date
+            else None,
+            "std_dev_days": results.std_dev_days,
         }
 
-    def _create_combined_banner(self, scenario: VelocityScenario, comparison: ScenarioComparison) -> str:
+    def _create_combined_banner(
+        self, scenario: VelocityScenario, comparison: ScenarioComparison
+    ) -> str:
         """Create banner for combined report with toggle"""
         scenario_desc = scenario.get_summary()
         impact_desc = comparison.get_impact_summary()
-        
+
         return f"""
         <div class="scenario-banner combined-banner">
             <div class="scenario-header">

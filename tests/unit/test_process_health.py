@@ -32,7 +32,11 @@ class TestAgingAnalysis:
     def test_aging_item_creation(self):
         """Test creating an aging item"""
         item = AgingItem(
-            key="TEST-1", summary="Test issue", status="In Progress", age_days=10, category=AgingCategory.NORMAL
+            key="TEST-1",
+            summary="Test issue",
+            status="In Progress",
+            age_days=10,
+            category=AgingCategory.NORMAL,
         )
 
         assert item.key == "TEST-1"
@@ -58,7 +62,10 @@ class TestAgingAnalysis:
         ]
 
         analysis = AgingAnalysis(
-            items_by_category={AgingCategory.FRESH: [items[0]], AgingCategory.AGING: [items[1], items[2]]},
+            items_by_category={
+                AgingCategory.FRESH: [items[0]],
+                AgingCategory.AGING: [items[1], items[2]],
+            },
             average_age_by_status={"To Do": 5.0, "In Progress": 17.5},
             oldest_items=[items[2]],  # Item with age 20
             blocked_items=[],
@@ -104,12 +111,19 @@ class TestWIPAnalysis:
         """Test WIP analysis with limits"""
         items = [
             WIPItem("TEST-1", "Issue 1", "To Do", WIPStatus.TODO, None, 1),
-            WIPItem("TEST-2", "Issue 2", "In Progress", WIPStatus.IN_PROGRESS, "Dev1", 3),
-            WIPItem("TEST-3", "Issue 3", "In Progress", WIPStatus.IN_PROGRESS, "Dev2", 5),
+            WIPItem(
+                "TEST-2", "Issue 2", "In Progress", WIPStatus.IN_PROGRESS, "Dev1", 3
+            ),
+            WIPItem(
+                "TEST-3", "Issue 3", "In Progress", WIPStatus.IN_PROGRESS, "Dev2", 5
+            ),
         ]
 
         analysis = WIPAnalysis(
-            items_by_status={WIPStatus.TODO: [items[0]], WIPStatus.IN_PROGRESS: [items[1], items[2]]},
+            items_by_status={
+                WIPStatus.TODO: [items[0]],
+                WIPStatus.IN_PROGRESS: [items[1], items[2]],
+            },
             wip_by_assignee={"Dev1": 1, "Dev2": 1},
             total_wip=3,
             wip_limits={WIPStatus.IN_PROGRESS: 3},
@@ -146,8 +160,26 @@ class TestSprintHealthAnalysis:
         """Test sprint health analysis with trends"""
         now = datetime.now()
         sprint_metrics = [
-            SprintHealth("Sprint 1", now - timedelta(days=42), now - timedelta(days=28), 20, 25, 0, 0, 0.8),
-            SprintHealth("Sprint 2", now - timedelta(days=28), now - timedelta(days=14), 18, 20, 2, 0, 0.9),
+            SprintHealth(
+                "Sprint 1",
+                now - timedelta(days=42),
+                now - timedelta(days=28),
+                20,
+                25,
+                0,
+                0,
+                0.8,
+            ),
+            SprintHealth(
+                "Sprint 2",
+                now - timedelta(days=28),
+                now - timedelta(days=14),
+                18,
+                20,
+                2,
+                0,
+                0.9,
+            ),
             SprintHealth("Sprint 3", now - timedelta(days=14), now, 22, 25, 3, 1, 0.88),
         ]
 
@@ -223,7 +255,10 @@ class TestProcessHealthMetrics:
         )
 
         wip_analysis = WIPAnalysis(
-            items_by_status={}, wip_by_assignee={}, total_wip=8, wip_limits={WIPStatus.IN_PROGRESS: 10}
+            items_by_status={},
+            wip_by_assignee={},
+            total_wip=8,
+            wip_limits={WIPStatus.IN_PROGRESS: 10},
         )
 
         sprint_health = SprintHealthAnalysis(
@@ -374,7 +409,11 @@ class TestAnalyzeWorkInProgressUseCase:
         # Create use case and execute
         use_case = AnalyzeWorkInProgressUseCase(issue_repo)
         analysis = use_case.execute(
-            status_mapping={"todo": ["To Do"], "in_progress": ["In Progress"], "review": ["In Review"]},
+            status_mapping={
+                "todo": ["To Do"],
+                "in_progress": ["In Progress"],
+                "review": ["In Review"],
+            },
             wip_limits={"in_progress": 3, "review": 2},
         )
 
@@ -466,7 +505,9 @@ class TestAnalyzeSprintHealthUseCase:
         assert analysis is not None
         assert len(analysis.sprint_metrics) == 2
         # Check that metrics were created for each sprint
-        assert all(m.sprint_name in ["Sprint 1", "Sprint 2"] for m in analysis.sprint_metrics)
+        assert all(
+            m.sprint_name in ["Sprint 1", "Sprint 2"] for m in analysis.sprint_metrics
+        )
         assert 0 <= analysis.predictability_score <= 1
 
 
@@ -512,7 +553,9 @@ class TestAnalyzeBlockedItemsUseCase:
 
         # Create use case and execute
         use_case = AnalyzeBlockedItemsUseCase(issue_repo)
-        analysis = use_case.execute(status_mapping={"done": ["Done"], "blocked": ["Blocked"]})
+        analysis = use_case.execute(
+            status_mapping={"done": ["Done"], "blocked": ["Blocked"]}
+        )
 
         # Verify results
         assert len(analysis.blocked_items) == 2
@@ -571,7 +614,11 @@ class TestAnalyzeProcessHealthUseCase:
         )
 
         metrics = use_case.execute(
-            status_mapping={"done": ["Done"], "todo": ["To Do"], "in_progress": ["In Progress"]},
+            status_mapping={
+                "done": ["Done"],
+                "todo": ["To Do"],
+                "in_progress": ["In Progress"],
+            },
             wip_limits={},
             lookback_sprints=6,
         )

@@ -45,6 +45,7 @@ The Monte Carlo simulation uses random sampling from historical velocity data to
 ### Confidence Interval Calculation
 
 For each confidence level:
+
 - Percentile index: `int(n * confidence_level)`
 - Lower bound: `int(n * alpha/2)` where alpha = 1 - confidence_level
 - Upper bound: `int(n * (1 - alpha/2))`
@@ -85,14 +86,17 @@ All components have equal weight (1.0) by default, contributing equally to the o
 New team members have reduced productivity that ramps up over time:
 
 #### Linear Ramp-up (Default)
+
 - Sprint 0: 25% productivity
 - Gradual increase: `0.25 + (0.75 * sprints_since_start / ramp_up_sprints)`
 - Full productivity: After ramp_up_sprints
 
 #### Exponential Ramp-up
+
 - Starts slower, accelerates: `0.25 + 0.75 * (progress^2)`
 
 #### Step Function
+
 - 25% → 50% → 75% → 100% in equal steps
 
 ## Lead Time Analysis
@@ -130,6 +134,7 @@ Lead time affects process health score based on these thresholds:
 ### Flow Efficiency
 
 Calculated as: `cycle_time / lead_time`
+
 - Measures the ratio of active work time to total time
 - Higher is better (less waiting/blocked time)
 
@@ -138,6 +143,7 @@ Calculated as: `cycle_time / lead_time`
 ### Predictability Score
 
 Based on velocity consistency across sprints:
+
 - Uses coefficient of variation (CV) = std_dev / mean
 - Score calculation: Implementation-specific
 
@@ -176,6 +182,7 @@ score = 1 - min(aging_ratio * 2, 1)
 ### Blocked Item Detection
 
 Items are considered blocked if their status contains keywords:
+
 - "blocked"
 - "impediment"
 - "waiting"
@@ -186,12 +193,14 @@ Items are considered blocked if their status contains keywords:
 ### WIP Score Calculation
 
 If WIP limits are defined:
+
 ```python
 violation_ratio = violation_count / total_limit
 score = max(0, 1 - violation_ratio)
 ```
 
 If no limits defined:
+
 - Score = 1.0 if no violations
 - Score = 0.5 if any violations exist
 
@@ -208,6 +217,7 @@ If no limits defined:
 ### Severity Classification
 
 Based on days blocked:
+
 - **Low**: ≤ 2 days
 - **Medium**: 3-5 days
 - **High**: > 5 days
@@ -229,6 +239,7 @@ score = 1 - min(blocked_ratio * 2, 1)
 ### Standard Confidence Levels
 
 The system uses these standard percentiles for predictions:
+
 - **P50 (50%)**: Median case - equally likely to finish earlier or later
 - **P70 (70%)**: Moderate confidence - 70% chance of completion by this sprint
 - **P85 (85%)**: Conservative estimate - 85% chance of completion
@@ -237,6 +248,7 @@ The system uses these standard percentiles for predictions:
 ### Multi-Project Aggregation
 
 When combining multiple projects:
+
 ```python
 variance_factor = 1.0 + (confidence_level - 0.5) * 0.5
 adjusted_sprints = base_sprints * variance_factor
@@ -255,6 +267,7 @@ This adds increasing variance for higher confidence levels to account for coordi
 ### Data Confidence Score
 
 Calculated based on:
+
 - Number of historical data points
 - Consistency of data (low variance = higher confidence)
 - Recency of data

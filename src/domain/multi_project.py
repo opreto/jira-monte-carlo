@@ -33,9 +33,13 @@ class ProjectData:
         if self.issues and not self.total_issues:
             self.total_issues = len(self.issues)
             done_statuses = {"Done", "Released", "Closed", "Resolved", "Complete"}
-            self.completed_issues = len([i for i in self.issues if i.status in done_statuses])
+            self.completed_issues = len(
+                [i for i in self.issues if i.status in done_statuses]
+            )
             if self.total_issues > 0:
-                self.completion_percentage = (self.completed_issues / self.total_issues) * 100
+                self.completion_percentage = (
+                    self.completed_issues / self.total_issues
+                ) * 100
         # Support legacy source_path
         if self.source_path and not self.file_path:
             self.file_path = self.source_path
@@ -57,7 +61,12 @@ class ProjectData:
     def in_progress_issues(self) -> int:
         # Check common in-progress statuses
         if self.issues:
-            progress_statuses = {"In Progress", "In Development", "In Review", "Analysis"}
+            progress_statuses = {
+                "In Progress",
+                "In Development",
+                "In Review",
+                "Analysis",
+            }
             return len([i for i in self.issues if i.status in progress_statuses])
         return 0
 

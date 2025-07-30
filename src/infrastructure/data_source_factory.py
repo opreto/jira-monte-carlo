@@ -4,7 +4,12 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Type
 
-from ..domain.data_sources import DataSource, DataSourceFactory, DataSourceInfo, DataSourceType
+from ..domain.data_sources import (
+    DataSource,
+    DataSourceFactory,
+    DataSourceInfo,
+    DataSourceType,
+)
 from ..domain.value_objects import FieldMapping
 from .jira_api_adapter import JiraApiDataSourceAdapter
 from .jira_data_source import JiraCSVDataSource
@@ -26,7 +31,9 @@ class DefaultDataSourceFactory(DataSourceFactory):
             DataSourceType.JIRA_API: JiraApiDataSourceAdapter,
         }
 
-    def create(self, source_type: DataSourceType, field_mapping: Optional[FieldMapping] = None) -> DataSource:
+    def create(
+        self, source_type: DataSourceType, field_mapping: Optional[FieldMapping] = None
+    ) -> DataSource:
         """Create a data source instance"""
         if source_type not in self._sources:
             raise ValueError(f"Unknown data source type: {source_type}")

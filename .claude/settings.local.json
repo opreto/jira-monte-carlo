@@ -286,7 +286,9 @@
       "Bash(perl:*)",
       "Bash(mypy:*)",
       "Bash(git filter-branch:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs"
     ],
     "deny": []
   }

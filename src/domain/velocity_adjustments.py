@@ -32,11 +32,22 @@ class VelocityAdjustment:
 
     def get_description(self) -> str:
         """Get human-readable description of the adjustment"""
-        sprint_range = f"sprint {self.sprint_start}"
+        # Use relative descriptions instead of absolute sprint numbers
+        if self.sprint_start == 1:
+            sprint_range = "next sprint"
+        elif self.sprint_start == 2:
+            sprint_range = "sprint after next"
+        else:
+            sprint_range = f"sprint +{self.sprint_start - 1}"
+            
         if self.sprint_end is None:
-            sprint_range = f"sprint {self.sprint_start} onwards"
+            sprint_range = f"from {sprint_range} onwards"
         elif self.sprint_end != self.sprint_start:
-            sprint_range = f"sprints {self.sprint_start}-{self.sprint_end}"
+            if self.sprint_end == self.sprint_start + 1:
+                sprint_range = f"next {self.sprint_end - self.sprint_start + 1} sprints"
+            else:
+                end_desc = f"sprint +{self.sprint_end - 1}" if self.sprint_end > 2 else "sprint after next"
+                sprint_range = f"{sprint_range} through {end_desc}"
 
         percentage = int(self.factor * 100)
         change_desc = f"{percentage}% capacity"
@@ -77,14 +88,25 @@ class TeamChange:
 
     def get_description(self) -> str:
         """Get human-readable description of the team change"""
+        # Use relative sprint descriptions
+        if self.sprint == 1:
+            sprint_desc = "next sprint"
+            after_desc = "after this sprint"
+        elif self.sprint == 2:
+            sprint_desc = "sprint after next"
+            after_desc = "after next sprint"
+        else:
+            sprint_desc = f"sprint +{self.sprint - 1}"
+            after_desc = f"after sprint +{self.sprint - 1}"
+            
         if self.change > 0:
             return (
                 f"Adding {self.change} developer{'s' if self.change > 1 else ''} "
-                f"starting sprint {self.sprint} (ramp-up: {self.ramp_up_sprints} sprints)"
+                f"starting {sprint_desc} (ramp-up: {self.ramp_up_sprints} sprints)"
             )
         else:
             return (
-                f"Removing {abs(self.change)} developer{'s' if abs(self.change) > 1 else ''} after sprint {self.sprint}"
+                f"Removing {abs(self.change)} developer{'s' if abs(self.change) > 1 else ''} {after_desc}"
             )
 
 

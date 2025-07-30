@@ -21,7 +21,7 @@ class TestVelocityAdjustment:
         assert not adj.applies_to_sprint(2)
         assert adj.applies_to_sprint(3)
         assert not adj.applies_to_sprint(4)
-        assert adj.get_description() == "50% capacity for sprint 3 (vacation)"
+        assert adj.get_description() == "50% capacity for sprint +2 (vacation)"
 
     def test_sprint_range_adjustment(self):
         """Test adjustment for a sprint range"""
@@ -32,7 +32,7 @@ class TestVelocityAdjustment:
         assert adj.applies_to_sprint(6)
         assert adj.applies_to_sprint(7)
         assert not adj.applies_to_sprint(8)
-        assert adj.get_description() == "70% capacity for sprints 5-7 (summer holidays)"
+        assert adj.get_description() == "70% capacity for sprint +4 through sprint +6 (summer holidays)"
 
     def test_forever_adjustment(self):
         """Test adjustment that applies forever"""
@@ -42,7 +42,7 @@ class TestVelocityAdjustment:
         assert adj.applies_to_sprint(10)
         assert adj.applies_to_sprint(100)
         assert adj.applies_to_sprint(1000)
-        assert adj.get_description() == "120% capacity for sprint 10 onwards (process improvements)"
+        assert adj.get_description() == "120% capacity for from sprint +9 onwards (process improvements)"
 
 
 class TestTeamChange:
@@ -64,7 +64,7 @@ class TestTeamChange:
 
         desc = change.get_description()
         assert "Adding 1 developer" in desc
-        assert "starting sprint 4" in desc
+        assert "starting sprint +3" in desc
         assert "ramp-up: 4 sprints" in desc
 
     def test_team_reduction(self):
@@ -77,7 +77,7 @@ class TestTeamChange:
 
         desc = change.get_description()
         assert "Removing 2 developers" in desc
-        assert "after sprint 8" in desc
+        assert "after sprint +7" in desc
 
     def test_exponential_ramp_up(self):
         """Test exponential productivity curve"""
@@ -168,10 +168,10 @@ class TestVelocityScenario:
         )
 
         summary = scenario.get_summary()
-        assert "80% capacity for sprints 2-3 (holidays)" in summary
-        assert "110% capacity for sprint 10 onwards (improvements)" in summary
-        assert "Adding 2 developers starting sprint 5" in summary
-        assert "Removing 1 developer after sprint 15" in summary
+        assert "80% capacity for next 2 sprints (holidays)" in summary
+        assert "110% capacity for from sprint +9 onwards (improvements)" in summary
+        assert "Adding 2 developers starting sprint +4" in summary
+        assert "Removing 1 developer after sprint +14" in summary
 
 
 class TestVelocityAdjustmentParser:

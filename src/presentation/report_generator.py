@@ -177,7 +177,13 @@ class HTMLReportGenerator:
         else:
             title = "Statistical Forecasting Report"
 
-        return self.base_template.render(title=title, styles=styles, content=content)
+        # Pass combined_scenario_data to base template for JavaScript inclusion
+        return self.base_template.render(
+            title=title, 
+            styles=styles, 
+            content=content,
+            combined_scenario_data=context.get("combined_scenario_data")
+        )
 
     def _create_probability_chart(self, results: SimulationResult, config: SimulationConfig) -> str:
         # Use the sprint counts directly if available

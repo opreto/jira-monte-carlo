@@ -18,6 +18,22 @@ class TestCombinedReportGenerator:
         mock_base_generator = Mock()
         mock_base_generator.generate.return_value = tmp_path / "report.html"
         
+        # Mock the _calculate_summary_stats method to return a proper dict
+        mock_base_generator._calculate_summary_stats.return_value = {
+            "50%": {
+                "class": "confidence-moderate",
+                "sprints": 10,
+                "date": "2024-03-15",
+                "probability": 50
+            },
+            "85%": {
+                "class": "confidence-conservative",
+                "sprints": 15,
+                "date": "2024-04-15",
+                "probability": 85
+            }
+        }
+        
         generator = CombinedReportGenerator(mock_base_generator)
         
         # Create test data

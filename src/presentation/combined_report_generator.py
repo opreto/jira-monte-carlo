@@ -58,6 +58,14 @@ class CombinedReportGenerator:
             config,
             "adjusted"
         )
+        
+        # Add summary stats to scenario data
+        baseline_data["summary_stats"] = self.base_generator._calculate_summary_stats(
+            baseline_results, velocity_metrics, config
+        )
+        adjusted_data["summary_stats"] = self.base_generator._calculate_summary_stats(
+            adjusted_results, velocity_metrics, config
+        )
 
         # Generate the combined report
         scenario_info = {
@@ -108,9 +116,28 @@ class CombinedReportGenerator:
         
         # Prepare probability distribution data
         prob_data = []
-        if results.probability_distribution:
-            for sprint, prob in results.probability_distribution:
+        
+        # First try to reconstruct from completion_sprints if available
+        if completion_sprints:
+            from collections import Counter
+            sprint_counts = Counter(int(s) for s in completion_sprints)
+            total = len(completion_sprints)
+            for sprint in sorted(sprint_counts.keys()):
+                prob = sprint_counts[sprint] / total
                 prob_data.append({"sprint": sprint, "probability": prob})
+            logger.info(f"Reconstructed probability distribution from {len(completion_sprints)} completion sprints")
+        
+        # Fallback to original probability_distribution if no completion sprints
+        elif hasattr(results, 'probability_distribution') and results.probability_distribution:
+            # Handle both dict and list formats
+            if isinstance(results.probability_distribution, dict):
+                for sprint, prob in results.probability_distribution.items():
+                    prob_data.append({"sprint": sprint, "probability": prob})
+                # Sort by sprint number
+                prob_data.sort(key=lambda x: x["sprint"])
+            else:
+                # If it's a list (legacy histogram format), skip it as it's not useful
+                logger.warning("Skipping legacy histogram format probability_distribution")
 
         # Prepare confidence intervals
         confidence_data = []
@@ -122,6 +149,13 @@ class CombinedReportGenerator:
                 "value": percentiles.get(level, 0)
             })
 
+        # Log what we're preparing
+        logger.info(f"Preparing {label} data - prob_data length: {len(prob_data)}, confidence_data length: {len(confidence_data)}")
+        if hasattr(results, 'probability_distribution'):
+            logger.info(f"{label} has probability_distribution attribute, type: {type(results.probability_distribution)}")
+        else:
+            logger.warning(f"{label} missing probability_distribution attribute")
+        
         return {
             "label": label,
             "percentiles": {

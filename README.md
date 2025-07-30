@@ -527,6 +527,22 @@ The styling system follows clean architecture principles:
 
 Themes are stored in `~/.jira-monte-carlo/themes.json` and can be customized.
 
+## Documentation
+
+### Technical Documentation
+- [Architecture Overview](docs/ARCHITECTURE.md) - System design and principles
+- [Heuristics Guide](docs/HEURISTICS.md) - Detailed explanation of all algorithms and thresholds
+- [Adding Data Sources](docs/ADDING_DATA_SOURCES.md) - Guide for implementing new data sources
+- [Field Requirements](docs/FIELD_REQUIREMENTS.md) - Required fields for different data formats
+
+### Understanding the Analytics
+The system uses various heuristics and algorithms for predictions and health assessments. See the [Heuristics Guide](docs/HEURISTICS.md) for detailed information on:
+- Monte Carlo simulation parameters
+- Process health scoring algorithms
+- Aging and WIP thresholds
+- Lead time analysis
+- Confidence level calculations
+
 ## Extensibility
 
 ### Adding New Forecasting Models

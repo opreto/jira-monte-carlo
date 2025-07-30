@@ -4,7 +4,11 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
 from ..domain.entities import Issue, SimulationConfig, SimulationResult
-from ..domain.forecasting import ForecastingModelFactory, ModelType, MonteCarloConfiguration
+from ..domain.forecasting import (
+    ForecastingModelFactory,
+    ModelType,
+    MonteCarloConfiguration,
+)
 from ..domain.repositories import IssueRepository, SprintRepository
 from ..domain.value_objects import DateRange, HistoricalData, VelocityMetrics
 from .forecasting_use_cases import GenerateForecastUseCase
@@ -17,7 +21,9 @@ class CalculateVelocityUseCase:
         self.issue_repo = issue_repo
         self.sprint_repo = sprint_repo
 
-    def execute(self, lookback_sprints: int = 6, velocity_field: str = "story_points") -> VelocityMetrics:
+    def execute(
+        self, lookback_sprints: int = 6, velocity_field: str = "story_points"
+    ) -> VelocityMetrics:
         # Get all sprints first
         all_sprints = self.sprint_repo.get_all()
 
@@ -60,7 +66,9 @@ class CalculateVelocityUseCase:
             x_mean = sum(x) / len(x)
             y_mean = sum(velocities) / len(velocities)
 
-            numerator = sum((x[i] - x_mean) * (velocities[i] - y_mean) for i in range(len(x)))
+            numerator = sum(
+                (x[i] - x_mean) * (velocities[i] - y_mean) for i in range(len(x))
+            )
             denominator = sum((x[i] - x_mean) ** 2 for i in range(len(x)))
 
             trend = numerator / denominator if denominator != 0 else 0.0
@@ -80,7 +88,11 @@ class CalculateVelocityUseCase:
 class RunMonteCarloSimulationUseCase:
     """Legacy use case for backward compatibility - delegates to new forecasting model"""
 
-    def __init__(self, issue_repo: IssueRepository, model_factory: Optional[ForecastingModelFactory] = None):
+    def __init__(
+        self,
+        issue_repo: IssueRepository,
+        model_factory: Optional[ForecastingModelFactory] = None,
+    ):
         self.issue_repo = issue_repo
         # Use injected factory or create default for backward compatibility
         if model_factory is None:
@@ -91,10 +103,15 @@ class RunMonteCarloSimulationUseCase:
 
         # Create Monte Carlo model for backward compatibility
         self.forecasting_model = model_factory.create(ModelType.MONTE_CARLO)
-        self.forecast_use_case = GenerateForecastUseCase(self.forecasting_model, issue_repo)
+        self.forecast_use_case = GenerateForecastUseCase(
+            self.forecasting_model, issue_repo
+        )
 
     def execute(
-        self, remaining_work: float, velocity_metrics: VelocityMetrics, config: SimulationConfig
+        self,
+        remaining_work: float,
+        velocity_metrics: VelocityMetrics,
+        config: SimulationConfig,
     ) -> SimulationResult:
         """Execute Monte Carlo simulation using new forecasting model"""
 
@@ -106,7 +123,9 @@ class RunMonteCarloSimulationUseCase:
         )
 
         # Run forecast using new model
-        forecast_result = self.forecast_use_case.execute(remaining_work, velocity_metrics, model_config)
+        forecast_result = self.forecast_use_case.execute(
+            remaining_work, velocity_metrics, model_config
+        )
 
         # Convert new ForecastResult to legacy SimulationResult
         percentiles = {}
@@ -115,7 +134,10 @@ class RunMonteCarloSimulationUseCase:
         for interval in forecast_result.prediction_intervals:
             confidence = interval.confidence_level
             percentiles[confidence] = interval.predicted_value
-            confidence_intervals[confidence] = (interval.lower_bound, interval.upper_bound)
+            confidence_intervals[confidence] = (
+                interval.lower_bound,
+                interval.upper_bound,
+            )
 
         # Convert probability distribution from dict to list format
         # Legacy format uses 50-bin histogram
@@ -124,7 +146,9 @@ class RunMonteCarloSimulationUseCase:
             min_sprints = min(forecast_result.probability_distribution.keys())
             max_sprints = max(forecast_result.probability_distribution.keys())
             bins = 50
-            bin_width = (max_sprints - min_sprints) / bins if max_sprints > min_sprints else 1
+            bin_width = (
+                (max_sprints - min_sprints) / bins if max_sprints > min_sprints else 1
+            )
             hist = [0.0] * bins
 
             # Populate histogram bins
@@ -176,7 +200,9 @@ class AnalyzeHistoricalDataUseCase:
         for issue in completed_issues:
             if issue.resolved:
                 week_start = issue.resolved - timedelta(days=issue.resolved.weekday())
-                week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+                week_start = week_start.replace(
+                    hour=0, minute=0, second=0, microsecond=0
+                )
 
                 if week_start not in weekly_data:
                     weekly_data[week_start] = []
@@ -189,8 +215,12 @@ class AnalyzeHistoricalDataUseCase:
         dates = []
 
         for week, issues in sorted(weekly_data.items()):
-            week_velocity = sum(issue.story_points for issue in issues if issue.story_points is not None)
-            week_cycle_times = [issue.cycle_time for issue in issues if issue.cycle_time is not None]
+            week_velocity = sum(
+                issue.story_points for issue in issues if issue.story_points is not None
+            )
+            week_cycle_times = [
+                issue.cycle_time for issue in issues if issue.cycle_time is not None
+            ]
 
             if week_velocity > 0:
                 velocities.append(week_velocity)
@@ -201,7 +231,11 @@ class AnalyzeHistoricalDataUseCase:
                 throughput.append(len(issues))
 
         return HistoricalData(
-            velocities=velocities, cycle_times=cycle_times, throughput=throughput, dates=dates, sprint_names=None
+            velocities=velocities,
+            cycle_times=cycle_times,
+            throughput=throughput,
+            dates=dates,
+            sprint_names=None,
         )
 
 
@@ -209,7 +243,9 @@ class CalculateRemainingWorkUseCase:
     def __init__(self, issue_repo: IssueRepository):
         self.issue_repo = issue_repo
 
-    def execute(self, todo_statuses: List[str], velocity_field: str = "story_points") -> float:
+    def execute(
+        self, todo_statuses: List[str], velocity_field: str = "story_points"
+    ) -> float:
         remaining_work = 0.0
 
         for status in todo_statuses:

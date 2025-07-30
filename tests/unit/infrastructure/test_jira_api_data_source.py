@@ -15,7 +15,10 @@ from src.infrastructure.jira_api_data_source import JiraApiDataSource
 def mock_config():
     """Create a mock JiraConfig"""
     config = JiraConfig(
-        url="https://test.atlassian.net", username="test@example.com", api_token="test-token", project_key="TEST"
+        url="https://test.atlassian.net",
+        username="test@example.com",
+        api_token="test-token",
+        project_key="TEST",
     )
     return config
 
@@ -51,7 +54,10 @@ class TestJiraApiDataSource:
                 assert data_source.config == mock_config
                 assert data_source.is_cloud is True
                 mock_jira_class.assert_called_once_with(
-                    url="https://test.atlassian.net", username="test@example.com", password="test-token", cloud=True
+                    url="https://test.atlassian.net",
+                    username="test@example.com",
+                    password="test-token",
+                    cloud=True,
                 )
 
     def test_build_jql_query_with_project(self, jira_data_source):
@@ -93,7 +99,10 @@ class TestJiraApiDataSource:
             )
         ]
 
-        jira_data_source.cache.get.return_value = {"issues": cached_issues, "sprints": cached_sprints}
+        jira_data_source.cache.get.return_value = {
+            "issues": cached_issues,
+            "sprints": cached_sprints,
+        }
 
         issues, sprints = jira_data_source.parse()
 
@@ -112,7 +121,11 @@ class TestJiraApiDataSource:
             "issues": [
                 {
                     "key": "TEST-1",
-                    "fields": {"summary": "Test Issue 1", "issuetype": {"name": "Story"}, "status": {"name": "Done"}},
+                    "fields": {
+                        "summary": "Test Issue 1",
+                        "issuetype": {"name": "Story"},
+                        "status": {"name": "Done"},
+                    },
                 }
             ],
         }
@@ -124,7 +137,11 @@ class TestJiraApiDataSource:
             "issues": [
                 {
                     "key": "TEST-2",
-                    "fields": {"summary": "Test Issue 2", "issuetype": {"name": "Bug"}, "status": {"name": "Open"}},
+                    "fields": {
+                        "summary": "Test Issue 2",
+                        "issuetype": {"name": "Bug"},
+                        "status": {"name": "Open"},
+                    },
                 }
             ],
         }
@@ -192,7 +209,10 @@ class TestJiraApiDataSource:
     def test_test_connection_success(self, jira_data_source):
         """Test successful connection test"""
         jira_data_source.jira = Mock()
-        jira_data_source.jira.get_server_info.return_value = {"serverTitle": "Test JIRA", "version": "8.0.0"}
+        jira_data_source.jira.get_server_info.return_value = {
+            "serverTitle": "Test JIRA",
+            "version": "8.0.0",
+        }
 
         result = jira_data_source.test_connection()
         assert result is True
@@ -201,7 +221,9 @@ class TestJiraApiDataSource:
     def test_test_connection_failure(self, jira_data_source):
         """Test failed connection test"""
         jira_data_source.jira = Mock()
-        jira_data_source.jira.get_server_info.side_effect = Exception("Authentication failed")
+        jira_data_source.jira.get_server_info.side_effect = Exception(
+            "Authentication failed"
+        )
 
         result = jira_data_source.test_connection()
         assert result is False
@@ -221,7 +243,9 @@ class TestJiraApiDataSource:
     def test_parse_with_processing_error(self, jira_data_source):
         """Test parse method with processing error"""
         # Make fetch_all_issues raise an exception
-        with patch.object(jira_data_source, "_fetch_all_issues", side_effect=Exception("API Error")):
+        with patch.object(
+            jira_data_source, "_fetch_all_issues", side_effect=Exception("API Error")
+        ):
             with pytest.raises(ProcessingError) as exc_info:
                 jira_data_source.parse()
 
@@ -245,7 +269,10 @@ class TestJiraApiDataSource:
                 story_points=5.0,
                 custom_fields={
                     "sprint": "Sprint 1",
-                    "sprint_data": {"startDate": "2024-01-01T00:00:00.000Z", "endDate": "2024-01-14T00:00:00.000Z"},
+                    "sprint_data": {
+                        "startDate": "2024-01-01T00:00:00.000Z",
+                        "endDate": "2024-01-14T00:00:00.000Z",
+                    },
                 },
             ),
             Issue(
@@ -258,7 +285,10 @@ class TestJiraApiDataSource:
                 story_points=3.0,
                 custom_fields={
                     "sprint": "Sprint 1",
-                    "sprint_data": {"startDate": "2024-01-01T00:00:00.000Z", "endDate": "2024-01-14T00:00:00.000Z"},
+                    "sprint_data": {
+                        "startDate": "2024-01-01T00:00:00.000Z",
+                        "endDate": "2024-01-14T00:00:00.000Z",
+                    },
                 },
             ),
         ]

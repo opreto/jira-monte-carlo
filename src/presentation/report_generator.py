@@ -16,7 +16,11 @@ from .templates import ReportTemplates
 
 
 class HTMLReportGenerator:
-    def __init__(self, style_service: Optional[StyleService] = None, theme_name: Optional[str] = None):
+    def __init__(
+        self,
+        style_service: Optional[StyleService] = None,
+        theme_name: Optional[str] = None,
+    ):
         self.style_service = style_service or StyleService()
         self.theme_name = theme_name
         self.style_generator = self.style_service.get_style_generator(theme_name)
@@ -46,9 +50,15 @@ class HTMLReportGenerator:
         # Generate charts - handle None simulation_results
         charts = {}
         if simulation_results:
-            charts["probability_distribution"] = self._create_probability_chart(simulation_results, config)
-            charts["forecast_timeline"] = self._create_forecast_timeline(simulation_results)
-            charts["confidence_intervals"] = self._create_confidence_chart(simulation_results)
+            charts["probability_distribution"] = self._create_probability_chart(
+                simulation_results, config
+            )
+            charts["forecast_timeline"] = self._create_forecast_timeline(
+                simulation_results
+            )
+            charts["confidence_intervals"] = self._create_confidence_chart(
+                simulation_results
+            )
         else:
             # Create empty charts
             empty_fig = go.Figure()
@@ -73,7 +83,9 @@ class HTMLReportGenerator:
 
         # Velocity trend can still be shown even without simulation
         if velocity_metrics and historical_data:
-            charts["velocity_trend"] = self._create_velocity_trend_chart(historical_data, velocity_metrics)
+            charts["velocity_trend"] = self._create_velocity_trend_chart(
+                historical_data, velocity_metrics
+            )
         else:
             empty_fig = go.Figure()
             empty_fig.update_layout(title="No Velocity Data Available")
@@ -81,7 +93,9 @@ class HTMLReportGenerator:
 
         # Story size breakdown chart (returns dict with pie and bar)
         if story_size_breakdown:
-            charts["story_size_breakdown"] = self._create_story_size_breakdown_chart(story_size_breakdown)
+            charts["story_size_breakdown"] = self._create_story_size_breakdown_chart(
+                story_size_breakdown
+            )
         else:
             empty_json = go.Figure().to_json()
             charts["story_size_breakdown"] = {"pie": empty_json, "bar": empty_json}
@@ -92,36 +106,50 @@ class HTMLReportGenerator:
             # Aging analysis charts
             if process_health_metrics.aging_analysis:
                 process_health_charts["aging_distribution"] = (
-                    self.process_health_charts.create_aging_distribution_chart(process_health_metrics.aging_analysis)
+                    self.process_health_charts.create_aging_distribution_chart(
+                        process_health_metrics.aging_analysis
+                    )
                 )
-                process_health_charts["aging_by_status"] = self.process_health_charts.create_aging_by_status_chart(
-                    process_health_metrics.aging_analysis
+                process_health_charts["aging_by_status"] = (
+                    self.process_health_charts.create_aging_by_status_chart(
+                        process_health_metrics.aging_analysis
+                    )
                 )
 
             # WIP analysis charts
             if process_health_metrics.wip_analysis:
-                process_health_charts["wip_by_status"] = self.process_health_charts.create_wip_by_status_chart(
-                    process_health_metrics.wip_analysis
+                process_health_charts["wip_by_status"] = (
+                    self.process_health_charts.create_wip_by_status_chart(
+                        process_health_metrics.wip_analysis
+                    )
                 )
 
             # Sprint health charts
             if process_health_metrics.sprint_health:
                 process_health_charts["sprint_completion_trend"] = (
-                    self.process_health_charts.create_sprint_health_trend_chart(process_health_metrics.sprint_health)
+                    self.process_health_charts.create_sprint_health_trend_chart(
+                        process_health_metrics.sprint_health
+                    )
                 )
                 process_health_charts["sprint_scope_change"] = (
-                    self.process_health_charts.create_sprint_scope_change_chart(process_health_metrics.sprint_health)
+                    self.process_health_charts.create_sprint_scope_change_chart(
+                        process_health_metrics.sprint_health
+                    )
                 )
 
             # Blocked items charts
             if process_health_metrics.blocked_items:
                 process_health_charts["blocked_severity"] = (
-                    self.process_health_charts.create_blocked_items_severity_chart(process_health_metrics.blocked_items)
+                    self.process_health_charts.create_blocked_items_severity_chart(
+                        process_health_metrics.blocked_items
+                    )
                 )
 
             # Overall health score
-            process_health_charts["health_score_gauge"] = self.process_health_charts.create_process_health_score_gauge(
-                process_health_metrics.health_score
+            process_health_charts["health_score_gauge"] = (
+                self.process_health_charts.create_process_health_score_gauge(
+                    process_health_metrics.health_score
+                )
             )
 
             # Health score breakdown
@@ -142,7 +170,9 @@ class HTMLReportGenerator:
             "simulation_results": simulation_results,
             "charts": charts,
             "percentiles": self._format_percentiles(simulation_results),
-            "summary_stats": self._calculate_summary_stats(simulation_results, velocity_metrics, config),
+            "summary_stats": self._calculate_summary_stats(
+                simulation_results, velocity_metrics, config
+            ),
             "model_info": model_info,
             "process_health_metrics": process_health_metrics,
             "process_health_charts": process_health_charts,
@@ -179,13 +209,15 @@ class HTMLReportGenerator:
 
         # Pass combined_scenario_data to base template for JavaScript inclusion
         return self.base_template.render(
-            title=title, 
-            styles=styles, 
+            title=title,
+            styles=styles,
             content=content,
-            combined_scenario_data=context.get("combined_scenario_data")
+            combined_scenario_data=context.get("combined_scenario_data"),
         )
 
-    def _create_probability_chart(self, results: SimulationResult, config: SimulationConfig) -> str:
+    def _create_probability_chart(
+        self, results: SimulationResult, config: SimulationConfig
+    ) -> str:
         # Use the sprint counts directly if available
         if hasattr(results, "completion_sprints") and results.completion_sprints:
             completion_sprints = results.completion_sprints
@@ -227,7 +259,10 @@ class HTMLReportGenerator:
                     ),
                     text=[f"{p:.1%}" for p in probabilities],
                     textposition="outside",
-                    textfont=dict(size=12, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"),
+                    textfont=dict(
+                        size=12,
+                        family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    ),
                     hovertemplate="<b>%{x} sprints</b><br>Probability: %{y:.1%}<extra></extra>",
                 )
             ]
@@ -240,15 +275,20 @@ class HTMLReportGenerator:
                 line_dash="dash",
                 line_color=self.chart_colors["low_confidence_rgba"](0.8),
                 line_width=3,
-                annotation_text=f"<b>{confidence*100:.0f}%</b>",
+                annotation_text=f"<b>{confidence * 100:.0f}%</b>",
                 annotation_position="top right",
-                annotation_font=dict(size=14, color=self.chart_colors["low_confidence"]),
+                annotation_font=dict(
+                    size=14, color=self.chart_colors["low_confidence"]
+                ),
             )
 
         fig.update_layout(
             title=dict(
                 text="<b>Sprints to Complete - Probability Distribution</b>",
-                font=dict(size=22, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"),
+                font=dict(
+                    size=22,
+                    family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                ),
             ),
             xaxis_title=dict(text="<b>Sprints to Complete</b>", font=dict(size=14)),
             yaxis_title=dict(text="<b>Probability</b>", font=dict(size=14)),
@@ -258,7 +298,9 @@ class HTMLReportGenerator:
                 tickmode="linear",
                 tick0=min(sprints_sorted) if sprints_sorted else 0,
                 dtick=1,
-                range=[min(sprints_sorted) - 0.5, max(sprints_sorted) + 0.5] if sprints_sorted else [0, 10],
+                range=[min(sprints_sorted) - 0.5, max(sprints_sorted) + 0.5]
+                if sprints_sorted
+                else [0, 10],
                 showgrid=True,
                 gridwidth=1,
                 gridcolor="rgba(128,128,128,0.1)",
@@ -280,7 +322,10 @@ class HTMLReportGenerator:
             margin=dict(t=100, b=80, l=80, r=60),
             plot_bgcolor="rgba(248,249,250,0.8)",
             paper_bgcolor="white",
-            font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", size=12),
+            font=dict(
+                family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                size=12,
+            ),
             hoverlabel=dict(
                 bgcolor="white",
                 font_size=14,
@@ -292,14 +337,18 @@ class HTMLReportGenerator:
 
         return fig.to_json()
 
-    def _create_velocity_trend_chart(self, historical: HistoricalData, metrics: VelocityMetrics) -> str:
+    def _create_velocity_trend_chart(
+        self, historical: HistoricalData, metrics: VelocityMetrics
+    ) -> str:
         if not historical.velocities:
             return go.Figure().to_json()
 
         fig = go.Figure()
 
         # Use sprint names if available, otherwise use dates
-        x_values = historical.sprint_names if historical.sprint_names else historical.dates
+        x_values = (
+            historical.sprint_names if historical.sprint_names else historical.dates
+        )
         hover_template = (
             "<b>%{x}</b><br>Velocity: %{y:.1f}<extra></extra>"
             if historical.sprint_names
@@ -319,7 +368,10 @@ class HTMLReportGenerator:
                     shape="spline",
                 ),
                 marker=dict(
-                    size=10, color=self.chart_colors["data1"], line=dict(color="white", width=2), symbol="circle"
+                    size=10,
+                    color=self.chart_colors["data1"],
+                    line=dict(color="white", width=2),
+                    symbol="circle",
                 ),
                 fill="tozeroy",
                 fillcolor=self.chart_colors["data1_rgba"](0.1),
@@ -346,9 +398,12 @@ class HTMLReportGenerator:
             y_mean = sum(historical.velocities) / len(historical.velocities)
 
             numerator = sum(
-                (x_numeric[i] - x_mean) * (historical.velocities[i] - y_mean) for i in range(len(x_numeric))
+                (x_numeric[i] - x_mean) * (historical.velocities[i] - y_mean)
+                for i in range(len(x_numeric))
             )
-            denominator = sum((x_numeric[i] - x_mean) ** 2 for i in range(len(x_numeric)))
+            denominator = sum(
+                (x_numeric[i] - x_mean) ** 2 for i in range(len(x_numeric))
+            )
 
             if denominator != 0:
                 slope = numerator / denominator
@@ -363,7 +418,11 @@ class HTMLReportGenerator:
                     y=trend_line,
                     mode="lines",
                     name="Trend",
-                    line=dict(color=self.chart_colors["warning_rgba"](0.8), width=3, dash="dot"),
+                    line=dict(
+                        color=self.chart_colors["warning_rgba"](0.8),
+                        width=3,
+                        dash="dot",
+                    ),
                     hovertemplate="<b>Trend</b><br>Value: %{y:.1f}<extra></extra>",
                 )
             )
@@ -371,9 +430,15 @@ class HTMLReportGenerator:
         fig.update_layout(
             title=dict(
                 text="<b>Historical Velocity Trend</b>",
-                font=dict(size=22, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"),
+                font=dict(
+                    size=22,
+                    family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                ),
             ),
-            xaxis_title=dict(text="<b>Sprint</b>" if historical.sprint_names else "<b>Date</b>", font=dict(size=14)),
+            xaxis_title=dict(
+                text="<b>Sprint</b>" if historical.sprint_names else "<b>Date</b>",
+                font=dict(size=14),
+            ),
             yaxis_title=dict(text="<b>Velocity (Story Points)</b>", font=dict(size=14)),
             height=450,
             xaxis=dict(
@@ -392,7 +457,10 @@ class HTMLReportGenerator:
             ),
             plot_bgcolor="rgba(248,249,250,0.8)",
             paper_bgcolor="white",
-            font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", size=12),
+            font=dict(
+                family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                size=12,
+            ),
             hoverlabel=dict(
                 bgcolor="white",
                 font_size=14,
@@ -429,7 +497,10 @@ class HTMLReportGenerator:
                 font=dict(size=16, color="gray"),
             )
             fig.update_layout(
-                title="Cycle Time Distribution", height=400, xaxis=dict(visible=False), yaxis=dict(visible=False)
+                title="Cycle Time Distribution",
+                height=400,
+                xaxis=dict(visible=False),
+                yaxis=dict(visible=False),
             )
             return fig.to_json()
 
@@ -465,7 +536,10 @@ class HTMLReportGenerator:
         fig.update_layout(
             title=dict(
                 text="<b>Cycle Time Distribution</b>",
-                font=dict(size=22, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"),
+                font=dict(
+                    size=22,
+                    family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                ),
             ),
             xaxis_title=dict(text="<b>Days</b>", font=dict(size=14)),
             yaxis_title=dict(text="<b>Frequency</b>", font=dict(size=14)),
@@ -487,7 +561,10 @@ class HTMLReportGenerator:
             ),
             plot_bgcolor="rgba(248,249,250,0.8)",
             paper_bgcolor="white",
-            font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", size=12),
+            font=dict(
+                family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                size=12,
+            ),
             hoverlabel=dict(
                 bgcolor="white",
                 font_size=14,
@@ -501,7 +578,9 @@ class HTMLReportGenerator:
 
         return fig.to_json()
 
-    def _create_story_size_breakdown_chart(self, story_size_breakdown: Dict[float, int]) -> Dict[str, str]:
+    def _create_story_size_breakdown_chart(
+        self, story_size_breakdown: Dict[float, int]
+    ) -> Dict[str, str]:
         """Create both pie and bar charts showing distribution of remaining stories by size"""
         if not story_size_breakdown:
             empty = go.Figure().to_json()
@@ -535,7 +614,9 @@ class HTMLReportGenerator:
                 labels=labels,
                 values=values,
                 hole=0.4,
-                marker=dict(colors=colors[: len(sizes)], line=dict(color="white", width=2)),
+                marker=dict(
+                    colors=colors[: len(sizes)], line=dict(color="white", width=2)
+                ),
                 textinfo="label+percent",
                 textposition="outside",
                 hovertemplate="<b>%{label}</b><br>"
@@ -560,7 +641,10 @@ class HTMLReportGenerator:
         pie_fig.update_layout(
             title=dict(
                 text="<b>Remaining Work by Story Size</b>",
-                font=dict(size=22, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"),
+                font=dict(
+                    size=22,
+                    family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                ),
             ),
             height=450,
             showlegend=True,
@@ -575,7 +659,10 @@ class HTMLReportGenerator:
             margin=dict(l=20, r=150, t=80, b=20),
             paper_bgcolor="white",
             plot_bgcolor="rgba(248,249,250,0.8)",
-            font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", size=12),
+            font=dict(
+                family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                size=12,
+            ),
         )
 
         # Create bar chart
@@ -623,7 +710,10 @@ class HTMLReportGenerator:
         bar_fig.update_layout(
             title=dict(
                 text="<b>Remaining Work by Story Size</b>",
-                font=dict(size=22, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"),
+                font=dict(
+                    size=22,
+                    family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                ),
             ),
             height=450,
             xaxis=dict(
@@ -638,7 +728,10 @@ class HTMLReportGenerator:
             hovermode="x",
             paper_bgcolor="white",
             plot_bgcolor="rgba(248,249,250,0.8)",
-            font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", size=12),
+            font=dict(
+                family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                size=12,
+            ),
             showlegend=False,
             bargap=0.2,
             margin=dict(l=80, r=80, t=120, b=60),  # Increased top margin
@@ -713,9 +806,9 @@ class HTMLReportGenerator:
 
             # Create label showing all confidence levels for this sprint count
             if len(confidences) == 1:
-                label = f"{confidences[0]*100:.0f}%<br>{sprints:.0f} sprints"
+                label = f"{confidences[0] * 100:.0f}%<br>{sprints:.0f} sprints"
             else:
-                confidence_text = ", ".join([f"{c*100:.0f}%" for c in confidences])
+                confidence_text = ", ".join([f"{c * 100:.0f}%" for c in confidences])
                 label = f"{confidence_text}<br>{sprints:.0f} sprints"
 
             fig.add_trace(
@@ -723,13 +816,23 @@ class HTMLReportGenerator:
                     x=[date],
                     y=[0],
                     mode="markers+text",
-                    marker=dict(size=24, color=color, symbol="diamond", line=dict(color="white", width=2)),
+                    marker=dict(
+                        size=24,
+                        color=color,
+                        symbol="diamond",
+                        line=dict(color="white", width=2),
+                    ),
                     text=[f"<b>{label}</b>"],
                     textposition="top center",
-                    textfont=dict(size=12, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"),
+                    textfont=dict(
+                        size=12,
+                        family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    ),
                     showlegend=False,
-                    name=f"{confidence_text if len(confidences) > 1 else f'{confidences[0]*100:.0f}%'} Confidence",
-                    hovertemplate="<b>%{x|%b %d, %Y}</b><br>" + label.replace("<br>", "<br>") + "<extra></extra>",
+                    name=f"{confidence_text if len(confidences) > 1 else f'{confidences[0] * 100:.0f}%'} Confidence",
+                    hovertemplate="<b>%{x|%b %d, %Y}</b><br>"
+                    + label.replace("<br>", "<br>")
+                    + "<extra></extra>",
                 )
             )
 
@@ -740,7 +843,10 @@ class HTMLReportGenerator:
                 y=[0],
                 mode="markers+text",
                 marker=dict(
-                    size=20, color=self.chart_colors["primary"], symbol="star", line=dict(color="white", width=3)
+                    size=20,
+                    color=self.chart_colors["primary"],
+                    symbol="star",
+                    line=dict(color="white", width=3),
                 ),
                 text=["<b>Today</b>"],
                 textposition="bottom center",
@@ -753,7 +859,10 @@ class HTMLReportGenerator:
         fig.update_layout(
             title=dict(
                 text="<b>Forecast Timeline</b>",
-                font=dict(size=22, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"),
+                font=dict(
+                    size=22,
+                    family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                ),
             ),
             xaxis_title=dict(text="<b>Date</b>", font=dict(size=14)),
             yaxis=dict(visible=False, range=[-0.6, 0.6]),
@@ -761,7 +870,10 @@ class HTMLReportGenerator:
             xaxis=dict(
                 tickformat="%b %d",
                 tickangle=-45,
-                range=[today - timedelta(days=7), today + timedelta(days=max_days + sprint_duration)],
+                range=[
+                    today - timedelta(days=7),
+                    today + timedelta(days=max_days + sprint_duration),
+                ],
                 showgrid=True,
                 gridwidth=1,
                 gridcolor="rgba(128,128,128,0.1)",
@@ -770,7 +882,10 @@ class HTMLReportGenerator:
             hovermode="closest",
             plot_bgcolor="rgba(248,249,250,0.8)",
             paper_bgcolor="white",
-            font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", size=12),
+            font=dict(
+                family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                size=12,
+            ),
             hoverlabel=dict(
                 bgcolor="white",
                 font_size=14,
@@ -791,17 +906,25 @@ class HTMLReportGenerator:
         labels = []
         colors = []
         for c, s in zip(confidences, sprints):
-            labels.append(f"{c*100:.0f}%")
+            labels.append(f"{c * 100:.0f}%")
             # Use semantic colors based on confidence levels
             # Industry standard: higher confidence = more conservative = safer (green)
             if c <= 0.5:
-                colors.append(self.chart_colors["low_confidence"])  # Red - Aggressive estimate
+                colors.append(
+                    self.chart_colors["low_confidence"]
+                )  # Red - Aggressive estimate
             elif c <= 0.7:
-                colors.append(self.chart_colors["medium_confidence"])  # Amber - Moderate risk
+                colors.append(
+                    self.chart_colors["medium_confidence"]
+                )  # Amber - Moderate risk
             elif c <= 0.85:
-                colors.append(self.chart_colors["medium_confidence"])  # Amber - Moderate risk
+                colors.append(
+                    self.chart_colors["medium_confidence"]
+                )  # Amber - Moderate risk
             else:
-                colors.append(self.chart_colors["high_confidence"])  # Green - Conservative estimate
+                colors.append(
+                    self.chart_colors["high_confidence"]
+                )  # Green - Conservative estimate
 
         fig = go.Figure(
             data=[
@@ -836,7 +959,10 @@ class HTMLReportGenerator:
         fig.update_layout(
             title=dict(
                 text="<b>Sprints to Complete by Confidence Level</b>",
-                font=dict(size=22, family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"),
+                font=dict(
+                    size=22,
+                    family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                ),
             ),
             xaxis_title=dict(text="<b>Confidence Level</b>", font=dict(size=14)),
             yaxis_title=dict(text="<b>Sprints</b>", font=dict(size=14)),
@@ -858,7 +984,10 @@ class HTMLReportGenerator:
             ),
             plot_bgcolor="rgba(248,249,250,0.8)",
             paper_bgcolor="white",
-            font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", size=12),
+            font=dict(
+                family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                size=12,
+            ),
             hoverlabel=dict(
                 bgcolor="white",
                 font_size=14,
@@ -886,7 +1015,10 @@ class HTMLReportGenerator:
                 font=dict(size=16, color="gray"),
             )
             fig.update_layout(
-                title="Weekly Throughput", height=400, xaxis=dict(visible=False), yaxis=dict(visible=False)
+                title="Weekly Throughput",
+                height=400,
+                xaxis=dict(visible=False),
+                yaxis=dict(visible=False),
             )
             return fig.to_json()
 
@@ -913,7 +1045,11 @@ class HTMLReportGenerator:
             )
 
         fig.update_layout(
-            title="Weekly Throughput", xaxis_title="Week", yaxis_title="Issues Completed", showlegend=False, height=400
+            title="Weekly Throughput",
+            xaxis_title="Week",
+            yaxis_title="Issues Completed",
+            showlegend=False,
+            height=400,
         )
 
         return fig.to_json()
@@ -921,10 +1057,13 @@ class HTMLReportGenerator:
     def _format_percentiles(self, results: SimulationResult) -> Dict[str, float]:
         if not results:
             return {"p50": 0, "p85": 0}
-        return {f"p{int(k*100)}": v for k, v in results.percentiles.items()}
+        return {f"p{int(k * 100)}": v for k, v in results.percentiles.items()}
 
     def _calculate_summary_stats(
-        self, results: SimulationResult, velocity_metrics: VelocityMetrics, config: SimulationConfig
+        self,
+        results: SimulationResult,
+        velocity_metrics: VelocityMetrics,
+        config: SimulationConfig,
     ) -> Dict:
         if not results:
             return {}
@@ -938,7 +1077,10 @@ class HTMLReportGenerator:
             0.5: ("50% (Aggressive)", "confidence-low"),  # Red - high risk estimate
             0.7: ("70% (Moderate)", "confidence-medium"),  # Amber - moderate risk
             0.85: ("85% (Confident)", "confidence-medium"),  # Amber - moderate risk
-            0.95: ("95% (Conservative)", "confidence-high"),  # Green - low risk estimate
+            0.95: (
+                "95% (Conservative)",
+                "confidence-high",
+            ),  # Green - low risk estimate
         }
 
         # Track seen sprint values to avoid duplicates

@@ -27,7 +27,9 @@ class TestDataSourceFactory:
 
     def test_create_with_field_mapping(self):
         factory = DefaultDataSourceFactory()
-        field_mapping = FieldMapping(key_field="ID", summary_field="Title", status_field="State")
+        field_mapping = FieldMapping(
+            key_field="ID", summary_field="Title", status_field="State"
+        )
         source = factory.create(DataSourceType.JIRA_CSV, field_mapping)
         assert isinstance(source, JiraCSVDataSource)
         assert source.field_mapping == field_mapping
@@ -157,7 +159,16 @@ class TestLinearDataSource:
         # Setup mock file and CSV reader with Linear headers
         mock_reader_instance = Mock()
         mock_reader_instance.__next__ = Mock(
-            return_value=["ID", "Title", "Status", "Cycle", "Estimate", "Completed", "Project", "Team"]
+            return_value=[
+                "ID",
+                "Title",
+                "Status",
+                "Cycle",
+                "Estimate",
+                "Completed",
+                "Project",
+                "Team",
+            ]
         )
         mock_csv_reader.return_value = mock_reader_instance
 
@@ -171,7 +182,9 @@ class TestLinearDataSource:
     def test_detect_format_failure(self, mock_csv_reader, mock_open):
         # Setup mock file and CSV reader with non-Linear headers
         mock_reader_instance = Mock()
-        mock_reader_instance.__next__ = Mock(return_value=["Issue key", "Summary", "State"])
+        mock_reader_instance.__next__ = Mock(
+            return_value=["Issue key", "Summary", "State"]
+        )
         mock_csv_reader.return_value = mock_reader_instance
 
         source = LinearCSVDataSource()
@@ -218,7 +231,9 @@ class TestLinearDataSource:
         assert source._parse_estimate(None) is None
         assert source._parse_estimate("invalid") is None
 
-    @patch("src.infrastructure.linear_data_source.LinearCSVDataSource._create_monthly_sprints")
+    @patch(
+        "src.infrastructure.linear_data_source.LinearCSVDataSource._create_monthly_sprints"
+    )
     @patch("polars.read_csv")
     def test_parse_with_synthetic_sprints(self, mock_read_csv, mock_create_sprints):
         # Mock DataFrame with no cycles

@@ -35,7 +35,9 @@ class JiraConfig:
                 missing.append("JIRA_USERNAME")
             if not api_token:
                 missing.append("ATLASSIAN_API_TOKEN")
-            raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
+            raise ValueError(
+                f"Missing required environment variables: {', '.join(missing)}"
+            )
 
         return cls(
             url=url,
@@ -51,4 +53,6 @@ class JiraConfig:
             raise ValueError("JIRA_URL must start with http:// or https://")
 
         if "@" not in self.username and "atlassian.net" in self.url:
-            raise ValueError("JIRA_USERNAME should be an email address for Atlassian Cloud")
+            raise ValueError(
+                "JIRA_USERNAME should be an email address for Atlassian Cloud"
+            )

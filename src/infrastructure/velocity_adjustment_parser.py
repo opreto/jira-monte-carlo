@@ -3,7 +3,11 @@
 import logging
 from typing import Optional
 
-from ..domain.velocity_adjustments import ProductivityCurve, TeamChange, VelocityAdjustment
+from ..domain.velocity_adjustments import (
+    ProductivityCurve,
+    TeamChange,
+    VelocityAdjustment,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -48,12 +52,18 @@ class VelocityAdjustmentParser:
             # Optional reason
             reason = parts.get("reason")
 
-            return VelocityAdjustment(sprint_start=sprint_start, sprint_end=sprint_end, factor=factor, reason=reason)
+            return VelocityAdjustment(
+                sprint_start=sprint_start,
+                sprint_end=sprint_end,
+                factor=factor,
+                reason=reason,
+            )
 
         except Exception as e:
             logger.error(f"Failed to parse velocity change '{value}': {e}")
             raise ValueError(
-                f"Invalid velocity change format '{value}'. " f"Expected: 'sprint:N[-M|+],factor:F[,reason:R]'"
+                f"Invalid velocity change format '{value}'. "
+                f"Expected: 'sprint:N[-M|+],factor:F[,reason:R]'"
             ) from e
 
     def parse_team_change(self, value: str) -> TeamChange:
@@ -125,13 +135,17 @@ class VelocityAdjustmentParser:
                     raise ValueError(f"Unknown curve type: {parts['curve']}")
 
             return TeamChange(
-                sprint=sprint, change=change, ramp_up_sprints=ramp_up if change > 0 else 0, productivity_curve=curve
+                sprint=sprint,
+                change=change,
+                ramp_up_sprints=ramp_up if change > 0 else 0,
+                productivity_curve=curve,
             )
 
         except Exception as e:
             logger.error(f"Failed to parse team change '{value}': {e}")
             raise ValueError(
-                f"Invalid team change format '{value}'. " f"Expected: 'sprint:N,change:±C[,ramp:R][,curve:TYPE]'"
+                f"Invalid team change format '{value}'. "
+                f"Expected: 'sprint:N,change:±C[,ramp:R][,curve:TYPE]'"
             ) from e
 
     def _parse_sprint_range(self, sprint_spec: str) -> tuple[int, Optional[int]]:

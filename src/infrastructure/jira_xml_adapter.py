@@ -57,7 +57,9 @@ class JiraXmlDataSourceAdapter(DataSource):
                         project = item.find("project")
 
                         # If we find these Jira-specific fields, it's likely a Jira XML
-                        if any([key is not None, status is not None, project is not None]):
+                        if any(
+                            [key is not None, status is not None, project is not None]
+                        ):
                             logger.info(f"Detected Jira XML format for: {file_path}")
                             return True
 
@@ -92,7 +94,9 @@ class JiraXmlDataSourceAdapter(DataSource):
             from lxml import etree
 
             # Count items and collect metadata
-            context = etree.iterparse(str(file_path), events=("end",), tag="item", encoding="utf-8")
+            context = etree.iterparse(
+                str(file_path), events=("end",), tag="item", encoding="utf-8"
+            )
 
             for event, elem in context:
                 issue_count += 1

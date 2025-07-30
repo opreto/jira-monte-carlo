@@ -13,7 +13,9 @@ class TemplateValidator:
         self.env = Environment()
         self.issues = []
 
-    def validate_template_string(self, template_str: str, name: str = "template") -> List[Dict[str, any]]:
+    def validate_template_string(
+        self, template_str: str, name: str = "template"
+    ) -> List[Dict[str, any]]:
         """Validate a template string and return list of issues"""
         self.issues = []
 
@@ -40,14 +42,19 @@ class TemplateValidator:
                 self.issues.append(
                     {
                         "type": "warning",
-                        "message": f'Potentially undefined variables: {", ".join(undeclared)}',
+                        "message": f"Potentially undefined variables: {', '.join(undeclared)}",
                         "template": name,
                     }
                 )
 
         except TemplateSyntaxError as e:
             self.issues.append(
-                {"type": "error", "message": f"Jinja2 syntax error: {str(e)}", "line": e.lineno, "template": name}
+                {
+                    "type": "error",
+                    "message": f"Jinja2 syntax error: {str(e)}",
+                    "line": e.lineno,
+                    "template": name,
+                }
             )
 
     def _check_html_structure(self, template_str: str, name: str):
@@ -57,7 +64,20 @@ class TemplateValidator:
         html_only = re.sub(r"{{.*?}}", "", html_only, flags=re.DOTALL)
 
         # Check for unclosed tags
-        tags_to_check = ["div", "table", "tr", "td", "ul", "ol", "li", "h1", "h2", "h3", "h4", "p"]
+        tags_to_check = [
+            "div",
+            "table",
+            "tr",
+            "td",
+            "ul",
+            "ol",
+            "li",
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "p",
+        ]
 
         for tag in tags_to_check:
             open_tags = len(re.findall(f"<{tag}[^>]*>", html_only, re.IGNORECASE))
@@ -138,15 +158,28 @@ class TemplateValidator:
             if re.search(r"{%\s*if\s+", line) or re.search(r"{%\s*for\s+", line):
                 depth += 1
                 condition_stack.append((i + 1, line.strip()))
-            elif re.search(r"{%\s*endif\s*%}", line) or re.search(r"{%\s*endfor\s*%}", line):
+            elif re.search(r"{%\s*endif\s*%}", line) or re.search(
+                r"{%\s*endfor\s*%}", line
+            ):
                 depth -= 1
                 if depth < 0:
                     self.issues.append(
-                        {"type": "error", "message": "Unmatched endif/endfor", "line": i + 1, "template": name}
+                        {
+                            "type": "error",
+                            "message": "Unmatched endif/endfor",
+                            "line": i + 1,
+                            "template": name,
+                        }
                     )
 
         if depth != 0:
-            self.issues.append({"type": "error", "message": f"Unclosed if/for blocks: depth={depth}", "template": name})
+            self.issues.append(
+                {
+                    "type": "error",
+                    "message": f"Unclosed if/for blocks: depth={depth}",
+                    "template": name,
+                }
+            )
 
         # Check for multiple consecutive blank lines (common rendering issue)
         if "\n\n\n\n" in template_str:
@@ -207,10 +240,10 @@ def print_validation_report(issues: List[Dict[str, any]]):
     warnings = [i for i in issues if i["type"] == "warning"]
 
     print("\n🔍 Template Validation Report")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
     print(f"❌ Errors: {len(errors)}")
     print(f"⚠️  Warnings: {len(warnings)}")
-    print(f"{'='*50}\n")
+    print(f"{'=' * 50}\n")
 
     if errors:
         print("ERRORS:")

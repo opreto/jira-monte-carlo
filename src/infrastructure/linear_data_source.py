@@ -47,7 +47,12 @@ class LinearCSVDataSource(DataSource):
         logger.info(f"Parsing Linear CSV file: {file_path}")
 
         # Read CSV with Polars
-        df = pl.read_csv(file_path, infer_schema_length=10000, ignore_errors=True, try_parse_dates=True)
+        df = pl.read_csv(
+            file_path,
+            infer_schema_length=10000,
+            ignore_errors=True,
+            try_parse_dates=True,
+        )
 
         issues = []
 
@@ -64,16 +69,26 @@ class LinearCSVDataSource(DataSource):
                     cycle_name = row.get(self.field_mapping.sprint_field)
                     if cycle_name and cycle_name.strip():
                         if cycle_name not in cycles:
-                            cycles[cycle_name] = {"completed_points": 0.0, "start_date": None, "end_date": None}
+                            cycles[cycle_name] = {
+                                "completed_points": 0.0,
+                                "start_date": None,
+                                "end_date": None,
+                            }
 
                         # If issue is done and has points, add to cycle
-                        if self._is_done_status(row.get(self.field_mapping.status_field)):
-                            points = self._parse_estimate(row.get(self.field_mapping.story_points_field))
+                        if self._is_done_status(
+                            row.get(self.field_mapping.status_field)
+                        ):
+                            points = self._parse_estimate(
+                                row.get(self.field_mapping.story_points_field)
+                            )
                             if points:
                                 cycles[cycle_name]["completed_points"] += points
 
                             # Track cycle dates from completed issues
-                            completed_date = self._parse_date(row.get(self.field_mapping.resolved_field))
+                            completed_date = self._parse_date(
+                                row.get(self.field_mapping.resolved_field)
+                            )
                             if completed_date:
                                 if (
                                     not cycles[cycle_name]["end_date"]
@@ -107,7 +122,9 @@ class LinearCSVDataSource(DataSource):
 
         # If no cycles found, try to create synthetic sprints from monthly data
         if not sprints and issues:
-            logger.info("No cycles found, creating synthetic monthly sprints from completed work")
+            logger.info(
+                "No cycles found, creating synthetic monthly sprints from completed work"
+            )
             monthly_sprints = self._create_monthly_sprints(issues)
             sprints.extend(monthly_sprints)
 
@@ -143,7 +160,11 @@ class LinearCSVDataSource(DataSource):
                 ]
 
                 # Count matches
-                matches = sum(1 for field in linear_indicators if any(field.lower() == h.lower() for h in headers))
+                matches = sum(
+                    1
+                    for field in linear_indicators
+                    if any(field.lower() == h.lower() for h in headers)
+                )
 
                 # Linear has very specific field names
                 return matches >= 5
@@ -172,10 +193,14 @@ class LinearCSVDataSource(DataSource):
             cycle_values = []
 
             if self.field_mapping.status_field in df.columns:
-                status_values = df[self.field_mapping.status_field].unique().drop_nulls().to_list()
+                status_values = (
+                    df[self.field_mapping.status_field].unique().drop_nulls().to_list()
+                )
 
             if self.field_mapping.sprint_field in df.columns:
-                cycle_values = df[self.field_mapping.sprint_field].unique().drop_nulls().to_list()
+                cycle_values = (
+                    df[self.field_mapping.sprint_field].unique().drop_nulls().to_list()
+                )
 
             return {
                 "total_rows": df.height,
@@ -208,7 +233,9 @@ class LinearCSVDataSource(DataSource):
             resolved = self._parse_date(row.get(self.field_mapping.resolved_field))
 
             # Parse estimate (Linear uses T-shirt sizes or numeric)
-            story_points = self._parse_estimate(row.get(self.field_mapping.story_points_field))
+            story_points = self._parse_estimate(
+                row.get(self.field_mapping.story_points_field)
+            )
 
             # Use default value of 1 if no estimate provided and issue is not done
             if story_points is None and not self._is_done_status(status):
@@ -216,8 +243,12 @@ class LinearCSVDataSource(DataSource):
 
             # Extract other fields
             assignee = str(row.get(self.field_mapping.assignee_field, ""))
-            reporter = str(row.get("Creator", ""))  # Linear uses Creator instead of Reporter
-            issue_type = str(row.get("Type", "Issue"))  # Linear has different issue types
+            reporter = str(
+                row.get("Creator", "")
+            )  # Linear uses Creator instead of Reporter
+            issue_type = str(
+                row.get("Type", "Issue")
+            )  # Linear has different issue types
 
             # Parse labels
             labels = []
@@ -301,7 +332,14 @@ class LinearCSVDataSource(DataSource):
             pass
 
         # T-shirt size mapping
-        tshirt_mapping = {"XS": 1.0, "S": 2.0, "M": 3.0, "L": 5.0, "XL": 8.0, "XXL": 13.0}
+        tshirt_mapping = {
+            "XS": 1.0,
+            "S": 2.0,
+            "M": 3.0,
+            "L": 5.0,
+            "XL": 8.0,
+            "XXL": 13.0,
+        }
 
         return tshirt_mapping.get(estimate_str)
 
@@ -337,7 +375,12 @@ class LinearCSVDataSource(DataSource):
         from collections import defaultdict
 
         monthly_data = defaultdict(
-            lambda: {"completed_points": 0.0, "completed_issues": [], "start_date": None, "end_date": None}
+            lambda: {
+                "completed_points": 0.0,
+                "completed_issues": [],
+                "start_date": None,
+                "end_date": None,
+            }
         )
 
         # Group completed issues by month
@@ -353,14 +396,26 @@ class LinearCSVDataSource(DataSource):
                 monthly_data[month_key]["completed_issues"].append(issue)
 
                 # Track date range
-                if not monthly_data[month_key]["start_date"] or issue.resolved < monthly_data[month_key]["start_date"]:
+                if (
+                    not monthly_data[month_key]["start_date"]
+                    or issue.resolved < monthly_data[month_key]["start_date"]
+                ):
                     # Set to first day of month
-                    monthly_data[month_key]["start_date"] = issue.resolved.replace(day=1)
+                    monthly_data[month_key]["start_date"] = issue.resolved.replace(
+                        day=1
+                    )
 
-                if not monthly_data[month_key]["end_date"] or issue.resolved > monthly_data[month_key]["end_date"]:
+                if (
+                    not monthly_data[month_key]["end_date"]
+                    or issue.resolved > monthly_data[month_key]["end_date"]
+                ):
                     # Set to last day of month
-                    last_day = calendar.monthrange(issue.resolved.year, issue.resolved.month)[1]
-                    monthly_data[month_key]["end_date"] = issue.resolved.replace(day=last_day)
+                    last_day = calendar.monthrange(
+                        issue.resolved.year, issue.resolved.month
+                    )[1]
+                    monthly_data[month_key]["end_date"] = issue.resolved.replace(
+                        day=last_day
+                    )
 
         # Create sprints from monthly data
         sprints = []

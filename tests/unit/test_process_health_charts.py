@@ -107,7 +107,10 @@ class TestProcessHealthChartGenerator:
 
         # Verify layout
         assert "layout" in chart_data
-        assert chart_data["layout"]["title"]["text"] == "<b>Aging Work Items Distribution</b>"
+        assert (
+            chart_data["layout"]["title"]["text"]
+            == "<b>Aging Work Items Distribution</b>"
+        )
 
     def test_create_aging_by_status_chart(self, chart_generator):
         """Test creating aging by status chart"""
@@ -189,9 +192,36 @@ class TestProcessHealthChartGenerator:
         """Test creating sprint health trend chart"""
         now = datetime.now()
         sprint_metrics = [
-            SprintHealth("Sprint 1", now - timedelta(days=56), now - timedelta(days=42), 20, 25, 0, 0, 0.8),
-            SprintHealth("Sprint 2", now - timedelta(days=42), now - timedelta(days=28), 23, 25, 2, 0, 0.92),
-            SprintHealth("Sprint 3", now - timedelta(days=28), now - timedelta(days=14), 18, 20, 0, 2, 0.9),
+            SprintHealth(
+                "Sprint 1",
+                now - timedelta(days=56),
+                now - timedelta(days=42),
+                20,
+                25,
+                0,
+                0,
+                0.8,
+            ),
+            SprintHealth(
+                "Sprint 2",
+                now - timedelta(days=42),
+                now - timedelta(days=28),
+                23,
+                25,
+                2,
+                0,
+                0.92,
+            ),
+            SprintHealth(
+                "Sprint 3",
+                now - timedelta(days=28),
+                now - timedelta(days=14),
+                18,
+                20,
+                0,
+                2,
+                0.9,
+            ),
             SprintHealth("Sprint 4", now - timedelta(days=14), now, 25, 25, 0, 0, 1.0),
         ]
 
@@ -223,8 +253,26 @@ class TestProcessHealthChartGenerator:
         """Test creating sprint scope change chart"""
         now = datetime.now()
         sprint_metrics = [
-            SprintHealth("Sprint 1", now - timedelta(days=42), now - timedelta(days=28), 20, 25, 5, 0, 0.8),
-            SprintHealth("Sprint 2", now - timedelta(days=28), now - timedelta(days=14), 23, 25, 2, 3, 0.92),
+            SprintHealth(
+                "Sprint 1",
+                now - timedelta(days=42),
+                now - timedelta(days=28),
+                20,
+                25,
+                5,
+                0,
+                0.8,
+            ),
+            SprintHealth(
+                "Sprint 2",
+                now - timedelta(days=28),
+                now - timedelta(days=14),
+                23,
+                25,
+                2,
+                3,
+                0.92,
+            ),
             SprintHealth("Sprint 3", now - timedelta(days=14), now, 18, 20, 0, 2, 0.9),
         ]
 
@@ -291,12 +339,19 @@ class TestProcessHealthChartGenerator:
 
         # Verify data
         pie_data = chart_data["data"][0]
-        assert pie_data["labels"] == ["Low (≤2 days)", "Medium (3-5 days)", "High (>5 days)"]
+        assert pie_data["labels"] == [
+            "Low (≤2 days)",
+            "Medium (3-5 days)",
+            "High (>5 days)",
+        ]
         assert pie_data["values"] == [2, 1, 2]
 
         # Verify center annotation
         assert "annotations" in chart_data["layout"]
-        assert chart_data["layout"]["annotations"][0]["text"] == "<b>5</b><br>Blocked Items"
+        assert (
+            chart_data["layout"]["annotations"][0]["text"]
+            == "<b>5</b><br>Blocked Items"
+        )
 
     def test_create_process_health_score_gauge(self, chart_generator):
         """Test creating process health score gauge"""

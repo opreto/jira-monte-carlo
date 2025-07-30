@@ -73,7 +73,9 @@ class TestAnalyzeCapabilitiesUseCase:
 
         # Create use case and execute
         use_case = AnalyzeCapabilitiesUseCase(
-            issue_repository=issue_repo, sprint_repository=sprint_repo, field_mapping=None
+            issue_repository=issue_repo,
+            sprint_repository=sprint_repo,
+            field_mapping=None,
         )
         capabilities = use_case.execute()
 
@@ -120,7 +122,9 @@ class TestAnalyzeCapabilitiesUseCase:
 
         # Create use case and execute
         use_case = AnalyzeCapabilitiesUseCase(
-            issue_repository=issue_repo, sprint_repository=sprint_repo, field_mapping=None
+            issue_repository=issue_repo,
+            sprint_repository=sprint_repo,
+            field_mapping=None,
         )
         capabilities = use_case.execute()
 
@@ -164,7 +168,9 @@ class TestAnalyzeCapabilitiesUseCase:
 
         # Create use case and execute
         use_case = AnalyzeCapabilitiesUseCase(
-            issue_repository=issue_repo, sprint_repository=sprint_repo, field_mapping=None
+            issue_repository=issue_repo,
+            sprint_repository=sprint_repo,
+            field_mapping=None,
         )
         capabilities = use_case.execute()
 
@@ -197,7 +203,9 @@ class TestAnalyzeCapabilitiesUseCase:
 
         # Create use case and execute
         use_case = AnalyzeCapabilitiesUseCase(
-            issue_repository=issue_repo, sprint_repository=sprint_repo, field_mapping=None
+            issue_repository=issue_repo,
+            sprint_repository=sprint_repo,
+            field_mapping=None,
         )
         capabilities = use_case.execute()
 
@@ -250,7 +258,9 @@ class TestAnalyzeCapabilitiesUseCase:
 
         # Create use case and execute
         use_case = AnalyzeCapabilitiesUseCase(
-            issue_repository=issue_repo, sprint_repository=sprint_repo, field_mapping=None
+            issue_repository=issue_repo,
+            sprint_repository=sprint_repo,
+            field_mapping=None,
         )
         capabilities = use_case.execute()
 
@@ -296,7 +306,9 @@ class TestAnalyzeCapabilitiesUseCase:
 
         # Create use case and execute
         use_case = AnalyzeCapabilitiesUseCase(
-            issue_repository=issue_repo, sprint_repository=sprint_repo, field_mapping=None
+            issue_repository=issue_repo,
+            sprint_repository=sprint_repo,
+            field_mapping=None,
         )
         capabilities = use_case.execute()
 

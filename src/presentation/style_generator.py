@@ -657,6 +657,10 @@ a:hover {
 .combined-banner {
     background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
     border-color: #6b7280;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 .combined-banner h3 {
     color: #374151;
@@ -703,6 +707,36 @@ a:hover {
     background: rgba(34, 197, 94, 0.05);
     border-radius: 8px;
     border-left: 4px solid #22c55e;
+}
+
+/* Sticky behavior improvements */
+@media (min-width: 768px) {
+    .combined-banner {
+        margin: 0 -20px 20px -20px;
+        padding: 20px 40px;
+        border-radius: 0;
+    }
+}
+
+/* Mobile responsive toggle */
+@media (max-width: 767px) {
+    .scenario-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .scenario-toggle {
+        width: 100%;
+        justify-content: center;
+    }
+    .toggle-label {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+/* Ensure content doesn't jump when sticky */
+.report-container {
+    scroll-padding-top: 200px;
 }
 """
 

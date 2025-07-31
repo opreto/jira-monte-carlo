@@ -2,7 +2,6 @@
 
 import logging
 import os
-from pathlib import Path
 from typing import List, Optional
 
 import click
@@ -108,11 +107,15 @@ console = Console()
 # Field mapping options
 @click.option("--key-field", default="Issue key", help="Field name for issue key")
 @click.option("--summary-field", default="Summary", help="Field name for issue summary")
-@click.option("--points-field", default="Story Points", help="Field name for story points")
+@click.option(
+    "--points-field", default="Story Points", help="Field name for story points"
+)
 @click.option("--sprint-field", default="Sprint", help="Field name for sprint")
 @click.option("--status-field", default="Status", help="Field name for status")
 @click.option("--created-field", default="Created", help="Field name for created date")
-@click.option("--resolved-field", default="Resolved", help="Field name for resolved date")
+@click.option(
+    "--resolved-field", default="Resolved", help="Field name for resolved date"
+)
 @click.option("--labels-field", default="Labels", help="Field name for labels")
 @click.option("--type-field", default="Issue Type", help="Field name for issue type")
 @click.option("--assignee-field", default="Assignee", help="Field name for assignee")
@@ -121,7 +124,9 @@ console = Console()
 # Additional options
 @click.option("--sprint-length", default=14, help="Sprint length in days")
 @click.option("--stale-days", default=30, help="Days before item is considered stale")
-@click.option("--abandoned-days", default=90, help="Days before item is considered abandoned")
+@click.option(
+    "--abandoned-days", default=90, help="Days before item is considered abandoned"
+)
 def main(
     csv_paths: List[str],
     remaining: Optional[float],
@@ -157,14 +162,14 @@ def main(
     abandoned_days: int,
 ):
     """Sprint Radar - Agile Analytics & Forecasting Tool (Refactored)
-    
+
     Analyzes CSV data to forecast project completion using Monte Carlo simulations.
     """
     try:
         # Create args object to match existing interface
         class Args:
             pass
-        
+
         args = Args()
         args.csv_paths = csv_paths
         args.remaining_work = remaining
@@ -181,7 +186,7 @@ def main(
         args.open_browser = open_browser
         args.no_health = no_health
         args.jira_url = jira_url
-        
+
         # Field mappings
         args.key_field = key_field
         args.summary_field = summary_field
@@ -195,15 +200,15 @@ def main(
         args.assignee_field = assignee_field
         args.project_field = project_field
         args.blocked_field = blocked_field
-        
+
         # Additional
         args.sprint_length = sprint_length
         args.stale_days = stale_days
         args.abandoned_days = abandoned_days
-        
+
         # Create orchestrator
         orchestrator = MainOrchestrator(console)
-        
+
         # Determine workflow based on arguments
         if analyze_only:
             result = orchestrator.execute_analysis_only(args)
@@ -212,19 +217,23 @@ def main(
         else:
             # Full workflow: import -> forecast -> report
             result = orchestrator.execute_full_workflow(args)
-        
+
         # Handle result
         if result.success:
-            console.print("\n[bold green]✓ Sprint Radar completed successfully![/bold green]")
-            
+            console.print(
+                "\n[bold green]✓ Sprint Radar completed successfully![/bold green]"
+            )
+
             # Show output path if report was generated
-            if result.data and 'output_path' in result.data:
+            if result.data and "output_path" in result.data:
                 console.print(f"Report: {result.data['output_path']}")
         else:
-            console.print(f"\n[bold red]✗ Sprint Radar failed: {result.message}[/bold red]")
+            console.print(
+                f"\n[bold red]✗ Sprint Radar failed: {result.message}[/bold red]"
+            )
             if result.error:
                 logger.exception("Error details:", exc_info=result.error)
-    
+
     except Exception as e:
         console.print(f"\n[bold red]✗ Unexpected error: {str(e)}[/bold red]")
         logger.exception("Fatal error in Sprint Radar")
@@ -233,9 +242,10 @@ def main(
 
 if __name__ == "__main__":
     # Check if we should use the refactored version
-    if os.environ.get('USE_REFACTORED_CLI', 'false').lower() == 'true':
+    if os.environ.get("USE_REFACTORED_CLI", "false").lower() == "true":
         main()
     else:
         # Import and run original CLI
         from .cli import main as original_main
+
         original_main()

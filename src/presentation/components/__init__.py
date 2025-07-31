@@ -8,14 +8,14 @@ from .chart import ChartComponent, ChartGridComponent
 from .table import TableComponent, SummaryTableComponent
 
 __all__ = [
-    'Component',
-    'CompositeComponent',
-    'HeaderComponent',
-    'FooterComponent',
-    'MetricCardComponent',
-    'MetricCardGridComponent',
-    'ChartComponent',
-    'ChartGridComponent',
-    'TableComponent',
-    'SummaryTableComponent'
+    "Component",
+    "CompositeComponent",
+    "HeaderComponent",
+    "FooterComponent",
+    "MetricCardComponent",
+    "MetricCardGridComponent",
+    "ChartComponent",
+    "ChartGridComponent",
+    "TableComponent",
+    "SummaryTableComponent",
 ]

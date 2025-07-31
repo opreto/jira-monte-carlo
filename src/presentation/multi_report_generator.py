@@ -49,7 +49,9 @@ class MultiProjectReportGenerator:
 
         # Generate individual project reports
         project_links = {}
-        single_report_generator = HTMLReportGenerator(self.style_service, self.theme_name)
+        single_report_generator = HTMLReportGenerator(
+            self.style_service, self.theme_name
+        )
 
         for project in multi_report.projects:
             # Generate individual report with safe filename
@@ -71,7 +73,9 @@ class MultiProjectReportGenerator:
             # Generate historical data from velocity analysis
             from ..domain.value_objects import HistoricalData
 
-            historical_data = HistoricalData(velocities=[], cycle_times=[], throughput=[], dates=[], sprint_names=[])
+            historical_data = HistoricalData(
+                velocities=[], cycle_times=[], throughput=[], dates=[], sprint_names=[]
+            )
 
             if project.sprints:
                 # Natural sort function for sprint names
@@ -91,9 +95,14 @@ class MultiProjectReportGenerator:
                 sorted_sprints = sorted(project.sprints, key=natural_sort_key)
 
                 for sprint in sorted_sprints:
-                    if hasattr(sprint, "completed_points") and sprint.completed_points > 0:
+                    if (
+                        hasattr(sprint, "completed_points")
+                        and sprint.completed_points > 0
+                    ):
                         historical_data.velocities.append(sprint.completed_points)
-                        historical_data.sprint_names.append(getattr(sprint, "name", "Unknown"))
+                        historical_data.sprint_names.append(
+                            getattr(sprint, "name", "Unknown")
+                        )
                         # Keep dates for backwards compatibility
                         if hasattr(sprint, "end_date") and sprint.end_date:
                             historical_data.dates.append(sprint.end_date)
@@ -117,7 +126,9 @@ class MultiProjectReportGenerator:
 
         # Generate dashboard
         dashboard_path = output_dir / output_filename
-        self._generate_dashboard(multi_report, project_links, dashboard_path, model_info)
+        self._generate_dashboard(
+            multi_report, project_links, dashboard_path, model_info
+        )
 
         return dashboard_path
 
@@ -133,17 +144,28 @@ class MultiProjectReportGenerator:
         # Prepare data for charts
         project_names = [p.name for p in multi_report.projects]
         remaining_work = [p.remaining_work for p in multi_report.projects]
-        velocities = [p.velocity_metrics.average if p.velocity_metrics else 0 for p in multi_report.projects]
-        completion_percentages = [p.completion_percentage for p in multi_report.projects]
+        velocities = [
+            p.velocity_metrics.average if p.velocity_metrics else 0
+            for p in multi_report.projects
+        ]
+        completion_percentages = [
+            p.completion_percentage for p in multi_report.projects
+        ]
 
         # Generate charts data
         charts_data = {
             "project_comparison": self._create_project_comparison_chart(
                 project_names, remaining_work, velocities, completion_percentages
             ),
-            "velocity_comparison": self._create_velocity_comparison_chart(project_names, multi_report.projects),
-            "timeline_comparison": self._create_timeline_comparison_chart(multi_report.projects),
-            "workload_distribution": self._create_workload_distribution_chart(project_names, remaining_work),
+            "velocity_comparison": self._create_velocity_comparison_chart(
+                project_names, multi_report.projects
+            ),
+            "timeline_comparison": self._create_timeline_comparison_chart(
+                multi_report.projects
+            ),
+            "workload_distribution": self._create_workload_distribution_chart(
+                project_names, remaining_work
+            ),
         }
 
         # Generate HTML
@@ -157,7 +179,9 @@ class MultiProjectReportGenerator:
         # Write to file
         output_path.write_text(html_content, encoding="utf-8")
 
-    def _create_project_comparison_chart(self, names, remaining, velocities, completion):
+    def _create_project_comparison_chart(
+        self, names, remaining, velocities, completion
+    ):
         """Create project comparison bar chart"""
         # Calculate completed work for each project
         completed_work = []
@@ -167,7 +191,9 @@ class MultiProjectReportGenerator:
             if comp_decimal > 0 and comp_decimal < 1:
                 # If we know X% is complete and Y points remain, total = Y / (1 - X%)
                 total_work = remaining[i] / (1 - comp_decimal)
-                completed_work.append(total_work - remaining[i])  # Completed = Total - Remaining
+                completed_work.append(
+                    total_work - remaining[i]
+                )  # Completed = Total - Remaining
             else:
                 completed_work.append(0)
 
@@ -178,7 +204,9 @@ class MultiProjectReportGenerator:
                     "y": completed_work,
                     "name": "Completed Work",
                     "type": "bar",
-                    "marker": {"color": self.chart_colors["high_confidence"]},  # Green for completed
+                    "marker": {
+                        "color": self.chart_colors["high_confidence"]
+                    },  # Green for completed
                     "text": [f"{c:.1f}%" for c in completion],
                     "textposition": "inside",
                 },
@@ -187,7 +215,9 @@ class MultiProjectReportGenerator:
                     "y": remaining,
                     "name": "Remaining Work",
                     "type": "bar",
-                    "marker": {"color": self.chart_colors["low_confidence"]},  # Red for remaining
+                    "marker": {
+                        "color": self.chart_colors["low_confidence"]
+                    },  # Red for remaining
                     "text": [f"{100 - c:.1f}%" for c in completion],
                     "textposition": "inside",
                 },
@@ -207,7 +237,11 @@ class MultiProjectReportGenerator:
         data = []
         for project in projects:
             if project.sprints:
-                velocities = [s.completed_points for s in project.sprints if hasattr(s, "completed_points")]
+                velocities = [
+                    s.completed_points
+                    for s in project.sprints
+                    if hasattr(s, "completed_points")
+                ]
                 if velocities:
                     data.append(
                         {
@@ -305,7 +339,9 @@ class MultiProjectReportGenerator:
             "layout": {"title": "Workload Distribution", "showlegend": True},
         }
 
-    def _render_dashboard_template(self, multi_report, project_links, charts_data, model_info=None):
+    def _render_dashboard_template(
+        self, multi_report, project_links, charts_data, model_info=None
+    ):
         """Render the dashboard HTML template"""
 
         # Generate content from dashboard template

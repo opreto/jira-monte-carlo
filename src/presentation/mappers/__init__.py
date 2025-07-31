@@ -7,9 +7,9 @@ from .entity_mapper import EntityMapper
 from .presentation_mapper import PresentationMapper
 
 __all__ = [
-    'ViewModelMapper',
-    'ChartMapper', 
-    'RequestResponseMapper',
-    'EntityMapper',
-    'PresentationMapper'
+    "ViewModelMapper",
+    "ChartMapper",
+    "RequestResponseMapper",
+    "EntityMapper",
+    "PresentationMapper",
 ]

@@ -8,7 +8,7 @@ from .base import Component
 
 class HeaderComponent(Component):
     """Header component for Sprint Radar reports"""
-    
+
     def get_template(self) -> str:
         """Get header template"""
         return """
@@ -48,7 +48,7 @@ class HeaderComponent(Component):
     {% endif %}
 </header>
         """
-    
+
     def get_context(
         self,
         title: str,
@@ -56,10 +56,10 @@ class HeaderComponent(Component):
         project_name: Optional[str] = None,
         theme_name: str = "opreto",
         generated_date: Optional[str] = None,
-        navigation_items: Optional[list] = None
+        navigation_items: Optional[list] = None,
     ) -> Dict[str, Any]:
         """Get header context
-        
+
         Args:
             title: Main title
             subtitle: Optional subtitle
@@ -67,23 +67,23 @@ class HeaderComponent(Component):
             theme_name: Theme name
             generated_date: Generation date (defaults to now)
             navigation_items: Optional navigation items
-            
+
         Returns:
             Context dictionary
         """
         if not generated_date:
             generated_date = datetime.now().strftime("%Y-%m-%d %H:%M")
-        
+
         return {
-            'title': title,
-            'subtitle': subtitle,
-            'project_name': project_name,
-            'theme_name': theme_name,
-            'generated_date': generated_date,
-            'has_navigation': bool(navigation_items),
-            'navigation_items': navigation_items or []
+            "title": title,
+            "subtitle": subtitle,
+            "project_name": project_name,
+            "theme_name": theme_name,
+            "generated_date": generated_date,
+            "has_navigation": bool(navigation_items),
+            "navigation_items": navigation_items or [],
         }
-    
+
     def get_styles(self) -> str:
         """Get header-specific styles"""
         return """

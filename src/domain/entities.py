@@ -91,14 +91,18 @@ class Team:
             return 0.0
         # Calculate standard deviation manually to avoid numpy dependency in domain
         mean = self.average_velocity
-        variance = sum((x - mean) ** 2 for x in self.historical_velocities) / len(self.historical_velocities)
+        variance = sum((x - mean) ** 2 for x in self.historical_velocities) / len(
+            self.historical_velocities
+        )
         return variance**0.5
 
 
 @dataclass
 class SimulationConfig:
     num_simulations: int = 10000
-    confidence_levels: List[float] = field(default_factory=lambda: [0.5, 0.7, 0.85, 0.95])
+    confidence_levels: List[float] = field(
+        default_factory=lambda: [0.5, 0.7, 0.85, 0.95]
+    )
     velocity_field: str = "story_points"
     done_statuses: List[str] = field(default_factory=lambda: ["Done", "Closed"])
     in_progress_statuses: List[str] = field(default_factory=lambda: ["In Progress"])

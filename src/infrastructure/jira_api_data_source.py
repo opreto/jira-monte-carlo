@@ -24,7 +24,9 @@ class JiraApiDataSource:
     Supports both Jira Cloud and Server instances.
     """
 
-    def __init__(self, config: Optional[JiraConfig] = None, cache_ttl_hours: float = 1.0):
+    def __init__(
+        self, config: Optional[JiraConfig] = None, cache_ttl_hours: float = 1.0
+    ):
         """
         Initialize Jira API connection.
 
@@ -59,7 +61,7 @@ class JiraApiDataSource:
     def parse(self) -> Tuple[List[Issue], List[Sprint]]:
         """
         Fetch issues and sprints from Jira API.
-        
+
         If history_jql is configured, uses dual-query approach:
         1. Fetch forecast items (backlog) using forecast_jql
         2. Fetch historical items for velocity using history_jql
@@ -71,18 +73,20 @@ class JiraApiDataSource:
         """
         try:
             import hashlib
-            
+
             # Check if we should use dual-query approach
             if self.config.history_jql:
-                logger.info("Using dual-query approach (separate history and forecast JQLs)")
-                
+                logger.info(
+                    "Using dual-query approach (separate history and forecast JQLs)"
+                )
+
                 # Fetch forecast items (backlog to predict)
                 forecast_jql = self._build_forecast_jql()
                 logger.info(f"Fetching forecast items with JQL: {forecast_jql}")
-                
+
                 forecast_hash = hashlib.sha256(forecast_jql.encode()).hexdigest()[:16]
                 forecast_cache_key = f"jira_forecast_{self.config.url.replace('https://', '').replace('/', '_')}_{forecast_hash}"
-                
+
                 # Check cache for forecast items
                 cached_forecast = self.cache.get(forecast_cache_key)
                 if cached_forecast is not None:
@@ -93,14 +97,14 @@ class JiraApiDataSource:
                     forecast_issues = self._fetch_all_issues(forecast_jql)
                     logger.info(f"Fetched {len(forecast_issues)} forecast items")
                     self.cache.set(forecast_cache_key, forecast_issues)
-                
+
                 # Fetch historical items for velocity calculation
                 history_jql = self._build_history_jql()
                 logger.info(f"Fetching historical items with JQL: {history_jql}")
-                
+
                 history_hash = hashlib.sha256(history_jql.encode()).hexdigest()[:16]
                 history_cache_key = f"jira_history_{self.config.url.replace('https://', '').replace('/', '_')}_{history_hash}"
-                
+
                 # Check cache for historical data
                 cached_history = self.cache.get(history_cache_key)
                 if cached_history is not None:
@@ -111,25 +115,30 @@ class JiraApiDataSource:
                     logger.info("Cache miss, fetching historical items from Jira API")
                     history_issues = self._fetch_all_issues(history_jql)
                     logger.info(f"Fetched {len(history_issues)} historical items")
-                    
+
                     # Extract sprints from historical data
                     sprints = self._extract_sprints(history_issues)
-                    logger.info(f"Extracted {len(sprints)} sprints from historical data")
-                    
-                    self.cache.set(history_cache_key, {"issues": history_issues, "sprints": sprints})
-                
+                    logger.info(
+                        f"Extracted {len(sprints)} sprints from historical data"
+                    )
+
+                    self.cache.set(
+                        history_cache_key,
+                        {"issues": history_issues, "sprints": sprints},
+                    )
+
                 # Return forecast issues with historical sprints
                 return forecast_issues, sprints
-                
+
             else:
                 # Use legacy single-query approach
                 logger.info("Using single-query approach (legacy behavior)")
                 jql = self._build_jql_query()
                 logger.info(f"Fetching issues with JQL: {jql}")
-                
+
                 jql_hash = hashlib.sha256(jql.encode()).hexdigest()[:16]
                 cache_key = f"jira_issues_{self.config.url.replace('https://', '').replace('/', '_')}_{jql_hash}"
-                
+
                 # Check cache first
                 cached_data = self.cache.get(cache_key)
                 if cached_data is not None:
@@ -137,19 +146,19 @@ class JiraApiDataSource:
                     issues = cached_data["issues"]
                     sprints = cached_data["sprints"]
                     return issues, sprints
-                
+
                 # Fetch issues from API
                 logger.info("Cache miss, fetching from Jira API")
                 issues = self._fetch_all_issues(jql)
                 logger.info(f"Fetched {len(issues)} issues from Jira")
-                
+
                 # Extract sprints from issues
                 sprints = self._extract_sprints(issues)
                 logger.info(f"Extracted {len(sprints)} sprints from issues")
-                
+
                 # Cache the results
                 self.cache.set(cache_key, {"issues": issues, "sprints": sprints})
-                
+
                 return issues, sprints
 
         except Exception as e:
@@ -182,14 +191,14 @@ class JiraApiDataSource:
         jql += " ORDER BY created DESC"
 
         return jql
-    
+
     def _build_forecast_jql(self) -> str:
         """Build JQL query for forecast items (backlog)"""
         # Use forecast_jql if available, otherwise fall back to jql_filter
         if self.config.forecast_jql:
             return self.config.forecast_jql
         return self._build_jql_query()
-    
+
     def _build_history_jql(self) -> str:
         """Build JQL query for historical items (velocity calculation)"""
         if self.config.history_jql:
@@ -226,23 +235,31 @@ class JiraApiDataSource:
                 # Use direct REST API call for reliable pagination
                 try:
                     # The jql method should work with start parameter
-                    result = self.jira.jql(jql, start=start, limit=100, expand="changelog")
+                    result = self.jira.jql(
+                        jql, start=start, limit=100, expand="changelog"
+                    )
                 except ValueError as e:
                     if "deprecated" in str(e) and page_num == 1:
                         # Try enhanced_jql only for first page to see if it works
-                        logger.info("JQL deprecated, trying enhanced_jql for first batch")
+                        logger.info(
+                            "JQL deprecated, trying enhanced_jql for first batch"
+                        )
                         result = self.jira.enhanced_jql(jql)
                         batch_issues = result.get("issues", [])
                         if batch_issues:
                             issues.extend(self._parse_issues(batch_issues))
-                            logger.info(f"Enhanced JQL returned {len(batch_issues)} issues")
+                            logger.info(
+                                f"Enhanced JQL returned {len(batch_issues)} issues"
+                            )
                         # Enhanced JQL has limits, continue with regular pagination
                         if len(batch_issues) < 100:
                             break
                         continue
                     else:
                         # For subsequent pages, fall back to REST API
-                        logger.warning(f"Cannot fetch page {page_num} with JQL method, switching to REST API")
+                        logger.warning(
+                            f"Cannot fetch page {page_num} with JQL method, switching to REST API"
+                        )
                         # Get all remaining issues via REST
                         raw_issues = self._fetch_all_issues_rest(jql)
                         # Parse all issues
@@ -254,7 +271,9 @@ class JiraApiDataSource:
                     break
 
                 issues.extend(self._parse_issues(batch_issues))
-                logger.info(f"Fetched {len(batch_issues)} issues in this batch, total so far: {len(issues)}")
+                logger.info(
+                    f"Fetched {len(batch_issues)} issues in this batch, total so far: {len(issues)}"
+                )
 
                 # Check if this is the last page
                 if result.get("isLast", False):
@@ -278,7 +297,9 @@ class JiraApiDataSource:
             limit = 100
 
             while True:
-                result = self.jira.jql(jql, start=start, limit=limit, expand="changelog")
+                result = self.jira.jql(
+                    jql, start=start, limit=limit, expand="changelog"
+                )
 
                 batch_issues = result.get("issues", [])
                 if not batch_issues:
@@ -288,7 +309,9 @@ class JiraApiDataSource:
 
                 # Check if there are more issues
                 total = result.get("total", 0)
-                logger.info(f"Batch complete. Total available: {total}, fetched so far: {len(issues)}")
+                logger.info(
+                    f"Batch complete. Total available: {total}, fetched so far: {len(issues)}"
+                )
                 if start + limit >= total:
                     break
 
@@ -330,7 +353,9 @@ class JiraApiDataSource:
                 issues = data.get("issues", [])
                 total = data.get("total", 0)
 
-                logger.info(f"REST API: Received {len(issues)} issues. Total available: {total}")
+                logger.info(
+                    f"REST API: Received {len(issues)} issues. Total available: {total}"
+                )
 
                 if not issues:
                     break
@@ -441,8 +466,12 @@ class JiraApiDataSource:
             story_points=story_points,
             time_estimate=time_estimate,
             time_spent=time_spent,
-            assignee=fields.get("assignee", {}).get("displayName") if fields.get("assignee") else None,
-            reporter=fields.get("reporter", {}).get("displayName") if fields.get("reporter") else None,
+            assignee=fields.get("assignee", {}).get("displayName")
+            if fields.get("assignee")
+            else None,
+            reporter=fields.get("reporter", {}).get("displayName")
+            if fields.get("reporter")
+            else None,
             labels=fields.get("labels", []),
         )
 
@@ -572,7 +601,9 @@ class JiraApiDataSource:
                 sprints_dict[sprint_name] = {
                     "name": sprint_name,
                     "issues": [],
-                    "start_date": self._parse_date(sprint_data_from_issue.get("startDate")),
+                    "start_date": self._parse_date(
+                        sprint_data_from_issue.get("startDate")
+                    ),
                     "end_date": self._parse_date(sprint_data_from_issue.get("endDate")),
                 }
 
@@ -599,7 +630,9 @@ class JiraApiDataSource:
             # Last resort: infer from issues
             if not start_date or not end_date:
                 created_dates = [i.created for i in sprint_data["issues"] if i.created]
-                resolved_dates = [i.resolved for i in sprint_data["issues"] if i.resolved]
+                resolved_dates = [
+                    i.resolved for i in sprint_data["issues"] if i.resolved
+                ]
 
                 if not start_date and created_dates:
                     start_date = min(created_dates)
@@ -610,7 +643,9 @@ class JiraApiDataSource:
             completed_issues = [i for i in sprint_data["issues"] if i.resolved]
 
             # Calculate completed points
-            completed_points = sum(i.story_points or 0 for i in completed_issues if i.story_points)
+            completed_points = sum(
+                i.story_points or 0 for i in completed_issues if i.story_points
+            )
 
             sprint = Sprint(
                 name=sprint_name,
@@ -628,7 +663,9 @@ class JiraApiDataSource:
         try:
             # Try to get server info
             info = self.jira.get_server_info()
-            logger.info(f"Successfully connected to Jira: {info.get('serverTitle', 'Unknown')}")
+            logger.info(
+                f"Successfully connected to Jira: {info.get('serverTitle', 'Unknown')}"
+            )
             return True
         except Exception as e:
             logger.error(f"Failed to connect to Jira: {e}")
@@ -674,16 +711,16 @@ class JiraApiDataSource:
     def get_jql_query(self) -> str:
         """Get the JQL query being used"""
         return self._build_jql_query()
-    
+
     def get_jql_queries(self) -> Dict[str, str]:
         """Get both JQL queries (forecast and history)"""
         queries = {}
-        
+
         # Forecast JQL (backlog items)
         queries["forecast"] = self._build_forecast_jql()
-        
+
         # History JQL (velocity calculation) - only if configured
         if self.config.history_jql:
             queries["history"] = self._build_history_jql()
-        
+
         return queries

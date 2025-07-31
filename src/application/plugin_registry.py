@@ -16,10 +16,14 @@ class ReportPluginRegistry:
         self._checkers: Dict[ReportType, Type[ReportCapabilityChecker]] = {}
         self._registered_plugins: List[str] = []
 
-    def register(self, report_type: ReportType, checker_class: Type[ReportCapabilityChecker]) -> None:
+    def register(
+        self, report_type: ReportType, checker_class: Type[ReportCapabilityChecker]
+    ) -> None:
         """Register a custom capability checker for a report type"""
         if report_type in self._checkers:
-            logger.warning(f"Overriding existing checker for {report_type} with {checker_class.__name__}")
+            logger.warning(
+                f"Overriding existing checker for {report_type} with {checker_class.__name__}"
+            )
 
         self._checkers[report_type] = checker_class
         plugin_name = f"{checker_class.__module__}.{checker_class.__name__}"

@@ -300,7 +300,11 @@
       "Bash(USE_REFACTORED_CLI=true sprint-radar --help)",
       "Bash(USE_REFACTORED_CLI=true sprint-radar -f data/jira-sample.csv -n 1000 -o reports/integration-test-refactored.html --theme modern)",
       "Bash(USE_REFACTORED_CLI=true sprint-radar -f data/jira-sample.csv -n 1000 -o reports/integration-test-refactored.html --theme generic)",
-      "Bash(git cherry-pick:*)"
+      "Bash(git cherry-pick:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(echo:*)",
+      "Bash(PYTHONPATH=/Users/xavier/projects/opreto/montecarlo python -c \"\nimport logging\nlogging.basicConfig(level=logging.DEBUG, format=''''%(name)s - %(levelname)s - %(message)s'''')\n\nfrom src.presentation.cli import main\nimport sys\nsys.argv = [''''sprint-radar'''', ''''-f'''', ''''data/jira-sample.csv'''', ''''--enable-ml'''', ''''-o'''', ''''reports/ml-test.html'''']\nmain()\n\")",
+      "Bash(cp:*)"
     ],
     "deny": []
   }

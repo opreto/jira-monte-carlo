@@ -92,21 +92,35 @@ class JiraApiDataSourceAdapter(DataSource):
                 }
 
             # Get JQL queries
-            jql_query = self._api_source.get_jql_query() if self._api_source and connected else None
-            jql_queries = self._api_source.get_jql_queries() if self._api_source and connected else {}
+            jql_query = (
+                self._api_source.get_jql_query()
+                if self._api_source and connected
+                else None
+            )
+            jql_queries = (
+                self._api_source.get_jql_queries()
+                if self._api_source and connected
+                else {}
+            )
 
             return {
                 "format": "Jira API",
                 "connected": connected,
-                "url": self._api_source.config.url if self._api_source else "Not configured",
+                "url": self._api_source.config.url
+                if self._api_source
+                else "Not configured",
                 "is_cloud": self._api_source.is_cloud if self._api_source else None,
                 "project_info": project_info,
                 "projects": projects[:10],  # First 10 projects
                 "project_count": len(projects),
                 "field_info": field_info,
                 "configuration": {
-                    "has_project_filter": bool(self._api_source.config.project_key) if self._api_source else False,
-                    "has_jql_filter": bool(self._api_source.config.jql_filter) if self._api_source else False,
+                    "has_project_filter": bool(self._api_source.config.project_key)
+                    if self._api_source
+                    else False,
+                    "has_jql_filter": bool(self._api_source.config.jql_filter)
+                    if self._api_source
+                    else False,
                 },
                 "jql_query": jql_query,
                 "jql_queries": jql_queries,

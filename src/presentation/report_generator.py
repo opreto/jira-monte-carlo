@@ -8,6 +8,7 @@ import plotly.graph_objects as go
 from ..application.style_service import StyleService
 from ..domain.entities import SimulationConfig, SimulationResult
 from ..domain.forecasting import ModelInfo
+from ..domain.ml_decisions import MLDecisionSet
 from ..domain.process_health import ProcessHealthMetrics
 from ..domain.reporting_capabilities import ReportingCapabilities
 from ..domain.value_objects import HistoricalData, VelocityMetrics
@@ -47,6 +48,7 @@ class HTMLReportGenerator:
         jira_url: Optional[str] = None,
         scenario_banner: Optional[str] = None,
         combined_scenario_data: Optional[str] = None,
+        ml_decisions: Optional[MLDecisionSet] = None,
     ) -> Path:
         # Generate charts - handle None simulation_results
         charts = {}
@@ -183,6 +185,7 @@ class HTMLReportGenerator:
             "jira_url": jira_url,
             "scenario_banner": scenario_banner,
             "combined_scenario_data": combined_scenario_data,
+            "ml_decisions": ml_decisions,
         }
 
         # Render HTML

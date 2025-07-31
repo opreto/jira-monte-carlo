@@ -54,7 +54,10 @@ class DefaultCapabilityChecker(ReportCapabilityChecker):
         # Special cases for degraded mode
         if self.base_capability.report_type == ReportType.CYCLE_TIME_DISTRIBUTION:
             # Can estimate cycle time from status changes if updated date is available
-            if DataRequirement.RESOLVED_DATE in missing_required and DataRequirement.UPDATED_DATE in available_fields:
+            if (
+                DataRequirement.RESOLVED_DATE in missing_required
+                and DataRequirement.UPDATED_DATE in available_fields
+            ):
                 is_available = True
                 degraded_mode = True
                 missing_required.discard(DataRequirement.RESOLVED_DATE)
@@ -108,7 +111,9 @@ class ProcessHealthCapabilityChecker(ReportCapabilityChecker):
                 )
 
         # Use default logic for other checks
-        return DefaultCapabilityChecker(self.base_capability).check_availability(issues, sprints, available_fields)
+        return DefaultCapabilityChecker(self.base_capability).check_availability(
+            issues, sprints, available_fields
+        )
 
     def _can_detect_blocked_items(self, issues: List[Issue]) -> bool:
         """Check if we can detect blocked items from the data"""
@@ -122,12 +127,17 @@ class ProcessHealthCapabilityChecker(ReportCapabilityChecker):
 
         # Check status
         has_blocked_status = any(
-            any(keyword in issue.status.lower() for keyword in blocked_keywords) for issue in sample_issues
+            any(keyword in issue.status.lower() for keyword in blocked_keywords)
+            for issue in sample_issues
         )
 
         # Check labels
         has_blocked_labels = any(
-            any(keyword in label.lower() for label in issue.labels for keyword in blocked_keywords)
+            any(
+                keyword in label.lower()
+                for label in issue.labels
+                for keyword in blocked_keywords
+            )
             for issue in sample_issues
         )
 
@@ -199,7 +209,9 @@ class AnalyzeCapabilitiesUseCase:
         # Calculate data quality score
         total_fields = len(DataRequirement)
         available_field_count = len(available_fields)
-        data_quality_score = available_field_count / total_fields if total_fields > 0 else 0
+        data_quality_score = (
+            available_field_count / total_fields if total_fields > 0 else 0
+        )
 
         # Generate warnings
         warnings = self._generate_warnings(issues, sprints, available_fields)
@@ -225,13 +237,17 @@ class AnalyzeCapabilitiesUseCase:
 
         for report_type, base_capability in REPORT_REQUIREMENTS.items():
             if report_type in process_health_reports:
-                checkers[report_type] = ProcessHealthCapabilityChecker(report_type, base_capability)
+                checkers[report_type] = ProcessHealthCapabilityChecker(
+                    report_type, base_capability
+                )
             else:
                 checkers[report_type] = DefaultCapabilityChecker(base_capability)
 
         return checkers
 
-    def _analyze_available_fields(self, issues: List[Issue], sprints: List[Sprint]) -> Set[DataRequirement]:
+    def _analyze_available_fields(
+        self, issues: List[Issue], sprints: List[Sprint]
+    ) -> Set[DataRequirement]:
         """Analyze which data fields are available"""
         available = set()
 
@@ -256,7 +272,9 @@ class AnalyzeCapabilitiesUseCase:
             if date_range_seconds > 60:  # More than 1 minute variation
                 available.add(DataRequirement.CREATED_DATE)
             else:
-                logger.warning("Created dates appear to be missing or fake - aging analysis will be disabled")
+                logger.warning(
+                    "Created dates appear to be missing or fake - aging analysis will be disabled"
+                )
 
         # Check optional fields with threshold (50% populated)
         sample_size = min(100, len(issues))
@@ -268,13 +286,22 @@ class AnalyzeCapabilitiesUseCase:
         if sum(1 for i in sample_issues if i.updated) > sample_size * 0.5:
             available.add(DataRequirement.UPDATED_DATE)
 
-        if sum(1 for i in sample_issues if i.story_points is not None) > sample_size * 0.5:
+        if (
+            sum(1 for i in sample_issues if i.story_points is not None)
+            > sample_size * 0.5
+        ):
             available.add(DataRequirement.STORY_POINTS)
 
-        if sum(1 for i in sample_issues if i.time_estimate is not None) > sample_size * 0.3:
+        if (
+            sum(1 for i in sample_issues if i.time_estimate is not None)
+            > sample_size * 0.3
+        ):
             available.add(DataRequirement.TIME_ESTIMATE)
 
-        if sum(1 for i in sample_issues if i.time_spent is not None) > sample_size * 0.3:
+        if (
+            sum(1 for i in sample_issues if i.time_spent is not None)
+            > sample_size * 0.3
+        ):
             available.add(DataRequirement.TIME_SPENT)
 
         if sum(1 for i in sample_issues if i.assignee) > sample_size * 0.5:
@@ -295,10 +322,15 @@ class AnalyzeCapabilitiesUseCase:
         # Check for blocked status (in status or labels)
         blocked_keywords = ["blocked", "impediment", "waiting"]
         has_blocked_status = any(
-            any(keyword in issue.status.lower() for keyword in blocked_keywords) for issue in sample_issues
+            any(keyword in issue.status.lower() for keyword in blocked_keywords)
+            for issue in sample_issues
         )
         has_blocked_labels = any(
-            any(keyword in label.lower() for label in issue.labels for keyword in blocked_keywords)
+            any(
+                keyword in label.lower()
+                for label in issue.labels
+                for keyword in blocked_keywords
+            )
             for issue in sample_issues
         )
 
@@ -322,7 +354,9 @@ class AnalyzeCapabilitiesUseCase:
 
         # Check for low story points coverage
         if DataRequirement.STORY_POINTS in available_fields:
-            story_point_coverage = sum(1 for i in issues if i.story_points is not None) / len(issues)
+            story_point_coverage = sum(
+                1 for i in issues if i.story_points is not None
+            ) / len(issues)
             if story_point_coverage < 0.7:
                 warnings.append(
                     f"Only {story_point_coverage:.0%} of issues have story points. "
@@ -331,20 +365,30 @@ class AnalyzeCapabilitiesUseCase:
 
         # Check for missing resolved dates
         if DataRequirement.RESOLVED_DATE not in available_fields:
-            warnings.append("No resolved dates found. Cycle time and throughput metrics will be unavailable.")
+            warnings.append(
+                "No resolved dates found. Cycle time and throughput metrics will be unavailable."
+            )
 
         # Check for sprint data
         if not sprints and DataRequirement.SPRINT not in available_fields:
-            warnings.append("No sprint data found. Sprint-based analytics will be unavailable.")
+            warnings.append(
+                "No sprint data found. Sprint-based analytics will be unavailable."
+            )
 
         # Check for old data
         if issues:
             latest_date = max(i.created for i in issues if i.created)
             from datetime import datetime
 
-            now = datetime.now(latest_date.tzinfo) if latest_date.tzinfo else datetime.now()
+            now = (
+                datetime.now(latest_date.tzinfo)
+                if latest_date.tzinfo
+                else datetime.now()
+            )
             days_old = (now - latest_date).days
             if days_old > 30:
-                warnings.append(f"Latest data is {days_old} days old. Consider updating the export.")
+                warnings.append(
+                    f"Latest data is {days_old} days old. Consider updating the export."
+                )
 
         return warnings

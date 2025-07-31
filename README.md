@@ -28,6 +28,7 @@ A high-performance agile project analytics and forecasting platform. Sprint Rada
 - **Plugin Architecture**: Extensible plugin system for custom report enhancements
 - **Clickable Issue Links**: Direct links to Jira issues in HTML reports
 - **Health Score Visualization**: Gauge charts and breakdowns with 0-100% bounded scores
+- **ML-Enhanced Heuristics**: Privacy-preserving machine learning optimizes lookback periods and forecasts based on your team's patterns
 
 ## Getting Started (Quick Setup for Jira API)
 
@@ -241,6 +242,22 @@ Sprint Radar now intelligently determines the optimal number of historical sprin
 - Selects 6 sprints for teams with 7-12 sprints (standard retrospective period)
 - Uses 8-10 sprints for teams with 13-24 sprints (2-3 months of data)
 - Analyzes 12 sprints for teams with 25-52 sprints (one quarter)
+
+### ML-Enhanced Lookback Optimization
+
+For even better accuracy, enable machine learning optimization with `--enable-ml`:
+
+```bash
+# Enable ML optimization for velocity and sprint health lookback periods
+sprint-radar -f jira-api:// -o forecast.html --enable-ml
+```
+
+This feature:
+- Learns your team's specific patterns over time
+- Optimizes lookback periods separately for velocity and sprint health metrics
+- Provides visual indicators (🧠) showing when ML made decisions
+- Includes explanations in tooltips for transparency
+- Stores models locally with complete project isolation for privacy
 - Caps at 16-20 sprints for very mature teams (maintains relevance)
 
 You can override this by specifying a number: `--lookback-sprints 10`
@@ -279,6 +296,7 @@ Analysis Options:
   --min-velocity FLOAT           Minimum velocity threshold (default: 10.0)
   --include-process-health       Include process health metrics in the report (deprecated)
   --exclude-process-health       Exclude process health section from the report
+  --enable-ml                    Enable ML optimization for lookback periods
 
 Velocity Change Prediction (What-If Analysis):
   --velocity-change TEXT         Model velocity changes (format: "sprint:N[-M],factor:F[,reason:R]")

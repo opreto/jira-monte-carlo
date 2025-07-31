@@ -525,7 +525,34 @@ class ReportTemplates:
 </div>
 
 <div class="chart-container">
-    <h2>Historical Velocity Trend</h2>
+    <h2>Historical Velocity Trend
+        {% if ml_decisions and ml_decisions.has_ml_decisions() %}
+        <span class="ml-indicator tooltip">
+            <span class="tooltip-icon">🧠</span>
+            <span class="tooltip-text">
+                {% for decision in ml_decisions.get_decisions_by_type('lookback_period') %}
+                    {% if loop.first %}
+                        <strong>ML Model: {{ decision.model_name }}</strong><br>
+                    {% endif %}
+                    {% if decision.method == 'ml_model' %}
+                        <strong>Decision:</strong> Using {{ decision.value }} sprints lookback<br>
+                        <strong>Confidence:</strong> {{ (decision.confidence * 100)|round|int }}%<br>
+                        <strong>Rationale:</strong> {{ decision.get_summary() }}<br>
+                        {% if decision.factors %}
+                            <strong>Factors:</strong><br>
+                            {% for factor, description in decision.factors.items() %}
+                                • {{ description }}<br>
+                            {% endfor %}
+                        {% endif %}
+                    {% else %}
+                        <strong>Using standard heuristic</strong><br>
+                        {{ decision.factors.get('reason', 'Standard heuristic applied') }}
+                    {% endif %}
+                {% endfor %}
+            </span>
+        </span>
+        {% endif %}
+    </h2>
     <div class="chart-description">
         <strong>What it shows:</strong> Team velocity over recent sprints with trend line.<br>
         <strong>Why it matters:</strong> Reveals if team performance is improving, declining, or stable.<br>
@@ -744,7 +771,34 @@ class ReportTemplates:
 
 {% if process_health_metrics.sprint_health %}
 <div class="chart-container">
-    <h2>Sprint Completion Trend</h2>
+    <h2>Sprint Completion Trend
+        {% if ml_decisions and ml_decisions.has_ml_decisions() %}
+        {% for decision in ml_decisions.get_decisions_by_type('sprint_health_lookback') %}
+            {% if loop.first %}
+            <span class="ml-indicator tooltip">
+                <span class="tooltip-icon">🧠</span>
+                <span class="tooltip-text">
+                    <strong>ML Model: {{ decision.model_name }}</strong><br>
+                    {% if decision.method == 'ml_model' %}
+                        <strong>Decision:</strong> Using {{ decision.value }} sprints lookback<br>
+                        <strong>Confidence:</strong> {{ (decision.confidence * 100)|round|int }}%<br>
+                        <strong>Rationale:</strong> {{ decision.get_summary() }}<br>
+                        {% if decision.factors %}
+                            <strong>Factors:</strong><br>
+                            {% for factor, description in decision.factors.items() %}
+                                • {{ description }}<br>
+                            {% endfor %}
+                        {% endif %}
+                    {% else %}
+                        <strong>Using standard heuristic</strong><br>
+                        {{ decision.factors.get('reason', 'Standard heuristic applied') }}
+                    {% endif %}
+                </span>
+            </span>
+            {% endif %}
+        {% endfor %}
+        {% endif %}
+    </h2>
     <div class="chart-description">
         <strong>What it shows:</strong> Percentage of committed work completed each sprint.<br>
         <strong>Why it matters:</strong> Measures planning accuracy and delivery predictability.<br>
@@ -754,7 +808,34 @@ class ReportTemplates:
 </div>
 
 <div class="chart-container">
-    <h2>Sprint Scope Changes</h2>
+    <h2>Sprint Scope Changes
+        {% if ml_decisions and ml_decisions.has_ml_decisions() %}
+        {% for decision in ml_decisions.get_decisions_by_type('sprint_health_lookback') %}
+            {% if loop.first %}
+            <span class="ml-indicator tooltip">
+                <span class="tooltip-icon">🧠</span>
+                <span class="tooltip-text">
+                    <strong>ML Model: {{ decision.model_name }}</strong><br>
+                    {% if decision.method == 'ml_model' %}
+                        <strong>Decision:</strong> Using {{ decision.value }} sprints lookback<br>
+                        <strong>Confidence:</strong> {{ (decision.confidence * 100)|round|int }}%<br>
+                        <strong>Rationale:</strong> {{ decision.get_summary() }}<br>
+                        {% if decision.factors %}
+                            <strong>Factors:</strong><br>
+                            {% for factor, description in decision.factors.items() %}
+                                • {{ description }}<br>
+                            {% endfor %}
+                        {% endif %}
+                    {% else %}
+                        <strong>Using standard heuristic</strong><br>
+                        {{ decision.factors.get('reason', 'Standard heuristic applied') }}
+                    {% endif %}
+                </span>
+            </span>
+            {% endif %}
+        {% endfor %}
+        {% endif %}
+    </h2>
     <div class="chart-description">
         <strong>What it shows:</strong> Work added and removed during sprints.<br>
         <strong>Why it matters:</strong> Excessive scope change disrupts team focus and predictability.<br>

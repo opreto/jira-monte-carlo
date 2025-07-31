@@ -422,6 +422,34 @@ a:hover {
     border-color: var(--color-surface) transparent transparent transparent;
 }
 
+/* ML Decision Indicator */
+.ml-indicator {
+    margin-left: 0.5rem;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.ml-indicator .tooltip-icon {
+    background-color: rgba(var(--color-info-rgb, 33, 150, 243), 0.1);
+    border-color: var(--color-info);
+    font-size: 1rem;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+}
+
+.ml-indicator .tooltip-text {
+    min-width: 350px;
+    max-width: 450px;
+    font-size: 0.9rem;
+}
+
+.ml-indicator .tooltip-text strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--color-primary);
+}
+
 /* JQL Query Display */
 .jql-query-container {
     background: var(--color-surface);

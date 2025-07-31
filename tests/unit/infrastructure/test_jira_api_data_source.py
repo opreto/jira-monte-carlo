@@ -221,9 +221,7 @@ class TestJiraApiDataSource:
     def test_test_connection_failure(self, jira_data_source):
         """Test failed connection test"""
         jira_data_source.jira = Mock()
-        jira_data_source.jira.get_server_info.side_effect = Exception(
-            "Authentication failed"
-        )
+        jira_data_source.jira.get_server_info.side_effect = Exception("Authentication failed")
 
         result = jira_data_source.test_connection()
         assert result is False
@@ -243,9 +241,7 @@ class TestJiraApiDataSource:
     def test_parse_with_processing_error(self, jira_data_source):
         """Test parse method with processing error"""
         # Make fetch_all_issues raise an exception
-        with patch.object(
-            jira_data_source, "_fetch_all_issues", side_effect=Exception("API Error")
-        ):
+        with patch.object(jira_data_source, "_fetch_all_issues", side_effect=Exception("API Error")):
             with pytest.raises(ProcessingError) as exc_info:
                 jira_data_source.parse()
 

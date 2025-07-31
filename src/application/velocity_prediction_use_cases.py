@@ -36,9 +36,7 @@ class ApplyVelocityAdjustmentsUseCase:
         """
         # Always generate baseline
         logger.info("Generating baseline forecast")
-        baseline_result = self.forecasting_model.forecast(
-            remaining_work, velocity_metrics, config
-        )
+        baseline_result = self.forecasting_model.forecast(remaining_work, velocity_metrics, config)
 
         if not scenario:
             return baseline_result, None
@@ -47,14 +45,10 @@ class ApplyVelocityAdjustmentsUseCase:
         logger.info(f"Applying scenario: {scenario.name}")
 
         # Create adjusted velocity metrics
-        adjusted_metrics = self._create_adjusted_metrics(
-            velocity_metrics, scenario, config, team_size
-        )
+        adjusted_metrics = self._create_adjusted_metrics(velocity_metrics, scenario, config, team_size)
 
         # Run forecast with adjusted metrics
-        adjusted_result = self.forecasting_model.forecast(
-            remaining_work, adjusted_metrics, config
-        )
+        adjusted_result = self.forecasting_model.forecast(remaining_work, adjusted_metrics, config)
 
         return baseline_result, adjusted_result
 
@@ -76,9 +70,7 @@ class ApplyVelocityAdjustmentsUseCase:
         total_factor = 0.0
 
         for sprint in range(1, future_sprints + 1):
-            adjusted_velocity, _ = scenario.get_adjusted_velocity(
-                sprint, base_metrics.average, team_size
-            )
+            adjusted_velocity, _ = scenario.get_adjusted_velocity(sprint, base_metrics.average, team_size)
             total_factor += adjusted_velocity / base_metrics.average
 
         avg_factor = total_factor / future_sprints
@@ -113,14 +105,12 @@ class GenerateScenarioComparisonUseCase:
         # Calculate velocity impact
         # Use mean of completion sprints to estimate average
         baseline_avg_sprints = (
-            sum(baseline.completion_sprints[:100])
-            / min(100, len(baseline.completion_sprints))
+            sum(baseline.completion_sprints[:100]) / min(100, len(baseline.completion_sprints))
             if baseline.completion_sprints
             else baseline_p50
         )
         adjusted_avg_sprints = (
-            sum(adjusted.completion_sprints[:100])
-            / min(100, len(adjusted.completion_sprints))
+            sum(adjusted.completion_sprints[:100]) / min(100, len(adjusted.completion_sprints))
             if adjusted.completion_sprints
             else adjusted_p50
         )
@@ -154,6 +144,4 @@ class CreateVelocityScenarioUseCase:
         sorted_adjustments = sorted(velocity_adjustments, key=lambda a: a.sprint_start)
         sorted_changes = sorted(team_changes, key=lambda c: c.sprint)
 
-        return VelocityScenario(
-            name=name, adjustments=sorted_adjustments, team_changes=sorted_changes
-        )
+        return VelocityScenario(name=name, adjustments=sorted_adjustments, team_changes=sorted_changes)

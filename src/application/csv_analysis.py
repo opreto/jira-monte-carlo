@@ -61,12 +61,8 @@ class AnalyzeCSVStructureUseCase:
         column_groups = self._group_related_columns(column_metadata)
 
         # Extract specific values
-        status_values = self._extract_unique_values(
-            sample_rows, column_groups.get("status")
-        )
-        sprint_values = self._extract_sprint_values(
-            sample_rows, column_groups.get("sprint")
-        )
+        status_values = self._extract_unique_values(sample_rows, column_groups.get("status"))
+        sprint_values = self._extract_sprint_values(sample_rows, column_groups.get("sprint"))
 
         # Suggest field mappings
         field_mappings = self._suggest_field_mappings(column_groups)
@@ -79,10 +75,7 @@ class AnalyzeCSVStructureUseCase:
             col.name
             for col in column_metadata
             if col.column_type == ColumnType.NUMERIC
-            or (
-                col.column_type == ColumnType.CUSTOM_FIELD
-                and "point" in col.name.lower()
-            )
+            or (col.column_type == ColumnType.CUSTOM_FIELD and "point" in col.name.lower())
         ]
 
         return CSVAnalysisResult(
@@ -102,9 +95,7 @@ class AnalyzeCSVStructureUseCase:
             return rows
         return random.sample(rows, self.sample_size)
 
-    def _analyze_columns(
-        self, headers: List[str], sample_rows: List[List[str]]
-    ) -> List[ColumnMetadata]:
+    def _analyze_columns(self, headers: List[str], sample_rows: List[List[str]]) -> List[ColumnMetadata]:
         """Analyze each column to determine type and characteristics"""
         column_metadata = []
 
@@ -152,9 +143,7 @@ class AnalyzeCSVStructureUseCase:
         # Check for custom fields
         if header.startswith("Custom field"):
             # Further analyze custom field type
-            if any(
-                word in header_lower for word in ["story", "point", "estimate", "size"]
-            ):
+            if any(word in header_lower for word in ["story", "point", "estimate", "size"]):
                 return ColumnType.NUMERIC
             elif "sprint" in header_lower:
                 return ColumnType.SPRINT
@@ -171,9 +160,7 @@ class AnalyzeCSVStructureUseCase:
 
         return ColumnType.UNKNOWN
 
-    def _group_related_columns(
-        self, columns: List[ColumnMetadata]
-    ) -> Dict[str, ColumnGroup]:
+    def _group_related_columns(self, columns: List[ColumnMetadata]) -> Dict[str, ColumnGroup]:
         """Group columns that appear to be related (e.g., multiple Sprint columns)"""
         groups = {}
 
@@ -188,10 +175,7 @@ class AnalyzeCSVStructureUseCase:
                 base_name_groups[base_name].append(col)
             else:
                 # Check if there are duplicated versions of this column
-                has_duplicates = any(
-                    other.name.startswith(f"{col.name}_duplicated_")
-                    for other in columns
-                )
+                has_duplicates = any(other.name.startswith(f"{col.name}_duplicated_") for other in columns)
                 if has_duplicates:
                     base_name_groups[col.name].append(col)
                 else:
@@ -226,9 +210,7 @@ class AnalyzeCSVStructureUseCase:
 
         return groups
 
-    def _suggest_field_mappings(
-        self, column_groups: Dict[str, ColumnGroup]
-    ) -> Dict[str, str]:
+    def _suggest_field_mappings(self, column_groups: Dict[str, ColumnGroup]) -> Dict[str, str]:
         """Suggest field mappings based on column analysis"""
         suggestions = {}
 
@@ -252,21 +234,14 @@ class AnalyzeCSVStructureUseCase:
         # Find story points field
         for group_name, group in column_groups.items():
             col = group.columns[0]
-            if (
-                col.column_type == ColumnType.NUMERIC
-                or col.column_type == ColumnType.CUSTOM_FIELD
-            ):
-                if any(
-                    word in col.name.lower() for word in ["story", "point", "estimate"]
-                ):
+            if col.column_type == ColumnType.NUMERIC or col.column_type == ColumnType.CUSTOM_FIELD:
+                if any(word in col.name.lower() for word in ["story", "point", "estimate"]):
                     suggestions["story_points_field"] = col.name
                     break
 
         return suggestions
 
-    def _extract_unique_values(
-        self, rows: List[List[str]], column_group: Optional[ColumnGroup]
-    ) -> List[str]:
+    def _extract_unique_values(self, rows: List[List[str]], column_group: Optional[ColumnGroup]) -> List[str]:
         """Extract unique values from a column group"""
         if not column_group:
             return []
@@ -281,9 +256,7 @@ class AnalyzeCSVStructureUseCase:
 
         return sorted(list(values))
 
-    def _extract_sprint_values(
-        self, rows: List[List[str]], sprint_group: Optional[ColumnGroup]
-    ) -> List[str]:
+    def _extract_sprint_values(self, rows: List[List[str]], sprint_group: Optional[ColumnGroup]) -> List[str]:
         """Extract sprint values using the aggregation strategy"""
         if not sprint_group:
             return []
@@ -309,9 +282,7 @@ class AnalyzeCSVStructureUseCase:
 
         return sorted(list(sprint_values))
 
-    def _analyze_date_formats(
-        self, rows: List[List[str]], columns: List[ColumnMetadata]
-    ) -> Dict[str, List[str]]:
+    def _analyze_date_formats(self, rows: List[List[str]], columns: List[ColumnMetadata]) -> Dict[str, List[str]]:
         """Analyze date formats in date columns"""
         date_formats = {}
 
@@ -382,9 +353,7 @@ class AnalyzeCSVStructureUseCase:
 class AnalyzeVelocityUseCase:
     """Analyze velocity data with outlier detection and time filtering"""
 
-    def execute(
-        self, velocity_data: List[VelocityDataPoint], config: VelocityAnalysisConfig
-    ) -> VelocityAnalysisResult:
+    def execute(self, velocity_data: List[VelocityDataPoint], config: VelocityAnalysisConfig) -> VelocityAnalysisResult:
         """Analyze velocity data and filter outliers"""
 
         if not velocity_data:
@@ -406,11 +375,7 @@ class AnalyzeVelocityUseCase:
             age_filtered = velocity_data  # Use all if none meet criteria
 
         # Filter by min/max bounds
-        bound_filtered = [
-            v
-            for v in age_filtered
-            if config.min_velocity <= v.completed_points <= config.max_velocity
-        ]
+        bound_filtered = [v for v in age_filtered if config.min_velocity <= v.completed_points <= config.max_velocity]
 
         if not bound_filtered:
             bound_filtered = age_filtered
@@ -435,22 +400,17 @@ class AnalyzeVelocityUseCase:
                 filtered_velocities.append(v)
 
         # Take most recent sprints if configured
-        if (
-            config.lookback_sprints > 0
-            and len(filtered_velocities) > config.lookback_sprints
-        ):
-            filtered_velocities = sorted(
-                filtered_velocities, key=lambda v: v.sprint_date, reverse=True
-            )[: config.lookback_sprints]
+        if config.lookback_sprints > 0 and len(filtered_velocities) > config.lookback_sprints:
+            filtered_velocities = sorted(filtered_velocities, key=lambda v: v.sprint_date, reverse=True)[
+                : config.lookback_sprints
+            ]
 
         # Calculate final statistics
         final_velocities = [v.completed_points for v in filtered_velocities]
 
         if final_velocities:
             final_mean = statistics.mean(final_velocities)
-            final_std = (
-                statistics.stdev(final_velocities) if len(final_velocities) > 1 else 0
-            )
+            final_std = statistics.stdev(final_velocities) if len(final_velocities) > 1 else 0
             final_median = statistics.median(final_velocities)
 
             # Calculate trend
@@ -459,10 +419,7 @@ class AnalyzeVelocityUseCase:
                 x_mean = sum(x) / len(x)
                 y_mean = final_mean
 
-                numerator = sum(
-                    (x[i] - x_mean) * (final_velocities[i] - y_mean)
-                    for i in range(len(x))
-                )
+                numerator = sum((x[i] - x_mean) * (final_velocities[i] - y_mean) for i in range(len(x)))
                 denominator = sum((x[i] - x_mean) ** 2 for i in range(len(x)))
 
                 trend = numerator / denominator if denominator != 0 else 0.0
@@ -470,9 +427,7 @@ class AnalyzeVelocityUseCase:
                 trend = 0.0
 
             # Calculate confidence level based on data quality
-            confidence = self._calculate_confidence(
-                filtered_velocities, outliers, config
-            )
+            confidence = self._calculate_confidence(filtered_velocities, outliers, config)
         else:
             final_mean = final_std = final_median = trend = confidence = 0.0
 
@@ -540,9 +495,7 @@ class AnalyzeVelocityUseCase:
         date_diffs = []
 
         for i in range(1, len(sorted_velocities)):
-            diff = (
-                sorted_velocities[i].sprint_date - sorted_velocities[i - 1].sprint_date
-            ).days
+            diff = (sorted_velocities[i].sprint_date - sorted_velocities[i - 1].sprint_date).days
             if diff > 0:  # Only consider positive differences
                 date_diffs.append(diff)
 
@@ -563,7 +516,5 @@ class AnalyzeVelocityUseCase:
         elif sprint_duration > 28:
             sprint_duration = 14  # Default to 2 weeks if unreasonable
 
-        logger.info(
-            f"Detected sprint duration: {sprint_duration} days ({sprint_duration // 7} weeks)"
-        )
+        logger.info(f"Detected sprint duration: {sprint_duration} days ({sprint_duration // 7} weeks)")
         return sprint_duration

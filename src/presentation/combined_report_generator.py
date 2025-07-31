@@ -112,9 +112,7 @@ class CombinedReportGenerator:
         """Prepare chart data for a single scenario"""
         # Extract key metrics
         percentiles = results.percentiles
-        completion_sprints = (
-            results.completion_sprints[:1000] if results.completion_sprints else []
-        )
+        completion_sprints = results.completion_sprints[:1000] if results.completion_sprints else []
 
         # Prepare probability distribution data
         prob_data = []
@@ -128,15 +126,10 @@ class CombinedReportGenerator:
             for sprint in sorted(sprint_counts.keys()):
                 prob = sprint_counts[sprint] / total
                 prob_data.append({"sprint": sprint, "probability": prob})
-            logger.info(
-                f"Reconstructed probability distribution from {len(completion_sprints)} completion sprints"
-            )
+            logger.info(f"Reconstructed probability distribution from {len(completion_sprints)} completion sprints")
 
         # Fallback to original probability_distribution if no completion sprints
-        elif (
-            hasattr(results, "probability_distribution")
-            and results.probability_distribution
-        ):
+        elif hasattr(results, "probability_distribution") and results.probability_distribution:
             # Handle both dict and list formats
             if isinstance(results.probability_distribution, dict):
                 for sprint, prob in results.probability_distribution.items():
@@ -145,9 +138,7 @@ class CombinedReportGenerator:
                 prob_data.sort(key=lambda x: x["sprint"])
             else:
                 # If it's a list (legacy histogram format), skip it as it's not useful
-                logger.warning(
-                    "Skipping legacy histogram format probability_distribution"
-                )
+                logger.warning("Skipping legacy histogram format probability_distribution")
 
         # Prepare confidence intervals
         confidence_data = []
@@ -183,15 +174,11 @@ class CombinedReportGenerator:
             "completion_sprints": completion_sprints,
             "probability_distribution": prob_data,
             "confidence_intervals": confidence_data,
-            "mean_completion": results.mean_completion_date.isoformat()
-            if results.mean_completion_date
-            else None,
+            "mean_completion": results.mean_completion_date.isoformat() if results.mean_completion_date else None,
             "std_dev_days": results.std_dev_days,
         }
 
-    def _create_combined_banner(
-        self, scenario: VelocityScenario, comparison: ScenarioComparison
-    ) -> str:
+    def _create_combined_banner(self, scenario: VelocityScenario, comparison: ScenarioComparison) -> str:
         """Create banner for combined report with toggle"""
         scenario_desc = scenario.get_summary()
         impact_desc = comparison.get_impact_summary()

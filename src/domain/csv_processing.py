@@ -29,9 +29,7 @@ class CSVAnalyzer(ABC):
         pass
 
     @abstractmethod
-    def extract_sprints(
-        self, df: pd.DataFrame, field_mapping: FieldMapping
-    ) -> List[Sprint]:
+    def extract_sprints(self, df: pd.DataFrame, field_mapping: FieldMapping) -> List[Sprint]:
         """Extract sprint information from CSV data"""
         pass
 

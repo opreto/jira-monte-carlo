@@ -107,10 +107,7 @@ class TestProcessHealthChartGenerator:
 
         # Verify layout
         assert "layout" in chart_data
-        assert (
-            chart_data["layout"]["title"]["text"]
-            == "<b>Aging Work Items Distribution</b>"
-        )
+        assert chart_data["layout"]["title"]["text"] == "<b>Aging Work Items Distribution</b>"
 
     def test_create_aging_by_status_chart(self, chart_generator):
         """Test creating aging by status chart"""
@@ -348,10 +345,7 @@ class TestProcessHealthChartGenerator:
 
         # Verify center annotation
         assert "annotations" in chart_data["layout"]
-        assert (
-            chart_data["layout"]["annotations"][0]["text"]
-            == "<b>5</b><br>Blocked Items"
-        )
+        assert chart_data["layout"]["annotations"][0]["text"] == "<b>5</b><br>Blocked Items"
 
     def test_create_process_health_score_gauge(self, chart_generator):
         """Test creating process health score gauge"""

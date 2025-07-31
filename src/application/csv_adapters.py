@@ -16,9 +16,7 @@ class EnhancedSprintExtractorAdapter(SprintExtractor):
     the domain SprintExtractor interface.
     """
 
-    def __init__(
-        self, status_mapping: Dict[str, List[str]], field_mapping: FieldMapping
-    ):
+    def __init__(self, status_mapping: Dict[str, List[str]], field_mapping: FieldMapping):
         """
         Initialize with dependencies needed by the infrastructure implementation.
 
@@ -56,9 +54,7 @@ class EnhancedSprintExtractorAdapter(SprintExtractor):
                 if issue.status in self.status_mapping.get("done", []):
                     sprints_data[sprint_name]["completed_issues"].append(issue)
                     if issue.story_points:
-                        sprints_data[sprint_name]["completed_points"] += (
-                            issue.story_points
-                        )
+                        sprints_data[sprint_name]["completed_points"] += issue.story_points
 
         # Convert to Sprint entities
         sprints = []
@@ -73,11 +69,7 @@ class EnhancedSprintExtractorAdapter(SprintExtractor):
 
             if data["completed_issues"]:
                 # Use latest resolved date as approximate end
-                resolved_dates = [
-                    issue.resolved
-                    for issue in data["completed_issues"]
-                    if issue.resolved
-                ]
+                resolved_dates = [issue.resolved for issue in data["completed_issues"] if issue.resolved]
                 if resolved_dates:
                     end_date = max(resolved_dates)
 
@@ -125,9 +117,7 @@ class EnhancedSprintExtractorAdapter(SprintExtractor):
                 start_date=datetime.now(),  # Would need actual dates
                 end_date=datetime.now(),  # Would need actual dates
                 completed_points=metrics.get("completed_points", 0),
-                committed_points=metrics.get(
-                    "committed_points", metrics.get("completed_points", 0)
-                ),
+                committed_points=metrics.get("committed_points", metrics.get("completed_points", 0)),
             )
             sprints.append(sprint)
 

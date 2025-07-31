@@ -50,9 +50,7 @@ from .multi_report_generator import MultiProjectReportGenerator
 from .report_generator import HTMLReportGenerator
 
 console = Console()
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -73,9 +71,7 @@ logger = logging.getLogger(__name__)
     default="auto",
     help="Data source format (default: auto-detect)",
 )
-@click.option(
-    "--num-simulations", "-n", default=10000, help="Number of Monte Carlo simulations"
-)
+@click.option("--num-simulations", "-n", default=10000, help="Number of Monte Carlo simulations")
 @click.option(
     "--output",
     "-o",
@@ -112,9 +108,7 @@ logger = logging.getLogger(__name__)
     "--story-points-field",
     help="CSV column for story points (default: varies by format)",
 )
-@click.option(
-    "--sprint-field", default="Sprint", help="CSV column for sprint (default: Sprint)"
-)
+@click.option("--sprint-field", default="Sprint", help="CSV column for sprint (default: Sprint)")
 # Status mapping options
 @click.option(
     "--done-statuses",
@@ -147,9 +141,7 @@ logger = logging.getLogger(__name__)
     default=6,
     help="Number of sprints to analyze for velocity",
 )
-@click.option(
-    "--analyze-only", is_flag=True, help="Only run CSV analysis without simulation"
-)
+@click.option("--analyze-only", is_flag=True, help="Only run CSV analysis without simulation")
 @click.option(
     "--max-velocity-age",
     type=int,
@@ -267,9 +259,7 @@ def main(
                 for entry in info["entries"]:
                     status = "Expired" if entry["expired"] else "Valid"
                     cache_table.add_row(
-                        entry["key"][:50] + "..."
-                        if len(entry["key"]) > 50
-                        else entry["key"],
+                        entry["key"][:50] + "..." if len(entry["key"]) > 50 else entry["key"],
                         str(entry["age_minutes"]),
                         f"{entry['size_kb']:.1f}",
                         status,
@@ -291,9 +281,7 @@ def main(
 
     # Get data source files/URLs
     if not csv_files:
-        console.print(
-            "[red]Error: At least one data source is required. Use --csv-file option.[/red]"
-        )
+        console.print("[red]Error: At least one data source is required. Use --csv-file option.[/red]")
         return
 
     # Handle both file paths and API URLs
@@ -316,11 +304,7 @@ def main(
     # Convert format string to enum
     source_type = None
     if data_format != "auto":
-        source_type = (
-            DataSourceType.JIRA_CSV
-            if data_format == "jira"
-            else DataSourceType.LINEAR_CSV
-        )
+        source_type = DataSourceType.JIRA_CSV if data_format == "jira" else DataSourceType.LINEAR_CSV
 
     # Configure field mappings - only if explicitly provided
     field_mapping = None
@@ -344,8 +328,7 @@ def main(
             created_field=created_field,
             updated_field="Updated",  # Default
             resolved_field=resolved_field,
-            story_points_field=story_points_field
-            or "Custom field (Story point estimate)",
+            story_points_field=story_points_field or "Custom field (Story point estimate)",
             time_estimate_field="Original estimate",  # Default
             time_spent_field="Time Spent",  # Default
             assignee_field="Assignee",  # Default
@@ -360,12 +343,8 @@ def main(
     # Configure status mappings
     # Use CLI-provided status mapping
     status_mapping = {
-        "done": done_statuses.split(",")
-        if done_statuses
-        else ["Done", "Closed", "Resolved"],
-        "in_progress": in_progress_statuses.split(",")
-        if in_progress_statuses
-        else ["In Progress"],
+        "done": done_statuses.split(",") if done_statuses else ["Done", "Closed", "Resolved"],
+        "in_progress": in_progress_statuses.split(",") if in_progress_statuses else ["In Progress"],
         "todo": todo_statuses.split(",") if todo_statuses else ["To Do", "Open"],
     }
     # Clean up whitespace
@@ -411,9 +390,7 @@ def main(
         issues, sprints = import_use_case.execute(
             file_path=csv_path, source_type=source_type, field_mapping=field_mapping
         )
-        console.print(
-            f"[green]✓ Loaded {len(issues)} issues and {len(sprints)} sprints[/green]"
-        )
+        console.print(f"[green]✓ Loaded {len(issues)} issues and {len(sprints)} sprints[/green]")
 
     except ValueError as e:
         console.print(f"[red]Error: {str(e)}[/red]")
@@ -443,18 +420,12 @@ def main(
 
     # Calculate remaining work
     remaining_use_case = CalculateRemainingWorkUseCase(issue_repo)
-    remaining_work = remaining_use_case.execute(
-        status_mapping.get("todo", []), velocity_field
-    )
+    remaining_work = remaining_use_case.execute(status_mapping.get("todo", []), velocity_field)
 
     # Get story size breakdown
-    story_size_breakdown = remaining_use_case.get_story_size_breakdown(
-        status_mapping.get("todo", [])
-    )
+    story_size_breakdown = remaining_use_case.get_story_size_breakdown(status_mapping.get("todo", []))
 
-    console.print(
-        f"\n[cyan]Remaining work: {remaining_work:.1f} {velocity_field}[/cyan]"
-    )
+    console.print(f"\n[cyan]Remaining work: {remaining_work:.1f} {velocity_field}[/cyan]")
 
     # Get model type from string
     model_type = ModelType.MONTE_CARLO  # Default
@@ -485,9 +456,7 @@ def main(
             try:
                 adjustment = parser.parse_velocity_change(vc)
                 adjustments.append(adjustment)
-                console.print(
-                    f"[cyan]Velocity adjustment: {adjustment.get_description()}[/cyan]"
-                )
+                console.print(f"[cyan]Velocity adjustment: {adjustment.get_description()}[/cyan]")
             except ValueError as e:
                 console.print(f"[red]Error parsing velocity change: {e}[/red]")
                 return
@@ -524,9 +493,7 @@ def main(
             avg_duration = sum(durations) / len(durations)
             # Round to nearest week
             sprint_duration = int(round(avg_duration / 7) * 7)
-            console.print(
-                f"[cyan]Detected sprint duration: {sprint_duration} days[/cyan]"
-            )
+            console.print(f"[cyan]Detected sprint duration: {sprint_duration} days[/cyan]")
 
     # Check if we're using the new model abstraction or legacy path
     if model_type == ModelType.MONTE_CARLO:
@@ -586,8 +553,7 @@ def main(
 
                 today = datetime.now()
                 completion_dates = [
-                    today + timedelta(days=int(s * sprint_duration))
-                    for s in forecast_result.sample_predictions[:100]
+                    today + timedelta(days=int(s * sprint_duration)) for s in forecast_result.sample_predictions[:100]
                 ]
 
                 return SimulationResult(
@@ -610,9 +576,7 @@ def main(
             model_info = forecasting_model.get_model_info()
         else:
             simulation_use_case = RunMonteCarloSimulationUseCase(issue_repo)
-            results = simulation_use_case.execute(
-                remaining_work, velocity_metrics, config
-            )
+            results = simulation_use_case.execute(remaining_work, velocity_metrics, config)
     else:
         # Use new model abstraction for other models
         forecasting_model = model_factory.create(model_type)
@@ -624,9 +588,7 @@ def main(
             model_config.sprint_duration_days = sprint_duration
 
         forecast_use_case = GenerateForecastUseCase(forecasting_model, issue_repo)
-        forecast_result = forecast_use_case.execute(
-            remaining_work, velocity_metrics, model_config
-        )
+        forecast_result = forecast_use_case.execute(remaining_work, velocity_metrics, model_config)
 
         # Convert to legacy SimulationResult format for report compatibility
         import statistics
@@ -647,8 +609,7 @@ def main(
         # Generate sample completion dates
         today = datetime.now()
         completion_dates = [
-            today + timedelta(days=int(s * sprint_duration))
-            for s in forecast_result.sample_predictions[:100]
+            today + timedelta(days=int(s * sprint_duration)) for s in forecast_result.sample_predictions[:100]
         ]
 
         # Create legacy result
@@ -680,9 +641,7 @@ def main(
         # Sort sprints chronologically instead of by name for consistency with other charts
 
         # Sort sprints chronologically by start date to match sprint health charts
-        sorted_sprints = sorted(
-            sprints, key=lambda s: s.start_date if s.start_date else datetime.min
-        )
+        sorted_sprints = sorted(sprints, key=lambda s: s.start_date if s.start_date else datetime.min)
 
         for sprint in sorted_sprints:
             if hasattr(sprint, "completed_points") and sprint.completed_points > 0:
@@ -715,9 +674,7 @@ def main(
         ) in report_plugin_registry.get_all_checkers().items():
             # Instantiate checker with appropriate base capability
             if report_type in REPORT_REQUIREMENTS:
-                registered_checkers[report_type] = checker_class(
-                    report_type, REPORT_REQUIREMENTS[report_type]
-                )
+                registered_checkers[report_type] = checker_class(report_type, REPORT_REQUIREMENTS[report_type])
 
         capabilities_use_case = AnalyzeCapabilitiesUseCase(
             issue_repository=issue_repo,
@@ -738,13 +695,9 @@ def main(
 
             # Check if we have the required data for process health
             if not reporting_capabilities.is_available(ReportType.AGING_WORK_ITEMS):
-                console.print(
-                    "[red]Warning: Aging analysis not available - missing created date data[/red]"
-                )
+                console.print("[red]Warning: Aging analysis not available - missing created date data[/red]")
             if not reporting_capabilities.is_available(ReportType.WORK_IN_PROGRESS):
-                console.print(
-                    "[red]Warning: WIP analysis not available - missing required fields[/red]"
-                )
+                console.print("[red]Warning: WIP analysis not available - missing required fields[/red]")
 
             # Parse WIP limits
             parsed_wip_limits = {}
@@ -754,9 +707,7 @@ def main(
                     try:
                         parsed_wip_limits[status] = int(limit)
                     except ValueError:
-                        console.print(
-                            f"[red]Warning: Invalid WIP limit '{limit_str}'[/red]"
-                        )
+                        console.print(f"[red]Warning: Invalid WIP limit '{limit_str}'[/red]")
 
             # Create process health use cases
             aging_use_case = AnalyzeAgingWorkItemsUseCase(issue_repo)
@@ -798,9 +749,7 @@ def main(
                 lead_time_analysis=lead_time_analysis,
             )
 
-            console.print(
-                f"[green]Process health score: {process_health_metrics.health_score:.0%}[/green]"
-            )
+            console.print(f"[green]Process health score: {process_health_metrics.health_score:.0%}[/green]")
 
         # Generate report
         console.print("\n[yellow]Generating HTML report...[/yellow]")
@@ -843,9 +792,7 @@ def main(
 
             # Create comparison
             comparison_use_case = GenerateScenarioComparisonUseCase()
-            comparison = comparison_use_case.execute(
-                baseline_results, adjusted_results, velocity_scenario
-            )
+            comparison = comparison_use_case.execute(baseline_results, adjusted_results, velocity_scenario)
 
             report_path = combined_generator.generate_combined_report(
                 baseline_results=baseline_results,
@@ -866,9 +813,7 @@ def main(
                 jira_url=jira_url,
             )
 
-            console.print(
-                f"\n[green]✓ Combined baseline/adjusted report: {report_path}[/green]"
-            )
+            console.print(f"\n[green]✓ Combined baseline/adjusted report: {report_path}[/green]")
         else:
             # Generate single report
             report_path = report_generator.generate(
@@ -895,12 +840,8 @@ def main(
         is_api_source = str(csv_path).startswith(("jira-api://", "linear-api://"))
         has_sprint_data = sprints and len(sprints) > 0
         # Show dates if: API source with sprints OR CSV with many consistent sprints
-        show_dates = (is_api_source and has_sprint_data) or (
-            has_sprint_data and len(sprints) >= 6
-        )
-        show_simulation_summary(
-            results, sprint_duration if show_dates else None, show_dates
-        )
+        show_dates = (is_api_source and has_sprint_data) or (has_sprint_data and len(sprints) >= 6)
+        show_simulation_summary(results, sprint_duration if show_dates else None, show_dates)
 
 
 def process_multiple_csvs(
@@ -943,11 +884,7 @@ def process_multiple_csvs(
     # Convert format string to enum
     source_type = None
     if data_format != "auto":
-        source_type = (
-            DataSourceType.JIRA_CSV
-            if data_format == "jira"
-            else DataSourceType.LINEAR_CSV
-        )
+        source_type = DataSourceType.JIRA_CSV if data_format == "jira" else DataSourceType.LINEAR_CSV
 
     # Process all data files using new abstraction
     use_case = ProcessMultipleDataSourcesUseCase(
@@ -1002,9 +939,7 @@ def show_multi_project_summary(multi_report):
     metrics = multi_report.aggregated_metrics
     summary_table.add_row("Total Projects", str(metrics.total_projects))
     summary_table.add_row("Total Issues", str(metrics.total_issues))
-    summary_table.add_row(
-        "Completion %", f"{metrics.overall_completion_percentage:.1f}%"
-    )
+    summary_table.add_row("Completion %", f"{metrics.overall_completion_percentage:.1f}%")
     summary_table.add_row("Remaining Work", f"{metrics.total_remaining_work:.1f}")
     summary_table.add_row("Combined Velocity", f"{metrics.combined_velocity:.1f}")
 
@@ -1045,9 +980,7 @@ def show_status_distribution(issues: List):
     table.add_column("Percentage", style="green")
 
     total = len(issues)
-    for status, count in sorted(
-        status_counts.items(), key=lambda x: x[1], reverse=True
-    ):
+    for status, count in sorted(status_counts.items(), key=lambda x: x[1], reverse=True):
         percentage = (count / total) * 100
         table.add_row(status, str(count), f"{percentage:.1f}%")
 
@@ -1069,9 +1002,7 @@ def show_velocity_metrics(metrics):
     console.print(table)
 
 
-def show_simulation_summary(
-    results, sprint_duration=None, has_reliable_sprint_data=False
-):
+def show_simulation_summary(results, sprint_duration=None, has_reliable_sprint_data=False):
     table = Table(title="Simulation Results Summary")
     table.add_column("Confidence Level", style="cyan")
     table.add_column("Sprints to Complete", style="magenta")
@@ -1129,12 +1060,8 @@ def display_analysis_results(analysis):
             "column_groups": getattr(analysis, "column_groups", {}),
             "status_values": getattr(analysis, "status_values", []),
             "sprint_values": getattr(analysis, "sprint_values", []),
-            "field_mapping_suggestions": getattr(
-                analysis, "field_mapping_suggestions", {}
-            ),
-            "numeric_field_candidates": getattr(
-                analysis, "numeric_field_candidates", []
-            ),
+            "field_mapping_suggestions": getattr(analysis, "field_mapping_suggestions", {}),
+            "numeric_field_candidates": getattr(analysis, "numeric_field_candidates", []),
         }
     else:
         analysis_dict = analysis
@@ -1149,13 +1076,9 @@ def display_analysis_results(analysis):
 
     # Additional info based on source type
     if "has_estimates" in analysis_dict:
-        table.add_row(
-            "Has Estimates", "Yes" if analysis_dict["has_estimates"] else "No"
-        )
+        table.add_row("Has Estimates", "Yes" if analysis_dict["has_estimates"] else "No")
     if "has_cycles" in analysis_dict:
-        table.add_row(
-            "Has Cycles/Sprints", "Yes" if analysis_dict["has_cycles"] else "No"
-        )
+        table.add_row("Has Cycles/Sprints", "Yes" if analysis_dict["has_cycles"] else "No")
 
     console.print(table)
 
@@ -1167,9 +1090,7 @@ def display_analysis_results(analysis):
 
     # Status values
     if "status_values" in analysis_dict and analysis_dict["status_values"]:
-        console.print(
-            f"\n[bold]Status Values ({len(analysis_dict['status_values'])}):[/bold]"
-        )
+        console.print(f"\n[bold]Status Values ({len(analysis_dict['status_values'])}):[/bold]")
         for status in analysis_dict["status_values"][:10]:  # Show first 10
             console.print(f"  - {status}")
 
@@ -1177,9 +1098,7 @@ def display_analysis_results(analysis):
     cycle_key = "cycle_values" if "cycle_values" in analysis_dict else "sprint_values"
     if cycle_key in analysis_dict and analysis_dict[cycle_key]:
         label = "Cycle" if cycle_key == "cycle_values" else "Sprint"
-        console.print(
-            f"\n[bold]{label} Values ({len(analysis_dict[cycle_key])}):[/bold]"
-        )
+        console.print(f"\n[bold]{label} Values ({len(analysis_dict[cycle_key])}):[/bold]")
         for value in analysis_dict[cycle_key][:10]:  # Show first 10
             console.print(f"  - {value}")
 

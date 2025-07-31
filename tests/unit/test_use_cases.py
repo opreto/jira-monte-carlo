@@ -90,9 +90,7 @@ class TestRunMonteCarloSimulationUseCase:
         )
 
         use_case = RunMonteCarloSimulationUseCase(issue_repo)
-        results = use_case.execute(
-            remaining_work=100.0, velocity_metrics=velocity_metrics, config=config
-        )
+        results = use_case.execute(remaining_work=100.0, velocity_metrics=velocity_metrics, config=config)
 
         # Assert structure
         assert len(results.percentiles) == 3
@@ -128,9 +126,7 @@ class TestCalculateRemainingWorkUseCase:
         issue_repo.get_by_status.return_value = issues
 
         use_case = CalculateRemainingWorkUseCase(issue_repo)
-        remaining = use_case.execute(
-            todo_statuses=["To Do"], velocity_field="story_points"
-        )
+        remaining = use_case.execute(todo_statuses=["To Do"], velocity_field="story_points")
 
         assert remaining == 40.0
 

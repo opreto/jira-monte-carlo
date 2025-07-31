@@ -165,9 +165,7 @@ class TestFileConfigRepository:
         with tempfile.TemporaryDirectory() as tmpdir:
             repo = FileConfigRepository(Path(tmpdir))
 
-            mapping = FieldMapping(
-                key_field="Issue Key", summary_field="Summary", status_field="Status"
-            )
+            mapping = FieldMapping(key_field="Issue Key", summary_field="Summary", status_field="Status")
 
             # Save
             repo.save_field_mapping(mapping)
@@ -229,9 +227,7 @@ class TestSprintExtractor:
                 issues.append(issue)
 
         # Extract sprints
-        sprints = SprintExtractor.extract_sprints_from_issues(
-            issues, sprint_field="Sprint", done_statuses=["Done"]
-        )
+        sprints = SprintExtractor.extract_sprints_from_issues(issues, sprint_field="Sprint", done_statuses=["Done"])
 
         assert len(sprints) == 3
 
@@ -271,9 +267,7 @@ class TestSprintExtractor:
             ),
         ]
 
-        sprints = SprintExtractor.extract_sprints_from_issues(
-            issues, sprint_field="Sprint", done_statuses=["Done"]
-        )
+        sprints = SprintExtractor.extract_sprints_from_issues(issues, sprint_field="Sprint", done_statuses=["Done"])
 
         # Should not create any sprints due to missing data
         assert len(sprints) == 0

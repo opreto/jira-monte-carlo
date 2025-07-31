@@ -80,32 +80,22 @@ class ProcessHealthChartGenerator:
         ]
 
         labels = [cat.value.capitalize() for cat in categories]
-        counts = [
-            len(aging_analysis.items_by_category.get(cat, [])) for cat in categories
-        ]
+        counts = [len(aging_analysis.items_by_category.get(cat, [])) for cat in categories]
 
         # Calculate story points sum for each category
         points_sums = []
         for cat in categories:
             items = aging_analysis.items_by_category.get(cat, [])
-            total_points = sum(
-                item.story_points for item in items if item.story_points is not None
-            )
+            total_points = sum(item.story_points for item in items if item.story_points is not None)
             points_sums.append(total_points)
 
         # Color gradient from green to red
         colors = [
-            self.chart_colors.get(
-                "success", self.chart_colors.get("high_confidence", "#00A86B")
-            ),  # Fresh
+            self.chart_colors.get("success", self.chart_colors.get("high_confidence", "#00A86B")),  # Fresh
             self._get_color_with_alpha("success", 0.7),  # Normal
-            self.chart_colors.get(
-                "warning", self.chart_colors.get("medium_confidence", "#FFA500")
-            ),  # Aging
+            self.chart_colors.get("warning", self.chart_colors.get("medium_confidence", "#FFA500")),  # Aging
             self._get_color_with_alpha("warning", 0.7),  # Stale
-            self.chart_colors.get(
-                "error", self.chart_colors.get("low_confidence", "#DC143C")
-            ),  # Abandoned
+            self.chart_colors.get("error", self.chart_colors.get("low_confidence", "#DC143C")),  # Abandoned
         ]
 
         fig = go.Figure()
@@ -177,11 +167,7 @@ class ProcessHealthChartGenerator:
                 elif age <= thresholds["stale"]:
                     colors.append(self._get_color_with_alpha("warning", 0.7))
                 else:
-                    colors.append(
-                        self.chart_colors.get(
-                            "error", self.chart_colors.get("low_confidence", "#DC143C")
-                        )
-                    )
+                    colors.append(self.chart_colors.get("error", self.chart_colors.get("low_confidence", "#DC143C")))
         else:
             # Fallback to fixed thresholds
             for age in ages:
@@ -202,11 +188,7 @@ class ProcessHealthChartGenerator:
                         )
                     )
                 else:
-                    colors.append(
-                        self.chart_colors.get(
-                            "error", self.chart_colors.get("low_confidence", "#DC143C")
-                        )
-                    )
+                    colors.append(self.chart_colors.get("error", self.chart_colors.get("low_confidence", "#DC143C")))
 
         fig = go.Figure()
 
@@ -250,18 +232,14 @@ class ProcessHealthChartGenerator:
             WIPStatus.BLOCKED,
         ]
 
-        counts = [
-            len(wip_analysis.items_by_status.get(status, [])) for status in statuses
-        ]
+        counts = [len(wip_analysis.items_by_status.get(status, [])) for status in statuses]
         labels = [status.value.replace("_", " ").title() for status in statuses]
 
         # Calculate story points sum for each status
         points_sums = []
         for status in statuses:
             items = wip_analysis.items_by_status.get(status, [])
-            total_points = sum(
-                item.story_points for item in items if item.story_points is not None
-            )
+            total_points = sum(item.story_points for item in items if item.story_points is not None)
             points_sums.append(total_points)
 
         fig = go.Figure()
@@ -335,9 +313,7 @@ class ProcessHealthChartGenerator:
             height=450,
             showlegend=False,
             yaxis=dict(
-                range=[0, max(counts + list(wip_analysis.wip_limits.values())) * 1.3]
-                if counts
-                else [0, 1],
+                range=[0, max(counts + list(wip_analysis.wip_limits.values())) * 1.3] if counts else [0, 1],
             ),
             paper_bgcolor="white",
             plot_bgcolor="rgba(248,249,250,0.8)",
@@ -345,14 +321,10 @@ class ProcessHealthChartGenerator:
 
         return fig.to_json()
 
-    def create_sprint_health_trend_chart(
-        self, sprint_health: SprintHealthAnalysis
-    ) -> str:
+    def create_sprint_health_trend_chart(self, sprint_health: SprintHealthAnalysis) -> str:
         """Create line chart showing sprint completion rate trend"""
         sprint_names = [sm.sprint_name for sm in sprint_health.sprint_metrics]
-        completion_rates = [
-            sm.completion_rate * 100 for sm in sprint_health.sprint_metrics
-        ]
+        completion_rates = [sm.completion_rate * 100 for sm in sprint_health.sprint_metrics]
 
         fig = go.Figure()
 
@@ -415,15 +387,11 @@ class ProcessHealthChartGenerator:
 
         return fig.to_json()
 
-    def create_sprint_scope_change_chart(
-        self, sprint_health: SprintHealthAnalysis
-    ) -> str:
+    def create_sprint_scope_change_chart(self, sprint_health: SprintHealthAnalysis) -> str:
         """Create bar chart showing scope changes per sprint"""
         sprint_names = [sm.sprint_name for sm in sprint_health.sprint_metrics]
         added_points = [sm.added_points for sm in sprint_health.sprint_metrics]
-        removed_points = [
-            -sm.removed_points for sm in sprint_health.sprint_metrics
-        ]  # Negative for visualization
+        removed_points = [-sm.removed_points for sm in sprint_health.sprint_metrics]  # Negative for visualization
 
         fig = go.Figure()
 
@@ -450,9 +418,7 @@ class ProcessHealthChartGenerator:
         )
 
         # Calculate net change trend line
-        net_changes = [
-            added - (-removed) for added, removed in zip(added_points, removed_points)
-        ]
+        net_changes = [added - (-removed) for added, removed in zip(added_points, removed_points)]
 
         # Add trend line for net scope change
         if len(sprint_names) > 1:
@@ -499,9 +465,7 @@ class ProcessHealthChartGenerator:
 
         return fig.to_json()
 
-    def create_blocked_items_severity_chart(
-        self, blocked_analysis: BlockedItemsAnalysis
-    ) -> str:
+    def create_blocked_items_severity_chart(self, blocked_analysis: BlockedItemsAnalysis) -> str:
         """Create pie chart showing blocked items by severity"""
         severity_groups = blocked_analysis.items_by_severity
 
@@ -562,19 +526,13 @@ class ProcessHealthChartGenerator:
         """Create gauge chart for overall process health score"""
         # Determine color based on score
         if health_score >= 0.8:
-            color = self.chart_colors.get(
-                "success", self.chart_colors.get("high_confidence", "#00A86B")
-            )
+            color = self.chart_colors.get("success", self.chart_colors.get("high_confidence", "#00A86B"))
             status = "Healthy"
         elif health_score >= 0.6:
-            color = self.chart_colors.get(
-                "warning", self.chart_colors.get("medium_confidence", "#FFA500")
-            )
+            color = self.chart_colors.get("warning", self.chart_colors.get("medium_confidence", "#FFA500"))
             status = "Fair"
         else:
-            color = self.chart_colors.get(
-                "error", self.chart_colors.get("low_confidence", "#DC143C")
-            )
+            color = self.chart_colors.get("error", self.chart_colors.get("low_confidence", "#DC143C"))
             status = "Needs Attention"
 
         fig = go.Figure()
@@ -583,9 +541,7 @@ class ProcessHealthChartGenerator:
             go.Indicator(
                 mode="gauge+number+delta",
                 value=health_score * 100,
-                title={
-                    "text": f"<b>Process Health Score</b><br><span style='font-size:0.8em'>{status}</span>"
-                },
+                title={"text": f"<b>Process Health Score</b><br><span style='font-size:0.8em'>{status}</span>"},
                 domain={"x": [0, 1], "y": [0, 1]},
                 gauge={
                     "axis": {"range": [0, 100], "tickwidth": 1},
@@ -625,9 +581,7 @@ class ProcessHealthChartGenerator:
 
         return fig.to_json()
 
-    def create_health_score_breakdown_chart(
-        self, components: List["HealthScoreComponent"]
-    ) -> str:
+    def create_health_score_breakdown_chart(self, components: List["HealthScoreComponent"]) -> str:
         """Create horizontal bar chart showing health score component breakdown"""
         if not components:
             # Return valid empty chart JSON
@@ -640,23 +594,11 @@ class ProcessHealthChartGenerator:
         colors = []
         for score in scores:
             if score >= 80:
-                colors.append(
-                    self.chart_colors.get(
-                        "success", self.chart_colors.get("high_confidence", "#00A86B")
-                    )
-                )
+                colors.append(self.chart_colors.get("success", self.chart_colors.get("high_confidence", "#00A86B")))
             elif score >= 60:
-                colors.append(
-                    self.chart_colors.get(
-                        "warning", self.chart_colors.get("medium_confidence", "#FFA500")
-                    )
-                )
+                colors.append(self.chart_colors.get("warning", self.chart_colors.get("medium_confidence", "#FFA500")))
             else:
-                colors.append(
-                    self.chart_colors.get(
-                        "error", self.chart_colors.get("low_confidence", "#DC143C")
-                    )
-                )
+                colors.append(self.chart_colors.get("error", self.chart_colors.get("low_confidence", "#DC143C")))
 
         fig = go.Figure()
 

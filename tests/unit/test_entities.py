@@ -75,9 +75,7 @@ class TestTeam:
         assert team.average_velocity == 30.0
 
     def test_average_velocity_empty(self):
-        team = Team(
-            name="Alpha Team", members=["Alice", "Bob"], historical_velocities=[]
-        )
+        team = Team(name="Alpha Team", members=["Alice", "Bob"], historical_velocities=[])
 
         assert team.average_velocity == 0.0
 
@@ -92,9 +90,7 @@ class TestTeam:
         assert abs(team.velocity_std_dev - 8.16) < 0.1
 
     def test_velocity_std_dev_insufficient_data(self):
-        team = Team(
-            name="Alpha Team", members=["Alice", "Bob"], historical_velocities=[20.0]
-        )
+        team = Team(name="Alpha Team", members=["Alice", "Bob"], historical_velocities=[20.0])
 
         assert team.velocity_std_dev == 0.0
 

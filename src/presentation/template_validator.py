@@ -13,9 +13,7 @@ class TemplateValidator:
         self.env = Environment()
         self.issues = []
 
-    def validate_template_string(
-        self, template_str: str, name: str = "template"
-    ) -> List[Dict[str, any]]:
+    def validate_template_string(self, template_str: str, name: str = "template") -> List[Dict[str, any]]:
         """Validate a template string and return list of issues"""
         self.issues = []
 
@@ -158,9 +156,7 @@ class TemplateValidator:
             if re.search(r"{%\s*if\s+", line) or re.search(r"{%\s*for\s+", line):
                 depth += 1
                 condition_stack.append((i + 1, line.strip()))
-            elif re.search(r"{%\s*endif\s*%}", line) or re.search(
-                r"{%\s*endfor\s*%}", line
-            ):
+            elif re.search(r"{%\s*endif\s*%}", line) or re.search(r"{%\s*endfor\s*%}", line):
                 depth -= 1
                 if depth < 0:
                     self.issues.append(

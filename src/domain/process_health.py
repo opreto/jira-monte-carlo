@@ -61,9 +61,7 @@ class AgingAnalysis:
     @property
     def aging_distribution(self) -> Dict[AgingCategory, int]:
         """Get count of items in each aging category"""
-        return {
-            category: len(items) for category, items in self.items_by_category.items()
-        }
+        return {category: len(items) for category, items in self.items_by_category.items()}
 
     @property
     def critical_items(self) -> List[AgingItem]:
@@ -157,11 +155,7 @@ class SprintHealthAnalysis:
     @property
     def recent_sprints(self) -> List[SprintHealth]:
         """Get last 6 sprints"""
-        return (
-            self.sprint_metrics[-6:]
-            if len(self.sprint_metrics) > 6
-            else self.sprint_metrics
-        )
+        return self.sprint_metrics[-6:] if len(self.sprint_metrics) > 6 else self.sprint_metrics
 
 
 @dataclass
@@ -237,20 +231,13 @@ class ProcessHealthMetrics:
 
         if self.aging_analysis:
             # Lower score for more aging items
-            aging_ratio = (
-                len(self.aging_analysis.critical_items)
-                / self.aging_analysis.total_items
-            )
-            scores.append(
-                1 - min(aging_ratio * 2, 1)
-            )  # Double weight for critical items
+            aging_ratio = len(self.aging_analysis.critical_items) / self.aging_analysis.total_items
+            scores.append(1 - min(aging_ratio * 2, 1))  # Double weight for critical items
 
         if self.wip_analysis:
             # Lower score for WIP violations
             violation_count = sum(self.wip_analysis.wip_violations.values())
-            violation_score = 1 - min(
-                violation_count / 10, 1
-            )  # Max penalty at 10 violations
+            violation_score = 1 - min(violation_count / 10, 1)  # Max penalty at 10 violations
             scores.append(violation_score)
 
         if self.sprint_health:
@@ -308,9 +295,7 @@ class ProcessHealthMetrics:
 
             insights = []
             if critical_count > 0:
-                insights.append(
-                    f"{critical_count} items ({aging_ratio:.0%}) are stale or abandoned"
-                )
+                insights.append(f"{critical_count} items ({aging_ratio:.0%}) are stale or abandoned")
 
             recommendations = []
             if score < 0.7:
@@ -363,8 +348,7 @@ class ProcessHealthMetrics:
                     name="Aging Items",
                     score=score,
                     description=(
-                        f"Based on {critical_count} critical items out of "
-                        f"{self.aging_analysis.total_items} total"
+                        f"Based on {critical_count} critical items out of " f"{self.aging_analysis.total_items} total"
                     ),
                     insights=insights,
                     recommendations=recommendations,
@@ -394,9 +378,7 @@ class ProcessHealthMetrics:
                 for status, count in self.wip_analysis.wip_violations.items():
                     limit = self.wip_analysis.wip_limits.get(status, 0)
                     actual = len(self.wip_analysis.items_by_status.get(status, []))
-                    insights.append(
-                        f"{status.value}: {actual}/{limit} items ({count} over limit)"
-                    )
+                    insights.append(f"{status.value}: {actual}/{limit} items ({count} over limit)")
             else:
                 insights.append("All WIP limits are being respected")
 
@@ -405,13 +387,9 @@ class ProcessHealthMetrics:
                 recommendations.append("Reduce work in progress to improve flow")
                 if self.wip_analysis.wip_by_assignee:
                     # Calculate ideal WIP per person based on team size
-                    ideal_wip = max(
-                        2, 5 - team_size // 3
-                    )  # Smaller teams can handle more per person
+                    ideal_wip = max(2, 5 - team_size // 3)  # Smaller teams can handle more per person
                     overloaded = [
-                        (name, count)
-                        for name, count in self.wip_analysis.wip_by_assignee.items()
-                        if count > ideal_wip
+                        (name, count) for name, count in self.wip_analysis.wip_by_assignee.items() if count > ideal_wip
                     ]
                     if overloaded:
                         overloaded.sort(key=lambda x: x[1], reverse=True)
@@ -425,8 +403,7 @@ class ProcessHealthMetrics:
                     name="Work In Progress",
                     score=score,
                     description=(
-                        f"{self.wip_analysis.total_wip} items in progress, "
-                        f"{violation_count} WIP limit violations"
+                        f"{self.wip_analysis.total_wip} items in progress, " f"{violation_count} WIP limit violations"
                     ),
                     insights=insights,
                     recommendations=recommendations,
@@ -438,9 +415,7 @@ class ProcessHealthMetrics:
             score = self.sprint_health.predictability_score
 
             insights = []
-            insights.append(
-                f"Average completion rate: {self.sprint_health.average_completion_rate:.0%}"
-            )
+            insights.append(f"Average completion rate: {self.sprint_health.average_completion_rate:.0%}")
             if self.sprint_health.completion_rate_trend > 0:
                 insights.append(
                     f"Completion rate improving by {self.sprint_health.completion_rate_trend:.1%} per sprint"
@@ -471,27 +446,19 @@ class ProcessHealthMetrics:
         if self.blocked_items:
             # Blocked items component
             if self.blocked_items.blocked_items:
-                high_severity = len(
-                    self.blocked_items.items_by_severity.get("high", [])
-                )
+                high_severity = len(self.blocked_items.items_by_severity.get("high", []))
                 blocked_ratio = high_severity / len(self.blocked_items.blocked_items)
                 score = 1 - min(blocked_ratio * 2, 1)
 
                 insights = []
-                insights.append(
-                    f"{len(self.blocked_items.blocked_items)} blocked items"
-                )
-                insights.append(
-                    f"Average blocked time: {self.blocked_items.average_blocked_days:.0f} days"
-                )
+                insights.append(f"{len(self.blocked_items.blocked_items)} blocked items")
+                insights.append(f"Average blocked time: {self.blocked_items.average_blocked_days:.0f} days")
 
                 recommendations = []
                 if score < 0.8:
                     recommendations.append("Escalate high-severity blockers")
                     if self.blocked_items.repeat_blockers:
-                        recommendations.append(
-                            f"Address recurring blocker: {self.blocked_items.repeat_blockers[0]}"
-                        )
+                        recommendations.append(f"Address recurring blocker: {self.blocked_items.repeat_blockers[0]}")
             else:
                 score = 1.0
                 insights = ["No blocked items"]
@@ -540,39 +507,25 @@ class ProcessHealthMetrics:
 
             insights = []
             insights.append(f"Average lead time: {avg_lead_time:.1f} days")
-            insights.append(
-                f"Median lead time: {self.lead_time_analysis.median_lead_time:.1f} days"
-            )
+            insights.append(f"Median lead time: {self.lead_time_analysis.median_lead_time:.1f} days")
             if self.lead_time_analysis.defect_rate > 0:
-                insights.append(
-                    f"Defect rate: {self.lead_time_analysis.defect_rate:.1%}"
-                )
+                insights.append(f"Defect rate: {self.lead_time_analysis.defect_rate:.1%}")
 
             if flow_eff > 0:
-                insights.append(
-                    f"Flow efficiency: {flow_eff:.1%} (active work time vs wait time)"
-                )
+                insights.append(f"Flow efficiency: {flow_eff:.1%} (active work time vs wait time)")
 
             recommendations = []
             if avg_lead_time > 21:
-                recommendations.append(
-                    "Focus on reducing cycle time for faster delivery"
-                )
+                recommendations.append("Focus on reducing cycle time for faster delivery")
             if self.lead_time_analysis.defect_rate > 0.15:
                 recommendations.append("High defect rate - improve quality practices")
             elif self.lead_time_analysis.defect_rate > 0.10:
-                recommendations.append(
-                    "Consider additional quality checks to reduce defects"
-                )
+                recommendations.append("Consider additional quality checks to reduce defects")
 
             if flow_eff < 0.4 and flow_eff > 0:
-                recommendations.append(
-                    "Low flow efficiency - reduce wait times between work stages"
-                )
+                recommendations.append("Low flow efficiency - reduce wait times between work stages")
             elif flow_eff > 0.8:
-                insights.append(
-                    "Excellent flow efficiency indicates minimal wait times"
-                )
+                insights.append("Excellent flow efficiency indicates minimal wait times")
 
             components.append(
                 HealthScoreComponent(
@@ -628,9 +581,7 @@ class LeadTimeAnalysis:
     @property
     def median_lead_time(self) -> float:
         """Median lead time in days"""
-        lead_times = sorted(
-            [m.lead_time_days for m in self.metrics if m.lead_time_days]
-        )
+        lead_times = sorted([m.lead_time_days for m in self.metrics if m.lead_time_days])
         if not lead_times:
             return 0
         mid = len(lead_times) // 2
@@ -655,9 +606,7 @@ class LeadTimeAnalysis:
     @property
     def lead_time_percentiles(self) -> Dict[int, float]:
         """Calculate lead time percentiles"""
-        lead_times = sorted(
-            [m.lead_time_days for m in self.metrics if m.lead_time_days]
-        )
+        lead_times = sorted([m.lead_time_days for m in self.metrics if m.lead_time_days])
         if not lead_times:
             return {50: 0, 85: 0, 95: 0}
 

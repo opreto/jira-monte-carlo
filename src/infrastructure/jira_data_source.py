@@ -98,11 +98,7 @@ class JiraCSVDataSource(DataSource):
                 ]
 
                 # Count how many Jira-specific fields we find
-                matches = sum(
-                    1
-                    for field in jira_indicators
-                    if any(field.lower() in h.lower() for h in headers)
-                )
+                matches = sum(1 for field in jira_indicators if any(field.lower() in h.lower() for h in headers))
 
                 # If we find at least 5 Jira fields, it's likely a Jira export
                 return matches >= 5
@@ -128,9 +124,7 @@ class JiraCSVDataSource(DataSource):
         return {
             "total_rows": analysis_result.total_rows,
             "total_columns": analysis_result.total_columns,
-            "column_groups": {
-                k: len(v.columns) for k, v in analysis_result.column_groups.items()
-            },
+            "column_groups": {k: len(v.columns) for k, v in analysis_result.column_groups.items()},
             "status_values": analysis_result.status_values,
             "sprint_values": analysis_result.sprint_values[:10],  # First 10 sprints
             "field_mapping_suggestions": analysis_result.field_mapping_suggestions,

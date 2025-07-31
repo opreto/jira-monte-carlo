@@ -9,9 +9,7 @@ from ..domain.styles import Theme, ThemeRepository
 class CleanStyleService:
     """Service for managing application styling with dependency injection"""
 
-    def __init__(
-        self, theme_repository: ThemeRepository, style_generator: StyleGenerator
-    ):
+    def __init__(self, theme_repository: ThemeRepository, style_generator: StyleGenerator):
         """Initialize with injected dependencies
 
         Args:

@@ -23,10 +23,7 @@ class TestReportPluginRegistry:
         registry.register(ReportType.MONTE_CARLO_FORECAST, MockCapabilityChecker)
 
         # Verify it's registered
-        assert (
-            registry.get_checker(ReportType.MONTE_CARLO_FORECAST)
-            == MockCapabilityChecker
-        )
+        assert registry.get_checker(ReportType.MONTE_CARLO_FORECAST) == MockCapabilityChecker
         assert len(registry.list_plugins()) == 1
 
     def test_register_override(self):
@@ -45,9 +42,7 @@ class TestReportPluginRegistry:
         registry.register(ReportType.MONTE_CARLO_FORECAST, AnotherMockChecker)
 
         # Verify it's overridden
-        assert (
-            registry.get_checker(ReportType.MONTE_CARLO_FORECAST) == AnotherMockChecker
-        )
+        assert registry.get_checker(ReportType.MONTE_CARLO_FORECAST) == AnotherMockChecker
         assert len(registry.list_plugins()) == 2  # Both registrations are tracked
 
     def test_get_all_checkers(self):

@@ -39,11 +39,7 @@ class InMemoryIssueRepository(IssueRepository):
         return [issue for issue in self.issues if date_range.contains(issue.created)]
 
     def get_completed_in_range(self, date_range: DateRange) -> List[Issue]:
-        return [
-            issue
-            for issue in self.issues
-            if issue.resolved and date_range.contains(issue.resolved)
-        ]
+        return [issue for issue in self.issues if issue.resolved and date_range.contains(issue.resolved)]
 
 
 class InMemorySprintRepository(SprintRepository):
@@ -54,9 +50,7 @@ class InMemorySprintRepository(SprintRepository):
         # Add new sprints to existing ones
         self.sprints.extend(sprints)
         # Sort by start_date, handling None values
-        self.sprints = sorted(
-            self.sprints, key=lambda s: s.start_date if s.start_date else datetime.min
-        )
+        self.sprints = sorted(self.sprints, key=lambda s: s.start_date if s.start_date else datetime.min)
 
     def get_all(self) -> List[Sprint]:
         return self.sprints
@@ -65,8 +59,7 @@ class InMemorySprintRepository(SprintRepository):
         return [
             sprint
             for sprint in self.sprints
-            if date_range.contains(sprint.start_date)
-            or date_range.contains(sprint.end_date)
+            if date_range.contains(sprint.start_date) or date_range.contains(sprint.end_date)
         ]
 
     def get_last_n_sprints(self, n: int) -> List[Sprint]:
@@ -76,17 +69,11 @@ class InMemorySprintRepository(SprintRepository):
         for sprint in self.sprints:
             if sprint.end_date:
                 # Make both dates timezone-naive for comparison
-                end_date = (
-                    sprint.end_date.replace(tzinfo=None)
-                    if sprint.end_date.tzinfo
-                    else sprint.end_date
-                )
+                end_date = sprint.end_date.replace(tzinfo=None) if sprint.end_date.tzinfo else sprint.end_date
                 now_naive = now.replace(tzinfo=None)
                 if end_date < now_naive:
                     completed_sprints.append(sprint)
-        return (
-            completed_sprints[-n:] if len(completed_sprints) >= n else completed_sprints
-        )
+        return completed_sprints[-n:] if len(completed_sprints) >= n else completed_sprints
 
 
 class FileConfigRepository(ConfigRepository):
@@ -140,9 +127,7 @@ class FileConfigRepository(ConfigRepository):
 
 class SprintExtractor:
     @staticmethod
-    def extract_sprints_from_issues(
-        issues: List[Issue], sprint_field: str, done_statuses: List[str]
-    ) -> List[Sprint]:
+    def extract_sprints_from_issues(issues: List[Issue], sprint_field: str, done_statuses: List[str]) -> List[Sprint]:
         sprint_issues: Dict[str, List[Issue]] = {}
 
         # Group issues by sprint
@@ -178,9 +163,7 @@ class SprintExtractor:
             start_date = min(resolved_dates)
 
             # Calculate completed points
-            completed_points = sum(
-                issue.story_points for issue in issues if issue.story_points is not None
-            )
+            completed_points = sum(issue.story_points for issue in issues if issue.story_points is not None)
 
             sprint = Sprint(
                 name=sprint_name,

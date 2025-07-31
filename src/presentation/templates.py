@@ -413,9 +413,41 @@ class ReportTemplates:
     {% endif %}
 </head>
 <body>
-    <div class="container">
+    <!-- Skip to content link for accessibility -->
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+    
+    <!-- Mobile menu toggle -->
+    <button class="mobile-menu-toggle d-md-none" aria-label="Toggle navigation" onclick="toggleMobileMenu()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+    </button>
+    
+    <div class="container" id="main-content">
         {{ content }}
     </div>
+    
+    <script>
+        function toggleMobileMenu() {
+            // Mobile menu toggle functionality
+            const nav = document.querySelector('.nav-container');
+            if (nav) {
+                nav.classList.toggle('mobile-menu-open');
+            }
+        }
+        
+        // Make charts responsive on window resize
+        window.addEventListener('resize', function() {
+            const charts = document.querySelectorAll('[id$="-distribution"], [id$="-intervals"], [id$="-timeline"], [id$="-trend"], [id$="-breakdown"], [id$="-gauge"], [id$="-status"], [id$="-severity"]');
+            charts.forEach(function(chart) {
+                if (chart && chart.data) {
+                    Plotly.Plots.resize(chart);
+                }
+            });
+        });
+    </script>
 </body>
 </html>
 """
@@ -601,26 +633,28 @@ class ReportTemplates:
 
 <div class="chart-container">
     <h2>Completion Forecast Summary</h2>
-    <table class="summary-table">
-        <thead>
-            <tr>
-                <th>Confidence Level</th>
-                <th>Sprints to Complete</th>
-                <th>Completion Date</th>
-                <th>Probability</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for level, data in summary_stats.items() %}
-            <tr class="{{ data.class }}">
-                <td>{{ level }}</td>
-                <td>{{ data.sprints }} sprints</td>
-                <td>{{ data.date }}</td>
-                <td>{{ data.probability }}% chance of completing by this date</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="summary-table mobile-table">
+            <thead>
+                <tr>
+                    <th>Confidence Level</th>
+                    <th>Sprints to Complete</th>
+                    <th>Completion Date</th>
+                    <th>Probability</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for level, data in summary_stats.items() %}
+                <tr class="{{ data.class }}">
+                    <td data-label="Confidence Level">{{ level }}</td>
+                    <td data-label="Sprints to Complete">{{ data.sprints }} sprints</td>
+                    <td data-label="Completion Date">{{ data.date }}</td>
+                    <td data-label="Probability">{{ data.probability }}% chance of completing by this date</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
 {% if process_health_metrics %}
@@ -891,6 +925,21 @@ class ReportTemplates:
     let storySizeCharts = {};
     let currentChartType = 'bar';
     
+    // Get viewport width for responsive chart configuration
+    const viewportWidth = window.innerWidth;
+    const responsiveConfig = {
+        responsive: true,
+        displayModeBar: true,
+        displaylogo: false,
+        modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d', 'autoScale2d', 'toggleSpikelines'],
+        modeBarButtonsToAdd: ['toImage'],
+        toImageButtonOptions: {
+            format: 'png',
+            filename: 'sprint-radar-chart',
+            scale: 2  // Higher resolution for retina displays
+        }
+    };
+    
     // Render all charts
     {% for chart_id, chart_json in charts.items() %}
     try {
@@ -901,26 +950,54 @@ class ReportTemplates:
             bar: {{ chart_json.bar|safe }}
         };
         
-        // Render initial bar chart
+        // Render initial bar chart with responsive config
         if (storySizeCharts.bar) {
             const barData = storySizeCharts.bar;
-            Plotly.newPlot('story-size-breakdown', barData.data, barData.layout, {responsive: true});
+            Plotly.newPlot('story-size-breakdown', barData.data, barData.layout, responsiveConfig);
         }
         {% else %}
-        // Regular chart rendering
+        // Regular chart rendering with responsive layout adjustments
         const chartData = {{ chart_json|safe }};
-        Plotly.newPlot('{{ chart_id.replace("_", "-") }}', chartData.data, chartData.layout, {responsive: true});
+        const chartLayout = JSON.parse(JSON.stringify(chartData.layout));
+        
+        // Apply responsive margins based on viewport
+        if (viewportWidth < 768) {
+            chartLayout.margin = { t: 30, l: 40, r: 10, b: 40 };
+            chartLayout.font = { ...chartLayout.font, size: 12 };
+            if (chartLayout.legend) {
+                chartLayout.showlegend = false;
+            }
+        } else if (viewportWidth >= 1920) {
+            chartLayout.margin = { t: 50, l: 80, r: 30, b: 80 };
+            chartLayout.font = { ...chartLayout.font, size: 16 };
+        }
+        
+        Plotly.newPlot('{{ chart_id.replace("_", "-") }}', chartData.data, chartLayout, responsiveConfig);
         {% endif %}
     } catch (e) {
         console.error('Error rendering chart {{ chart_id }}:', e);
     }
     {% endfor %}
     
-    // Render process health charts
+    // Render process health charts with responsive configuration
     {% for chart_id, chart_json in process_health_charts.items() %}
     try {
         const phChartData = {{ chart_json|safe }};
-        Plotly.newPlot('{{ chart_id.replace("_", "-") }}', phChartData.data, phChartData.layout, {responsive: true});
+        const phChartLayout = JSON.parse(JSON.stringify(phChartData.layout));
+        
+        // Apply responsive margins based on viewport
+        if (viewportWidth < 768) {
+            phChartLayout.margin = { t: 30, l: 40, r: 10, b: 40 };
+            phChartLayout.font = { ...phChartLayout.font, size: 12 };
+            if (phChartLayout.legend) {
+                phChartLayout.showlegend = false;
+            }
+        } else if (viewportWidth >= 1920) {
+            phChartLayout.margin = { t: 50, l: 80, r: 30, b: 80 };
+            phChartLayout.font = { ...phChartLayout.font, size: 16 };
+        }
+        
+        Plotly.newPlot('{{ chart_id.replace("_", "-") }}', phChartData.data, phChartLayout, responsiveConfig);
     } catch (e) {
         console.error('Error rendering process health chart {{ chart_id }}:', e);
     }
@@ -1018,52 +1095,54 @@ class ReportTemplates:
 
 <div class="data-table">
     <h2>Individual Project Results</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Project</th>
-                <th>Total Issues</th>
-                <th>Completion</th>
-                <th>Remaining Work</th>
-                <th>Velocity</th>
-                <th>50% Conf.</th>
-                <th>85% Conf.</th>
-                <th>Report</th>
-            </tr>
-        </thead>
-        <tbody>
+    <div class="table-responsive">
+        <table class="mobile-table">
+            <thead>
+                <tr>
+                    <th>Project</th>
+                    <th>Total Issues</th>
+                    <th>Completion</th>
+                    <th>Remaining Work</th>
+                    <th>Velocity</th>
+                    <th>50% Conf.</th>
+                    <th>85% Conf.</th>
+                    <th>Report</th>
+                </tr>
+            </thead>
+            <tbody>
             {% for project in multi_report.projects %}
             <tr>
-                <td><strong>{{ project.name }}</strong></td>
-                <td>{{ project.total_issues }}</td>
-                <td>{{ "%.1f"|format(project.completion_percentage) }}%</td>
-                <td>{{ "%.1f"|format(project.remaining_work) }}</td>
-                <td>
+                <td data-label="Project"><strong>{{ project.name }}</strong></td>
+                <td data-label="Total Issues">{{ project.total_issues }}</td>
+                <td data-label="Completion">{{ "%.1f"|format(project.completion_percentage) }}%</td>
+                <td data-label="Remaining Work">{{ "%.1f"|format(project.remaining_work) }}</td>
+                <td data-label="Velocity">
                     {% if project.velocity_metrics %}
                         {{ "%.1f"|format(project.velocity_metrics.average) }}
                     {% else %}
                         N/A
                     {% endif %}
                 </td>
-                <td>
+                <td data-label="50% Conf.">
                     {% if project.simulation_result %}
                         {{ project.simulation_result.percentiles.get(0.5, 0)|int }}
                     {% else %}
                         N/A
                     {% endif %}
                 </td>
-                <td>
+                <td data-label="85% Conf.">
                     {% if project.simulation_result %}
                         {{ project.simulation_result.percentiles.get(0.85, 0)|int }}
                     {% else %}
                         N/A
                     {% endif %}
                 </td>
-                <td><a href="{{ project_links[project.name] }}">View Details →</a></td>
+                <td data-label="Report"><a href="{{ project_links[project.name] }}">View Details →</a></td>
             </tr>
             {% endfor %}
         </tbody>
-    </table>
+        </table>
+    </div>
 </div>
 
 <div class="chart-container">

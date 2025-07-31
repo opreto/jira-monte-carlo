@@ -5,6 +5,7 @@ from typing import Dict, Any, Optional, List
 
 from .base import Component
 from ..models.view_models import ChartViewModel
+from ..utils.responsive_charts import ResponsiveChartConfig
 
 
 class ChartComponent(Component):
@@ -21,7 +22,7 @@ class ChartComponent(Component):
         {% endif %}
     </div>
     <div class="chart-content">
-        <div id="{{ chart_id }}" class="plotly-chart"></div>
+        <div id="{{ chart_id }}" class="plotly-chart" style="height: clamp(300px, 60vh, 800px);"></div>
     </div>
     {% if insights %}
     <div class="chart-insights">
@@ -38,12 +39,25 @@ class ChartComponent(Component):
     (function() {
         var data = {{ data_json|safe }};
         var layout = {{ layout_json|safe }};
-        var config = {
-            responsive: {{ responsive|lower }},
-            displayModeBar: {{ show_toolbar|lower }},
-            displaylogo: false,
-            modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d', 'autoScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian']
-        };
+        var config = {{ config_json|safe }};
+        
+        // Apply responsive layout adjustments
+        const viewportWidth = window.innerWidth;
+        if (viewportWidth < 768) {
+            layout.margin = { t: 30, l: 40, r: 10, b: 40 };
+            layout.font = layout.font || {};
+            layout.font.size = 12;
+            if (layout.showlegend !== false) {
+                layout.showlegend = false;
+            }
+            if (layout.xaxis && layout.xaxis.title) {
+                layout.xaxis.tickangle = -45;
+            }
+        } else if (viewportWidth >= 1920) {
+            layout.margin = { t: 50, l: 80, r: 30, b: 80 };
+            layout.font = layout.font || {};
+            layout.font.size = 16;
+        }
         
         Plotly.newPlot('{{ chart_id }}', data, layout, config);
     })();
@@ -60,6 +74,7 @@ class ChartComponent(Component):
         insights: Optional[List[str]] = None,
         responsive: bool = True,
         show_toolbar: bool = True,
+        chart_type: str = "bar",
     ) -> Dict[str, Any]:
         """Get chart context
 
@@ -72,6 +87,7 @@ class ChartComponent(Component):
             insights: Optional list of insights
             responsive: Whether chart should be responsive
             show_toolbar: Whether to show Plotly toolbar
+            chart_type: Type of chart for responsive height calculation
 
         Returns:
             Context dictionary
@@ -80,12 +96,20 @@ class ChartComponent(Component):
         if data and not isinstance(data, list):
             data = [data]
 
+        # Get responsive config
+        config = ResponsiveChartConfig.get_responsive_config()
+        if show_toolbar:
+            config["displayModeBar"] = True
+        else:
+            config["displayModeBar"] = False
+
         return {
             "chart_id": chart_id,
             "title": title,
             "description": description,
             "data_json": json.dumps(data or {}),
             "layout_json": json.dumps(layout or {}),
+            "config_json": json.dumps(config),
             "insights": insights,
             "responsive": responsive,
             "show_toolbar": show_toolbar,

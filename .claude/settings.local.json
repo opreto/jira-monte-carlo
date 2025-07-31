@@ -299,7 +299,8 @@
       "mcp__sequential-thinking__sequentialthinking",
       "Bash(USE_REFACTORED_CLI=true sprint-radar --help)",
       "Bash(USE_REFACTORED_CLI=true sprint-radar -f data/jira-sample.csv -n 1000 -o reports/integration-test-refactored.html --theme modern)",
-      "Bash(USE_REFACTORED_CLI=true sprint-radar -f data/jira-sample.csv -n 1000 -o reports/integration-test-refactored.html --theme generic)"
+      "Bash(USE_REFACTORED_CLI=true sprint-radar -f data/jira-sample.csv -n 1000 -o reports/integration-test-refactored.html --theme generic)",
+      "Bash(git cherry-pick:*)"
     ],
     "deny": []
   }

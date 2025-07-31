@@ -31,7 +31,9 @@ class DefaultDataSourceFactory(DataSourceFactory):
             DataSourceType.JIRA_API: JiraApiDataSourceAdapter,
         }
 
-    def create(self, source_type: DataSourceType, field_mapping: Optional[FieldMapping] = None) -> DataSource:
+    def create(
+        self, source_type: DataSourceType, field_mapping: Optional[FieldMapping] = None
+    ) -> DataSource:
         """Create a data source instance"""
         if source_type not in self._sources:
             raise ValueError(f"Unknown data source type: {source_type}")

@@ -97,9 +97,13 @@ class ProcessMultipleDataSourcesUseCase:
             projects.append(project_data)
 
         # Calculate aggregated metrics
-        aggregated_metrics = self._calculate_aggregated_metrics(projects, simulation_config)
+        aggregated_metrics = self._calculate_aggregated_metrics(
+            projects, simulation_config
+        )
 
-        return MultiProjectReport(projects=projects, aggregated_metrics=aggregated_metrics)
+        return MultiProjectReport(
+            projects=projects, aggregated_metrics=aggregated_metrics
+        )
 
     def _process_single_file(
         self,
@@ -160,7 +164,9 @@ class ProcessMultipleDataSourcesUseCase:
         )
 
         # Get story size breakdown
-        story_size_breakdown = remaining_use_case.get_story_size_breakdown(status_mapping.get("todo", []))
+        story_size_breakdown = remaining_use_case.get_story_size_breakdown(
+            status_mapping.get("todo", [])
+        )
 
         # Count completed issues
         completed_issues = []
@@ -169,13 +175,17 @@ class ProcessMultipleDataSourcesUseCase:
 
         # Calculate completion percentage
         total_issues = len(issues)
-        completion_percentage = (len(completed_issues) / total_issues * 100) if total_issues > 0 else 0
+        completion_percentage = (
+            (len(completed_issues) / total_issues * 100) if total_issues > 0 else 0
+        )
 
         # Run simulation if we have velocity
         simulation_result = None
         if velocity_metrics.average > 0 and remaining_work > 0:
             simulation_use_case = RunMonteCarloSimulationUseCase(issue_repo)
-            simulation_result = simulation_use_case.execute(remaining_work, velocity_metrics, simulation_config)
+            simulation_result = simulation_use_case.execute(
+                remaining_work, velocity_metrics, simulation_config
+            )
 
         # Get historical data
         historical_use_case = AnalyzeHistoricalDataUseCase(issue_repo)
@@ -207,7 +217,9 @@ class ProcessMultipleDataSourcesUseCase:
 
         # Combined velocity (sum of individual velocities)
         combined_velocity = sum(
-            p.velocity_metrics.average for p in projects if p.velocity_metrics and p.velocity_metrics.average > 0
+            p.velocity_metrics.average
+            for p in projects
+            if p.velocity_metrics and p.velocity_metrics.average > 0
         )
 
         # Overall completion percentage
@@ -220,12 +232,15 @@ class ProcessMultipleDataSourcesUseCase:
             velocities = [p.velocity_metrics for p in projects if p.velocity_metrics]
             if velocities:
                 avg_velocity = statistics.mean([v.average for v in velocities])
-                avg_std_dev = statistics.mean([v.std_dev for v in velocities if v.std_dev > 0])
+                avg_std_dev = statistics.mean(
+                    [v.std_dev for v in velocities if v.std_dev > 0]
+                )
 
                 combined_velocity_metrics = VelocityMetrics(
                     average=combined_velocity,
                     median=combined_velocity,
-                    std_dev=avg_std_dev * (combined_velocity / avg_velocity),  # Scale std dev
+                    std_dev=avg_std_dev
+                    * (combined_velocity / avg_velocity),  # Scale std dev
                     min_value=min(v.min_value for v in velocities),
                     max_value=sum(v.max_value for v in velocities),
                     trend=statistics.mean([v.trend for v in velocities]),
@@ -238,7 +253,9 @@ class ProcessMultipleDataSourcesUseCase:
                 # Use first project's repo as a template for simulation
                 for project in projects:
                     if project.simulation_result:
-                        combined_simulation = RunMonteCarloSimulationUseCase(temp_repo).execute(
+                        combined_simulation = RunMonteCarloSimulationUseCase(
+                            temp_repo
+                        ).execute(
                             total_remaining_work,
                             combined_velocity_metrics,
                             simulation_config,

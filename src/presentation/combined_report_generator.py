@@ -84,6 +84,9 @@ class CombinedReportGenerator:
         }
 
         # Generate the report with combined data
+        # Extract ml_decisions from kwargs if present
+        ml_decisions = kwargs.pop("ml_decisions", None)
+
         self.base_generator.generate(
             simulation_results=adjusted_results,  # Use adjusted as primary
             velocity_metrics=velocity_metrics,
@@ -95,6 +98,7 @@ class CombinedReportGenerator:
             model_info=model_info,
             combined_scenario_data=json.dumps(combined_data),
             scenario_banner=self._create_combined_banner(scenario, comparison),
+            ml_decisions=ml_decisions,
             **kwargs,
         )
 

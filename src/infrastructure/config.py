@@ -18,7 +18,9 @@ class JiraConfig:
     username: str
     api_token: str
     project_key: Optional[str] = None
-    jql_filter: Optional[str] = None  # Legacy, now used as forecast_jql if forecast_jql not set
+    jql_filter: Optional[str] = (
+        None  # Legacy, now used as forecast_jql if forecast_jql not set
+    )
     history_jql: Optional[str] = None
     forecast_jql: Optional[str] = None
 
@@ -37,13 +39,15 @@ class JiraConfig:
                 missing.append("JIRA_USERNAME")
             if not api_token:
                 missing.append("ATLASSIAN_API_TOKEN")
-            raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
+            raise ValueError(
+                f"Missing required environment variables: {', '.join(missing)}"
+            )
 
         # Support both old and new environment variable names
         jql_filter = os.getenv("JIRA_JQL_FILTER")
         forecast_jql = os.getenv("FORECAST_JQL", jql_filter)
         history_jql = os.getenv("HISTORY_JQL")
-        
+
         return cls(
             url=url,
             username=username,
@@ -60,4 +64,6 @@ class JiraConfig:
             raise ValueError("JIRA_URL must start with http:// or https://")
 
         if "@" not in self.username and "atlassian.net" in self.url:
-            raise ValueError("JIRA_USERNAME should be an email address for Atlassian Cloud")
+            raise ValueError(
+                "JIRA_USERNAME should be an email address for Atlassian Cloud"
+            )

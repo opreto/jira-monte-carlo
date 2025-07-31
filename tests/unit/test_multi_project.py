@@ -85,9 +85,13 @@ class TestAggregatedMetrics:
 class TestMultiProjectReport:
     def test_multi_project_report(self):
         # Create test projects
-        project1 = ProjectData(name="Project A", file_path=Path("a.csv"), remaining_work=50.0)
+        project1 = ProjectData(
+            name="Project A", file_path=Path("a.csv"), remaining_work=50.0
+        )
 
-        project2 = ProjectData(name="Project B", file_path=Path("b.csv"), remaining_work=75.0)
+        project2 = ProjectData(
+            name="Project B", file_path=Path("b.csv"), remaining_work=75.0
+        )
 
         # Create aggregated metrics
         metrics = AggregatedMetrics(
@@ -98,7 +102,9 @@ class TestMultiProjectReport:
             combined_velocity=30.0,
         )
 
-        report = MultiProjectReport(projects=[project1, project2], aggregated_metrics=metrics)
+        report = MultiProjectReport(
+            projects=[project1, project2], aggregated_metrics=metrics
+        )
 
         assert report.has_multiple_projects is True
         assert report.get_project_by_name("Project A") == project1

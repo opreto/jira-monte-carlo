@@ -31,7 +31,9 @@ class APICache:
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.ttl = timedelta(hours=ttl_hours)
 
-        logger.info(f"Initialized cache at {self.cache_dir} with TTL of {ttl_hours} hours")
+        logger.info(
+            f"Initialized cache at {self.cache_dir} with TTL of {ttl_hours} hours"
+        )
 
     def _get_cache_path(self, key: str) -> Path:
         """Get the file path for a cache key"""

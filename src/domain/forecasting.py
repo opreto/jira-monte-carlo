@@ -38,7 +38,9 @@ class PredictionInterval:
 class ModelConfiguration:
     """Base configuration for all forecasting models"""
 
-    confidence_levels: List[float] = field(default_factory=lambda: [0.5, 0.7, 0.85, 0.95])
+    confidence_levels: List[float] = field(
+        default_factory=lambda: [0.5, 0.7, 0.85, 0.95]
+    )
     sprint_duration_days: int = 14
 
     def validate(self) -> List[str]:
@@ -80,7 +82,9 @@ class ForecastResult:
     expected_completion_date: datetime
 
     # Optional probability distribution
-    probability_distribution: Optional[Dict[int, float]] = None  # sprints -> probability
+    probability_distribution: Optional[Dict[int, float]] = (
+        None  # sprints -> probability
+    )
 
     # Model-specific metadata
     model_type: ModelType = ModelType.MONTE_CARLO
@@ -89,7 +93,9 @@ class ForecastResult:
     # Raw data for visualization (limited sample)
     sample_predictions: List[float] = field(default_factory=list)  # In sprints
 
-    def get_prediction_at_confidence(self, confidence: float) -> Optional[PredictionInterval]:
+    def get_prediction_at_confidence(
+        self, confidence: float
+    ) -> Optional[PredictionInterval]:
         """Get prediction interval for specific confidence level"""
         for interval in self.prediction_intervals:
             if abs(interval.confidence_level - confidence) < 0.001:
@@ -114,8 +120,12 @@ class ModelInfo:
     configuration_class: type
     # Additional metadata for reports
     report_title: str = field(default="")  # e.g., "Monte Carlo Simulation Report"
-    report_subtitle: str = field(default="")  # e.g., "Statistical forecasting using Monte Carlo method"
-    methodology_description: str = field(default="")  # Brief description of how the model works
+    report_subtitle: str = field(
+        default=""
+    )  # e.g., "Statistical forecasting using Monte Carlo method"
+    methodology_description: str = field(
+        default=""
+    )  # Brief description of how the model works
 
     def __post_init__(self):
         """Set default report metadata if not provided"""
@@ -154,7 +164,9 @@ class ForecastingModel(ABC):
         pass
 
     @abstractmethod
-    def validate_inputs(self, remaining_work: float, velocity_metrics: VelocityMetrics) -> List[str]:
+    def validate_inputs(
+        self, remaining_work: float, velocity_metrics: VelocityMetrics
+    ) -> List[str]:
         """
         Validate inputs are suitable for this model
 
@@ -172,7 +184,9 @@ class ForecastingModelFactory(ABC):
     """Factory for creating forecasting model instances"""
 
     @abstractmethod
-    def create(self, model_type: ModelType, config: Optional[ModelConfiguration] = None) -> ForecastingModel:
+    def create(
+        self, model_type: ModelType, config: Optional[ModelConfiguration] = None
+    ) -> ForecastingModel:
         """Create a forecasting model instance"""
         pass
 

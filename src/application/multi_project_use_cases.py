@@ -81,9 +81,13 @@ class ProcessMultipleCSVsUseCase:
             projects.append(project_data)
 
         # Calculate aggregated metrics
-        aggregated_metrics = self._calculate_aggregated_metrics(projects, simulation_config)
+        aggregated_metrics = self._calculate_aggregated_metrics(
+            projects, simulation_config
+        )
 
-        return MultiProjectReport(projects=projects, aggregated_metrics=aggregated_metrics)
+        return MultiProjectReport(
+            projects=projects, aggregated_metrics=aggregated_metrics
+        )
 
     def _process_single_csv(
         self,
@@ -140,8 +144,14 @@ class ProcessMultipleCSVsUseCase:
             lookback_sprints=velocity_config.get("lookback_sprints", 6),
             velocity_field=velocity_config.get("velocity_field", "story_points"),
         )
-        velocity_metrics = analyzer.extract_velocity(df, field_mapping, velocity_analysis_config)
-        velocity_data_points = velocity_metrics.velocities if hasattr(velocity_metrics, "velocities") else []
+        velocity_metrics = analyzer.extract_velocity(
+            df, field_mapping, velocity_analysis_config
+        )
+        velocity_data_points = (
+            velocity_metrics.velocities
+            if hasattr(velocity_metrics, "velocities")
+            else []
+        )
 
         # Analyze velocity
         from ..domain.analysis import VelocityAnalysisConfig
@@ -154,7 +164,9 @@ class ProcessMultipleCSVsUseCase:
         )
 
         analyze_velocity_use_case = AnalyzeVelocityUseCase()
-        velocity_analysis = analyze_velocity_use_case.execute(velocity_data_points, velocity_analysis_config)
+        velocity_analysis = analyze_velocity_use_case.execute(
+            velocity_data_points, velocity_analysis_config
+        )
 
         # Create sprints in repository
         sprints = []
@@ -186,7 +198,9 @@ class ProcessMultipleCSVsUseCase:
 
         # Run simulation
         simulation_use_case = RunMonteCarloSimulationUseCase(issue_repo)
-        simulation_result = simulation_use_case.execute(remaining_work, velocity_metrics, simulation_config)
+        simulation_result = simulation_use_case.execute(
+            remaining_work, velocity_metrics, simulation_config
+        )
 
         return ProjectData(
             name=project_name,
@@ -208,29 +222,45 @@ class ProcessMultipleCSVsUseCase:
         total_remaining_work = sum(p.remaining_work for p in projects)
 
         # Calculate average and combined velocity
-        velocities = [p.velocity_metrics.average for p in projects if p.velocity_metrics]
+        velocities = [
+            p.velocity_metrics.average for p in projects if p.velocity_metrics
+        ]
         average_velocity = statistics.mean(velocities) if velocities else 0.0
         combined_velocity = sum(velocities)
 
         # Get earliest and latest completion dates from all projects
         all_completion_dates = []
         for project in projects:
-            if project.simulation_result and hasattr(project.simulation_result, "mean_completion_date"):
-                all_completion_dates.append(project.simulation_result.mean_completion_date)
+            if project.simulation_result and hasattr(
+                project.simulation_result, "mean_completion_date"
+            ):
+                all_completion_dates.append(
+                    project.simulation_result.mean_completion_date
+                )
 
-        earliest_completion = min(all_completion_dates) if all_completion_dates else datetime.now()
-        latest_completion = max(all_completion_dates) if all_completion_dates else datetime.now()
+        earliest_completion = (
+            min(all_completion_dates) if all_completion_dates else datetime.now()
+        )
+        latest_completion = (
+            max(all_completion_dates) if all_completion_dates else datetime.now()
+        )
 
         # Calculate combined confidence intervals (using combined velocity)
         if combined_velocity > 0:
             confidence_intervals = {}
             for confidence_level in simulation_config.confidence_levels:
-                sprints_needed = int((total_remaining_work / combined_velocity) + 0.5)  # Round up
+                sprints_needed = int(
+                    (total_remaining_work / combined_velocity) + 0.5
+                )  # Round up
                 # Add some variance based on individual project uncertainties
                 variance_factor = 1.0 + (confidence_level - 0.5) * 0.5
-                confidence_intervals[confidence_level] = int(sprints_needed * variance_factor)
+                confidence_intervals[confidence_level] = int(
+                    sprints_needed * variance_factor
+                )
         else:
-            confidence_intervals = {level: 0 for level in simulation_config.confidence_levels}
+            confidence_intervals = {
+                level: 0 for level in simulation_config.confidence_levels
+            }
 
         return AggregatedMetrics(
             total_projects=len(projects),

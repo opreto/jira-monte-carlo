@@ -303,6 +303,7 @@ Velocity Change Prediction (What-If Analysis):
   --team-change TEXT             Model team size changes (format: "sprint:N,change:±C[,ramp:R]")
   
   Sprint ranges: Use N for single sprint, N-M for range, N+ for sprint N onwards (forever)
+  Team changes: C can be fractional (0.5 for part-time), R (ramp) is number of sprints (can be float)
   Multiple changes: Repeat flags for multiple adjustments
 
 Cache Management:

@@ -23,9 +23,7 @@ class CSVProcessingFactory:
         self._default_analyzer: Optional[str] = None
         self._default_extractor: Optional[str] = None
 
-    def register_parser(
-        self, name: str, parser_class: Type[CSVParser], set_as_default: bool = False
-    ) -> None:
+    def register_parser(self, name: str, parser_class: Type[CSVParser], set_as_default: bool = False) -> None:
         """
         Register a CSV parser implementation.
 
@@ -41,9 +39,7 @@ class CSVProcessingFactory:
         if set_as_default or self._default_parser is None:
             self._default_parser = name
 
-    def register_analyzer(
-        self, name: str, analyzer_class: Type[CSVAnalyzer], set_as_default: bool = False
-    ) -> None:
+    def register_analyzer(self, name: str, analyzer_class: Type[CSVAnalyzer], set_as_default: bool = False) -> None:
         """
         Register a CSV analyzer implementation.
 
@@ -74,9 +70,7 @@ class CSVProcessingFactory:
             set_as_default: Whether to set as default extractor
         """
         if not issubclass(extractor_class, SprintExtractor):
-            raise TypeError(
-                f"{extractor_class} must implement SprintExtractor interface"
-            )
+            raise TypeError(f"{extractor_class} must implement SprintExtractor interface")
 
         self._extractors[name] = extractor_class
         if set_as_default or self._default_extractor is None:
@@ -101,9 +95,7 @@ class CSVProcessingFactory:
             raise ConfigurationError("No CSV parser registered")
 
         if parser_name not in self._parsers:
-            raise ConfigurationError(
-                f"CSV parser '{parser_name}' not found. Available: {list(self._parsers.keys())}"
-            )
+            raise ConfigurationError(f"CSV parser '{parser_name}' not found. Available: {list(self._parsers.keys())}")
 
         return self._parsers[parser_name](**kwargs)
 

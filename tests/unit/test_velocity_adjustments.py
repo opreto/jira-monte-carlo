@@ -16,9 +16,7 @@ class TestVelocityAdjustment:
 
     def test_single_sprint_adjustment(self):
         """Test adjustment for a single sprint"""
-        adj = VelocityAdjustment(
-            sprint_start=3, sprint_end=3, factor=0.5, reason="vacation"
-        )
+        adj = VelocityAdjustment(sprint_start=3, sprint_end=3, factor=0.5, reason="vacation")
 
         assert not adj.applies_to_sprint(2)
         assert adj.applies_to_sprint(3)
@@ -27,34 +25,24 @@ class TestVelocityAdjustment:
 
     def test_sprint_range_adjustment(self):
         """Test adjustment for a sprint range"""
-        adj = VelocityAdjustment(
-            sprint_start=5, sprint_end=7, factor=0.7, reason="summer holidays"
-        )
+        adj = VelocityAdjustment(sprint_start=5, sprint_end=7, factor=0.7, reason="summer holidays")
 
         assert not adj.applies_to_sprint(4)
         assert adj.applies_to_sprint(5)
         assert adj.applies_to_sprint(6)
         assert adj.applies_to_sprint(7)
         assert not adj.applies_to_sprint(8)
-        assert (
-            adj.get_description()
-            == "70% capacity for sprint +4 through sprint +6 (summer holidays)"
-        )
+        assert adj.get_description() == "70% capacity for sprint +4 through sprint +6 (summer holidays)"
 
     def test_forever_adjustment(self):
         """Test adjustment that applies forever"""
-        adj = VelocityAdjustment(
-            sprint_start=10, sprint_end=None, factor=1.2, reason="process improvements"
-        )  # Forever
+        adj = VelocityAdjustment(sprint_start=10, sprint_end=None, factor=1.2, reason="process improvements")  # Forever
 
         assert not adj.applies_to_sprint(9)
         assert adj.applies_to_sprint(10)
         assert adj.applies_to_sprint(100)
         assert adj.applies_to_sprint(1000)
-        assert (
-            adj.get_description()
-            == "120% capacity for from sprint +9 onwards (process improvements)"
-        )
+        assert adj.get_description() == "120% capacity for from sprint +9 onwards (process improvements)"
 
 
 class TestTeamChange:
@@ -86,9 +74,7 @@ class TestTeamChange:
 
     def test_team_reduction(self):
         """Test removing team members"""
-        change = TeamChange(
-            sprint=8, change=-2, ramp_up_sprints=0
-        )  # No ramp-up for departures
+        change = TeamChange(sprint=8, change=-2, ramp_up_sprints=0)  # No ramp-up for departures
 
         # Always full productivity impact for departures
         assert change.get_productivity_factor(0) == 1.0
@@ -139,9 +125,7 @@ class TestVelocityScenario:
             VelocityAdjustment(10, None, 1.1, "improvements"),
         ]
 
-        scenario = VelocityScenario(
-            name="Test Scenario", adjustments=adjustments, team_changes=[]
-        )
+        scenario = VelocityScenario(name="Test Scenario", adjustments=adjustments, team_changes=[])
 
         base_velocity = 20.0
         team_size = 5
@@ -167,9 +151,7 @@ class TestVelocityScenario:
             TeamChange(4, 1, 2),  # Add 1 person at sprint 4
         ]
 
-        scenario = VelocityScenario(
-            name="Scaling", adjustments=[], team_changes=team_changes
-        )
+        scenario = VelocityScenario(name="Scaling", adjustments=[], team_changes=team_changes)
 
         base_velocity = 20.0
         team_size = 4
@@ -274,14 +256,10 @@ class TestVelocityAdjustmentParser:
         parser = VelocityAdjustmentParser()
 
         # Missing required fields
-        with pytest.raises(
-            ValueError, match="Invalid velocity change format.*Expected:"
-        ):
+        with pytest.raises(ValueError, match="Invalid velocity change format.*Expected:"):
             parser.parse_velocity_change("factor:0.5")
 
-        with pytest.raises(
-            ValueError, match="Invalid velocity change format.*Expected:"
-        ):
+        with pytest.raises(ValueError, match="Invalid velocity change format.*Expected:"):
             parser.parse_velocity_change("sprint:3")
 
         with pytest.raises(ValueError, match="Invalid team change format.*Expected:"):

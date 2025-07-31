@@ -69,18 +69,14 @@ class TestModelConfiguration:
 
 class TestPredictionInterval:
     def test_prediction_interval_creation(self):
-        interval = PredictionInterval(
-            confidence_level=0.85, lower_bound=2.0, predicted_value=3.0, upper_bound=5.0
-        )
+        interval = PredictionInterval(confidence_level=0.85, lower_bound=2.0, predicted_value=3.0, upper_bound=5.0)
         assert interval.confidence_level == 0.85
         assert interval.lower_bound == 2.0
         assert interval.predicted_value == 3.0
         assert interval.upper_bound == 5.0
 
     def test_range_width(self):
-        interval = PredictionInterval(
-            confidence_level=0.85, lower_bound=2.0, predicted_value=3.0, upper_bound=5.0
-        )
+        interval = PredictionInterval(confidence_level=0.85, lower_bound=2.0, predicted_value=3.0, upper_bound=5.0)
         assert interval.range_width == 3.0
 
 
@@ -184,9 +180,7 @@ class TestMonteCarloModel:
             max_value=30.0,
             trend=0.5,
         )
-        config = MonteCarloConfiguration(
-            num_simulations=1000, confidence_levels=[0.5, 0.85]
-        )
+        config = MonteCarloConfiguration(num_simulations=1000, confidence_levels=[0.5, 0.85])
 
         result = model.forecast(100.0, velocity_metrics, config)
 
@@ -207,9 +201,7 @@ class TestMonteCarloModel:
             max_value=20.0,
             trend=0.0,
         )
-        config = MonteCarloConfiguration(
-            num_simulations=100, use_historical_variance=False
-        )
+        config = MonteCarloConfiguration(num_simulations=100, use_historical_variance=False)
 
         result = model.forecast(100.0, velocity_metrics, config)
 

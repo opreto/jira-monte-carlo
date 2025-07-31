@@ -289,7 +289,12 @@
       "Bash(git branch:*)",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
-      "Bash(ruff format:*)"
+      "Bash(ruff format:*)",
+      "Bash(uv add:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(SuperClaude --version)",
+      "Bash(SuperClaude install)",
+      "Bash(SuperClaude install:*)"
     ],
     "deny": []
   }

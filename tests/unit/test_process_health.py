@@ -111,12 +111,8 @@ class TestWIPAnalysis:
         """Test WIP analysis with limits"""
         items = [
             WIPItem("TEST-1", "Issue 1", "To Do", WIPStatus.TODO, None, 1),
-            WIPItem(
-                "TEST-2", "Issue 2", "In Progress", WIPStatus.IN_PROGRESS, "Dev1", 3
-            ),
-            WIPItem(
-                "TEST-3", "Issue 3", "In Progress", WIPStatus.IN_PROGRESS, "Dev2", 5
-            ),
+            WIPItem("TEST-2", "Issue 2", "In Progress", WIPStatus.IN_PROGRESS, "Dev1", 3),
+            WIPItem("TEST-3", "Issue 3", "In Progress", WIPStatus.IN_PROGRESS, "Dev2", 5),
         ]
 
         analysis = WIPAnalysis(
@@ -505,9 +501,7 @@ class TestAnalyzeSprintHealthUseCase:
         assert analysis is not None
         assert len(analysis.sprint_metrics) == 2
         # Check that metrics were created for each sprint
-        assert all(
-            m.sprint_name in ["Sprint 1", "Sprint 2"] for m in analysis.sprint_metrics
-        )
+        assert all(m.sprint_name in ["Sprint 1", "Sprint 2"] for m in analysis.sprint_metrics)
         assert 0 <= analysis.predictability_score <= 1
 
 
@@ -553,9 +547,7 @@ class TestAnalyzeBlockedItemsUseCase:
 
         # Create use case and execute
         use_case = AnalyzeBlockedItemsUseCase(issue_repo)
-        analysis = use_case.execute(
-            status_mapping={"done": ["Done"], "blocked": ["Blocked"]}
-        )
+        analysis = use_case.execute(status_mapping={"done": ["Done"], "blocked": ["Blocked"]})
 
         # Verify results
         assert len(analysis.blocked_items) == 2

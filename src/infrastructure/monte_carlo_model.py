@@ -47,26 +47,18 @@ class MonteCarloModel(ForecastingModel):
             raise ValueError(f"Invalid configuration: {'; '.join(errors)}")
 
         # Run simulations
-        completion_sprints = self._run_simulations(
-            remaining_work, velocity_metrics, mc_config
-        )
+        completion_sprints = self._run_simulations(remaining_work, velocity_metrics, mc_config)
 
         # Calculate prediction intervals
-        prediction_intervals = self._calculate_prediction_intervals(
-            completion_sprints, mc_config.confidence_levels
-        )
+        prediction_intervals = self._calculate_prediction_intervals(completion_sprints, mc_config.confidence_levels)
 
         # Calculate probability distribution
-        probability_distribution = self._calculate_probability_distribution(
-            completion_sprints
-        )
+        probability_distribution = self._calculate_probability_distribution(completion_sprints)
 
         # Calculate expected values
         expected_sprints = statistics.mean(completion_sprints)
         today = datetime.now()
-        expected_completion_date = today + timedelta(
-            days=int(expected_sprints * mc_config.sprint_duration_days)
-        )
+        expected_completion_date = today + timedelta(days=int(expected_sprints * mc_config.sprint_duration_days))
 
         # Create result
         return ForecastResult(
@@ -81,9 +73,7 @@ class MonteCarloModel(ForecastingModel):
                 "velocity_std_dev": velocity_metrics.std_dev,
                 "variance_multiplier": mc_config.variance_multiplier,
             },
-            sample_predictions=completion_sprints[
-                :1000
-            ],  # Store sample for visualization
+            sample_predictions=completion_sprints[:1000],  # Store sample for visualization
         )
 
     def get_model_info(self) -> ModelInfo:
@@ -103,9 +93,7 @@ class MonteCarloModel(ForecastingModel):
             ),
         )
 
-    def validate_inputs(
-        self, remaining_work: float, velocity_metrics: VelocityMetrics
-    ) -> List[str]:
+    def validate_inputs(self, remaining_work: float, velocity_metrics: VelocityMetrics) -> List[str]:
         """Validate inputs for Monte Carlo simulation"""
         errors = []
 
@@ -199,9 +187,7 @@ class MonteCarloModel(ForecastingModel):
 
         return intervals
 
-    def _calculate_probability_distribution(
-        self, completion_sprints: List[float]
-    ) -> Dict[int, float]:
+    def _calculate_probability_distribution(self, completion_sprints: List[float]) -> Dict[int, float]:
         """Calculate probability distribution of completion sprints"""
         from collections import Counter
 
@@ -210,8 +196,6 @@ class MonteCarloModel(ForecastingModel):
         total = len(completion_sprints)
 
         # Convert to probabilities
-        distribution = {
-            sprints: count / total for sprints, count in sprint_counts.items()
-        }
+        distribution = {sprints: count / total for sprints, count in sprint_counts.items()}
 
         return distribution

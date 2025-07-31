@@ -752,9 +752,7 @@ a:hover {
                 "neutral": cc.neutral.hex,  # Blue/Gray = Neutral info
                 # RGBA functions for transparency
                 "high_confidence_rgba": lambda alpha: cc.high_confidence.to_rgba(alpha),
-                "medium_confidence_rgba": lambda alpha: cc.medium_confidence.to_rgba(
-                    alpha
-                ),
+                "medium_confidence_rgba": lambda alpha: cc.medium_confidence.to_rgba(alpha),
                 "low_confidence_rgba": lambda alpha: cc.low_confidence.to_rgba(alpha),
                 "neutral_rgba": lambda alpha: cc.neutral.to_rgba(alpha),
                 # Data visualization colors
@@ -792,9 +790,7 @@ a:hover {
                 "primary": self.theme.colors.primary.hex,
                 "primary_rgba": lambda alpha: self.theme.colors.primary.to_rgba(alpha),
                 "secondary": self.theme.colors.secondary.hex,
-                "secondary_rgba": lambda alpha: self.theme.colors.secondary.to_rgba(
-                    alpha
-                ),
+                "secondary_rgba": lambda alpha: self.theme.colors.secondary.to_rgba(alpha),
                 "accent": self.theme.colors.accent.hex,
                 "accent_rgba": lambda alpha: self.theme.colors.accent.to_rgba(alpha),
                 "success": self.theme.colors.success.hex,

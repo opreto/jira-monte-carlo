@@ -52,9 +52,7 @@ class ApplicationBootstrap:
 
             # Register extractors
             # Note: We use the adapter to make infrastructure comply with interface
-            factory.register_extractor(
-                "enhanced", EnhancedSprintExtractorAdapter, set_as_default=True
-            )
+            factory.register_extractor("enhanced", EnhancedSprintExtractorAdapter, set_as_default=True)
 
             self._csv_processing_factory = factory
 

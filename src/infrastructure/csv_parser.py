@@ -49,9 +49,7 @@ class JiraCSVParser:
             needed_columns = self._get_needed_columns()
             available_columns = df.columns
 
-            columns_to_select = [
-                col for col in needed_columns if col in available_columns
-            ]
+            columns_to_select = [col for col in needed_columns if col in available_columns]
             df = df.select(columns_to_select)
 
             # Process in batches
@@ -141,11 +139,7 @@ class JiraCSVParser:
                 # Look for all keys that match the sprint field name
                 sprint_values = []
                 for key, value in row.items():
-                    if (
-                        key == self.field_mapping.sprint_field
-                        and value
-                        and str(value).strip()
-                    ):
+                    if key == self.field_mapping.sprint_field and value and str(value).strip():
                         sprint_values.append(str(value).strip())
 
                 # Use the last sprint value (most recent)
@@ -266,11 +260,7 @@ class CSVFieldAnalyzer:
                 categorized["key_candidates"].append(header)
 
             # Summary candidates
-            if (
-                "summary" in header_lower
-                or "title" in header_lower
-                or "name" in header_lower
-            ):
+            if "summary" in header_lower or "title" in header_lower or "name" in header_lower:
                 categorized["summary_candidates"].append(header)
 
             # Status candidates
@@ -278,24 +268,15 @@ class CSVFieldAnalyzer:
                 categorized["status_candidates"].append(header)
 
             # Date candidates
-            if any(
-                word in header_lower
-                for word in ["date", "created", "updated", "resolved", "time"]
-            ):
+            if any(word in header_lower for word in ["date", "created", "updated", "resolved", "time"]):
                 categorized["date_candidates"].append(header)
 
             # Numeric candidates (for velocity)
-            if any(
-                word in header_lower
-                for word in ["points", "estimate", "effort", "size", "hours"]
-            ):
+            if any(word in header_lower for word in ["points", "estimate", "effort", "size", "hours"]):
                 categorized["numeric_candidates"].append(header)
 
             # User candidates
-            if any(
-                word in header_lower
-                for word in ["assignee", "reporter", "owner", "user"]
-            ):
+            if any(word in header_lower for word in ["assignee", "reporter", "owner", "user"]):
                 categorized["user_candidates"].append(header)
 
             # Sprint candidates

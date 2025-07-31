@@ -61,11 +61,7 @@ class TestCombinedReportGenerator:
 
         scenario = VelocityScenario(
             name="Test Scenario",
-            adjustments=[
-                VelocityAdjustment(
-                    sprint_start=5, sprint_end=7, factor=0.7, reason="vacation"
-                )
-            ],
+            adjustments=[VelocityAdjustment(sprint_start=5, sprint_end=7, factor=0.7, reason="vacation")],
             team_changes=[],
         )
 
@@ -143,11 +139,7 @@ class TestCombinedReportGenerator:
 
         scenario = VelocityScenario(
             name="Test",
-            adjustments=[
-                VelocityAdjustment(
-                    sprint_start=1, sprint_end=3, factor=0.8, reason="holidays"
-                )
-            ],
+            adjustments=[VelocityAdjustment(sprint_start=1, sprint_end=3, factor=0.8, reason="holidays")],
             team_changes=[],
         )
 

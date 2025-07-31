@@ -24,9 +24,7 @@ class JiraApiDataSource:
     Supports both Jira Cloud and Server instances.
     """
 
-    def __init__(
-        self, config: Optional[JiraConfig] = None, cache_ttl_hours: float = 1.0
-    ):
+    def __init__(self, config: Optional[JiraConfig] = None, cache_ttl_hours: float = 1.0):
         """
         Initialize Jira API connection.
 
@@ -158,31 +156,23 @@ class JiraApiDataSource:
                 # Use direct REST API call for reliable pagination
                 try:
                     # The jql method should work with start parameter
-                    result = self.jira.jql(
-                        jql, start=start, limit=100, expand="changelog"
-                    )
+                    result = self.jira.jql(jql, start=start, limit=100, expand="changelog")
                 except ValueError as e:
                     if "deprecated" in str(e) and page_num == 1:
                         # Try enhanced_jql only for first page to see if it works
-                        logger.info(
-                            "JQL deprecated, trying enhanced_jql for first batch"
-                        )
+                        logger.info("JQL deprecated, trying enhanced_jql for first batch")
                         result = self.jira.enhanced_jql(jql)
                         batch_issues = result.get("issues", [])
                         if batch_issues:
                             issues.extend(self._parse_issues(batch_issues))
-                            logger.info(
-                                f"Enhanced JQL returned {len(batch_issues)} issues"
-                            )
+                            logger.info(f"Enhanced JQL returned {len(batch_issues)} issues")
                         # Enhanced JQL has limits, continue with regular pagination
                         if len(batch_issues) < 100:
                             break
                         continue
                     else:
                         # For subsequent pages, fall back to REST API
-                        logger.warning(
-                            f"Cannot fetch page {page_num} with JQL method, switching to REST API"
-                        )
+                        logger.warning(f"Cannot fetch page {page_num} with JQL method, switching to REST API")
                         # Get all remaining issues via REST
                         raw_issues = self._fetch_all_issues_rest(jql)
                         # Parse all issues
@@ -194,9 +184,7 @@ class JiraApiDataSource:
                     break
 
                 issues.extend(self._parse_issues(batch_issues))
-                logger.info(
-                    f"Fetched {len(batch_issues)} issues in this batch, total so far: {len(issues)}"
-                )
+                logger.info(f"Fetched {len(batch_issues)} issues in this batch, total so far: {len(issues)}")
 
                 # Check if this is the last page
                 if result.get("isLast", False):
@@ -220,9 +208,7 @@ class JiraApiDataSource:
             limit = 100
 
             while True:
-                result = self.jira.jql(
-                    jql, start=start, limit=limit, expand="changelog"
-                )
+                result = self.jira.jql(jql, start=start, limit=limit, expand="changelog")
 
                 batch_issues = result.get("issues", [])
                 if not batch_issues:
@@ -232,9 +218,7 @@ class JiraApiDataSource:
 
                 # Check if there are more issues
                 total = result.get("total", 0)
-                logger.info(
-                    f"Batch complete. Total available: {total}, fetched so far: {len(issues)}"
-                )
+                logger.info(f"Batch complete. Total available: {total}, fetched so far: {len(issues)}")
                 if start + limit >= total:
                     break
 
@@ -276,9 +260,7 @@ class JiraApiDataSource:
                 issues = data.get("issues", [])
                 total = data.get("total", 0)
 
-                logger.info(
-                    f"REST API: Received {len(issues)} issues. Total available: {total}"
-                )
+                logger.info(f"REST API: Received {len(issues)} issues. Total available: {total}")
 
                 if not issues:
                     break
@@ -389,12 +371,8 @@ class JiraApiDataSource:
             story_points=story_points,
             time_estimate=time_estimate,
             time_spent=time_spent,
-            assignee=fields.get("assignee", {}).get("displayName")
-            if fields.get("assignee")
-            else None,
-            reporter=fields.get("reporter", {}).get("displayName")
-            if fields.get("reporter")
-            else None,
+            assignee=fields.get("assignee", {}).get("displayName") if fields.get("assignee") else None,
+            reporter=fields.get("reporter", {}).get("displayName") if fields.get("reporter") else None,
             labels=fields.get("labels", []),
         )
 
@@ -524,9 +502,7 @@ class JiraApiDataSource:
                 sprints_dict[sprint_name] = {
                     "name": sprint_name,
                     "issues": [],
-                    "start_date": self._parse_date(
-                        sprint_data_from_issue.get("startDate")
-                    ),
+                    "start_date": self._parse_date(sprint_data_from_issue.get("startDate")),
                     "end_date": self._parse_date(sprint_data_from_issue.get("endDate")),
                 }
 
@@ -553,9 +529,7 @@ class JiraApiDataSource:
             # Last resort: infer from issues
             if not start_date or not end_date:
                 created_dates = [i.created for i in sprint_data["issues"] if i.created]
-                resolved_dates = [
-                    i.resolved for i in sprint_data["issues"] if i.resolved
-                ]
+                resolved_dates = [i.resolved for i in sprint_data["issues"] if i.resolved]
 
                 if not start_date and created_dates:
                     start_date = min(created_dates)
@@ -566,9 +540,7 @@ class JiraApiDataSource:
             completed_issues = [i for i in sprint_data["issues"] if i.resolved]
 
             # Calculate completed points
-            completed_points = sum(
-                i.story_points or 0 for i in completed_issues if i.story_points
-            )
+            completed_points = sum(i.story_points or 0 for i in completed_issues if i.story_points)
 
             sprint = Sprint(
                 name=sprint_name,
@@ -586,9 +558,7 @@ class JiraApiDataSource:
         try:
             # Try to get server info
             info = self.jira.get_server_info()
-            logger.info(
-                f"Successfully connected to Jira: {info.get('serverTitle', 'Unknown')}"
-            )
+            logger.info(f"Successfully connected to Jira: {info.get('serverTitle', 'Unknown')}")
             return True
         except Exception as e:
             logger.error(f"Failed to connect to Jira: {e}")

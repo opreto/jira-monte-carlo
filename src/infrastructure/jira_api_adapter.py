@@ -91,8 +91,9 @@ class JiraApiDataSourceAdapter(DataSource):
                     "custom_fields": self._api_source._custom_field_map or {},
                 }
 
-            # Get JQL query
+            # Get JQL queries
             jql_query = self._api_source.get_jql_query() if self._api_source and connected else None
+            jql_queries = self._api_source.get_jql_queries() if self._api_source and connected else {}
 
             return {
                 "format": "Jira API",
@@ -108,6 +109,7 @@ class JiraApiDataSourceAdapter(DataSource):
                     "has_jql_filter": bool(self._api_source.config.jql_filter) if self._api_source else False,
                 },
                 "jql_query": jql_query,
+                "jql_queries": jql_queries,
             }
 
         except Exception as e:

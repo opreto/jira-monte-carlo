@@ -441,7 +441,29 @@ class ReportTemplates:
 {{ scenario_banner|safe }}
 {% endif %}
 
-{% if jql_query %}
+{% if jql_queries %}
+<div class="jql-query-container">
+    <h3>Data Selection Queries (JQL)</h3>
+    {% if jql_queries.forecast %}
+    <div style="margin-bottom: 15px;">
+        <h4 style="margin: 10px 0 5px 0; font-size: 1.1em;">Forecast Query (Backlog Items)</h4>
+        <p style="margin: 0 0 5px 0; color: #666; font-size: 0.9em;">Items to be forecasted - the work that needs to be completed</p>
+        <pre class="jql-query"><code>{{ jql_queries.forecast }}</code></pre>
+    </div>
+    {% endif %}
+    {% if jql_queries.history %}
+    <div>
+        <h4 style="margin: 10px 0 5px 0; font-size: 1.1em;">History Query (Velocity Calculation)</h4>
+        <p style="margin: 0 0 5px 0; color: #666; font-size: 0.9em;">Completed items used to calculate historical velocity</p>
+        <pre class="jql-query"><code>{{ jql_queries.history }}</code></pre>
+    </div>
+    {% else %}
+    <p style="margin: 10px 0; color: #666; font-style: italic; font-size: 0.9em;">
+        Note: Using the same query for both velocity calculation and forecasting
+    </p>
+    {% endif %}
+</div>
+{% elif jql_query %}
 <div class="jql-query-container">
     <h3>Data Selection Query (JQL)</h3>
     <pre class="jql-query"><code>{{ jql_query }}</code></pre>

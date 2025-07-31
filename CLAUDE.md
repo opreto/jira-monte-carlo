@@ -13,7 +13,7 @@ This is a high-performance agile project analytics tool for enterprise forecasti
 
 ## Development Workflow
 
-- Your workflow should be: plan -> design failing tests -> implement -> flesh out tests -> update documentation as appropriate -> commit/push.
+- Your workflow for each development task should be: plan -> design failing tests -> implement -> flesh out tests -> lint -> ensure the entire test suit passes -> update documentation as appropriate -> commit/push.
 
 ## CLI Guidelines
 

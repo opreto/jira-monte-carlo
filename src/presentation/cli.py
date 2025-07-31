@@ -232,7 +232,7 @@ def main(
     clear_cache: bool,
     cache_info: bool,
 ):
-    console.print("[bold blue]Statistical Forecasting Tool[/bold blue]")
+    console.print("[bold blue]Sprint Radar - Agile Analytics Platform[/bold blue]")
 
     # Handle cache operations
     if cache_info or clear_cache:

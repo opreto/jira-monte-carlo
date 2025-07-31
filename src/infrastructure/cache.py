@@ -13,7 +13,7 @@ class APICache:
     """
     Simple file-based cache for API responses.
 
-    Stores cached data in the user's home directory under ~/.jira-monte-carlo/cache/
+    Stores cached data in the user's home directory under ~/.sprint-radar/cache/
     """
 
     def __init__(self, cache_dir: Optional[Path] = None, ttl_hours: float = 1.0):
@@ -21,11 +21,11 @@ class APICache:
         Initialize cache.
 
         Args:
-            cache_dir: Directory to store cache files. Defaults to ~/.jira-monte-carlo/cache/
+            cache_dir: Directory to store cache files. Defaults to ~/.sprint-radar/cache/
             ttl_hours: Time to live for cache entries in hours. Default is 1 hour.
         """
         if cache_dir is None:
-            cache_dir = Path.home() / ".jira-monte-carlo" / "cache"
+            cache_dir = Path.home() / ".sprint-radar" / "cache"
 
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)

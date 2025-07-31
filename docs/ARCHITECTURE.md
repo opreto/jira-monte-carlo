@@ -855,7 +855,7 @@ See [ADDING_DATA_SOURCES.md](./ADDING_DATA_SOURCES.md) for detailed instructions
 
 The architecture includes an intelligent caching system for API responses:
 
-- **File-based Cache**: Stores pickled responses in `~/.jira-monte-carlo/cache/`
+- **File-based Cache**: Stores pickled responses in `~/.sprint-radar/cache/`
 - **TTL Support**: Configurable time-to-live (default 1 hour)
 - **Automatic Expiration**: Expired entries are automatically cleaned up
 - **Cache Management**: CLI commands for viewing and clearing cache

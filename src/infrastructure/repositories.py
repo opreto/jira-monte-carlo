@@ -77,7 +77,7 @@ class InMemorySprintRepository(SprintRepository):
 
 
 class FileConfigRepository(ConfigRepository):
-    def __init__(self, config_dir: Path = Path.home() / ".jira-monte-carlo"):
+    def __init__(self, config_dir: Path = Path.home() / ".sprint-radar"):
         self.config_dir = config_dir
         self.config_dir.mkdir(exist_ok=True)
         self.field_mapping_file = self.config_dir / "field_mapping.json"

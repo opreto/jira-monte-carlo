@@ -179,7 +179,7 @@ class HTMLReportGenerator:
         if model_info and hasattr(model_info, "report_title"):
             title = model_info.report_title
         else:
-            title = "Statistical Forecasting Report"
+            title = "Sprint Radar Analytics Report"
 
         # Pass combined_scenario_data to base template for JavaScript inclusion
         return self.base_template.render(

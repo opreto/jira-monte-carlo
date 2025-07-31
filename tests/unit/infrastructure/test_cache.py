@@ -236,6 +236,6 @@ class TestAPICache:
             mock_home = Path(tmpdir)
             with patch.object(Path, "home", return_value=mock_home):
                 cache = APICache()
-                expected_path = mock_home / ".jira-monte-carlo" / "cache"
+                expected_path = mock_home / ".sprint-radar" / "cache"
                 assert cache.cache_dir == expected_path
                 assert cache.cache_dir.exists()

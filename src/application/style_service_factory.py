@@ -47,7 +47,7 @@ class StyleServiceFactory:
 
         # Create instances
         if config_dir is None:
-            config_dir = Path.home() / ".jira-monte-carlo"
+            config_dir = Path.home() / ".sprint-radar"
 
         theme_repository = self._theme_repository_class(config_dir)
         style_generator = self._style_generator_class()

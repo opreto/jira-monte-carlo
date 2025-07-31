@@ -3,9 +3,9 @@ requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "monte-carlo-simulator"
+name = "sprint-radar"
 version = "0.1.0"
-description = "Monte Carlo simulation for project forecasting"
+description = "Sprint Radar - Agile project analytics and forecasting platform"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
@@ -26,6 +26,9 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "superclaude>=3.0.0.2",
 ]
+
+[project.scripts]
+sprint-radar = "src.presentation.cli:main"
 
 [project.optional-dependencies]
 dev = [

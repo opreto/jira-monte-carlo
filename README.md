@@ -1,6 +1,6 @@
-# Monte Carlo Simulation for Agile Projects
+# Sprint Radar
 
-A high-performance Monte Carlo simulation tool for agile project forecasting. This tool analyzes historical velocity data from various sources (Jira, Linear, etc.) and uses Monte Carlo simulations to predict project completion dates with confidence intervals.
+A high-performance agile project analytics and forecasting platform. Sprint Radar analyzes historical velocity data from various sources (Jira, Linear, etc.) and uses Monte Carlo simulations to predict project completion dates with confidence intervals.
 
 ## Features
 
@@ -37,8 +37,8 @@ The most common use case is connecting directly to your Jira instance. Here's ho
 
 ```bash
 # Clone the repository
-git clone https://github.com/opreto/jira-monte-carlo.git
-cd jira-monte-carlo
+git clone https://github.com/opreto/sprint-radar.git
+cd sprint-radar
 
 # Install UV (fast package manager)
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -77,7 +77,7 @@ To get your Atlassian API token:
 
 ```bash
 # Generate forecast for your project
-jira-monte-carlo -f jira-api:// -o reports/forecast.html
+sprint-radar -f jira-api:// -o reports/forecast.html
 
 # Open the report in your browser
 open reports/forecast.html  # On Windows: start reports/forecast.html
@@ -89,17 +89,17 @@ That's it! You now have a comprehensive Monte Carlo forecast for your project.
 
 ```bash
 # Analyze a specific project (overrides .env)
-jira-monte-carlo -f jira-api://MYPROJECT -o reports/myproject.html
+sprint-radar -f jira-api://MYPROJECT -o reports/myproject.html
 
 # Model vacation impact
-jira-monte-carlo -f jira-api:// \
+sprint-radar -f jira-api:// \
   --velocity-change "sprint:10,factor:0.7,reason:team vacation week"
 
 # Include process health metrics
-jira-monte-carlo -f jira-api:// --include-process-health
+sprint-radar -f jira-api:// --include-process-health
 
 # Clear cache to fetch fresh data
-jira-monte-carlo --clear-cache
+sprint-radar --clear-cache
 ```
 
 ## Supported Data Sources
@@ -122,7 +122,7 @@ jira-monte-carlo --clear-cache
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd jira-monte-carlo
+cd sprint-radar
 ```
 
 2. Install UV if you haven't already:
@@ -148,25 +148,25 @@ Run the Monte Carlo simulation on your project data:
 # Set up .env file with your Jira credentials (see Jira API Integration section)
 
 # Analyze your project in real-time
-jira-monte-carlo -f jira-api://MYPROJECT -o forecast.html
+sprint-radar -f jira-api://MYPROJECT -o forecast.html
 
 # Add velocity adjustments for vacation planning
-jira-monte-carlo -f jira-api://MYPROJECT \
+sprint-radar -f jira-api://MYPROJECT \
   --velocity-change "sprint:10,factor:0.7,reason:team vacation"
 ```
 
 **Option 2: Use exported CSV/XML files**
 ```bash
 # Simplest usage - auto-detects format
-jira-monte-carlo -f export.csv
+sprint-radar -f export.csv
 
 # Specify format explicitly
-jira-monte-carlo -f linear-export.csv --format linear
-jira-monte-carlo -f jira-export.csv --format jira
-jira-monte-carlo -f jira-export.xml --format jira-xml
+sprint-radar -f linear-export.csv --format linear
+sprint-radar -f jira-export.csv --format jira
+sprint-radar -f jira-export.xml --format jira-xml
 
 # Process multiple files (can be different formats)
-jira-monte-carlo -f jira-export.csv -f linear-export.csv -f jira-backup.xml
+sprint-radar -f jira-export.csv -f linear-export.csv -f jira-backup.xml
 ```
 
 ### Jira API Integration
@@ -183,19 +183,19 @@ JIRA_PROJECT_KEY=PROJ
 EOF
 
 # Generate report from Jira API (uses JIRA_PROJECT_KEY from .env)
-jira-monte-carlo -f jira-api:// -o reports/forecast.html
+sprint-radar -f jira-api:// -o reports/forecast.html
 
 # Use a specific project (overrides .env)
-jira-monte-carlo -f jira-api://PROJECT-KEY -o reports/forecast.html
+sprint-radar -f jira-api://PROJECT-KEY -o reports/forecast.html
 
 # Multiple projects in one dashboard
-jira-monte-carlo -f jira-api://PROJ1 -f jira-api://PROJ2 -o dashboard.html
+sprint-radar -f jira-api://PROJ1 -f jira-api://PROJ2 -o dashboard.html
 
 # Clear cache to fetch fresh data
-jira-monte-carlo --clear-cache
+sprint-radar --clear-cache
 
 # View cache information
-jira-monte-carlo --cache-info
+sprint-radar --cache-info
 ```
 
 To get an Atlassian API token:
@@ -256,10 +256,10 @@ Include comprehensive process health metrics in your report:
 
 ```bash
 # Enable process health analysis
-jira-monte-carlo -f jira-api:// --include-process-health
+sprint-radar -f jira-api:// --include-process-health
 
 # Set custom WIP limits
-jira-monte-carlo -f data.csv --include-process-health --wip-limit "in_progress:10" --wip-limit "review:5"
+sprint-radar -f data.csv --include-process-health --wip-limit "in_progress:10" --wip-limit "review:5"
 ```
 
 Process health includes:
@@ -311,52 +311,52 @@ Model the impact of team changes, vacations, and scaling on your forecasts. This
 **Using with Jira API (Recommended):**
 ```bash
 # Model vacation impact on live Jira data
-jira-monte-carlo -f jira-api://DM \
+sprint-radar -f jira-api://DM \
   --velocity-change "sprint:17,factor:0.74,reason:vacations (1 engineer 3 days + 1 full sprint)"
 
 # Complex scenario with team scaling
-jira-monte-carlo -f jira-api://MYPROJECT \
+sprint-radar -f jira-api://MYPROJECT \
   --velocity-change "sprint:26,factor:0.8,reason:holidays" \
   --team-change "sprint:27,change:+2,ramp:4" \
   --velocity-change "sprint:27+,factor:1.2,reason:team scaled up"
 
 # Analyze impact on multiple projects
-jira-monte-carlo -f jira-api://PROJ1 -f jira-api://PROJ2 \
+sprint-radar -f jira-api://PROJ1 -f jira-api://PROJ2 \
   --velocity-change "sprint:10-12,factor:0.7,reason:summer vacation period"
 ```
 
 **Using with CSV files:**
 ```bash
 # One person on vacation for sprint 3 (50% capacity reduction for small team)
-jira-monte-carlo -f data.csv \
+sprint-radar -f data.csv \
   --velocity-change "sprint:3,factor:0.5,reason:vacation"
 
 # Summer vacation period affecting sprints 5-7 with 30% reduced capacity
-jira-monte-carlo -f data.csv \
+sprint-radar -f data.csv \
   --velocity-change "sprint:5-7,factor:0.7,reason:summer-holidays"
 
 # Adding one developer starting sprint 4 with 3-sprint ramp-up
-jira-monte-carlo -f data.csv \
+sprint-radar -f data.csv \
   --team-change "sprint:4,change:+1,ramp:3"
 
 # Scaling up by 2 developers permanently starting sprint 6
-jira-monte-carlo -f data.csv \
+sprint-radar -f data.csv \
   --team-change "sprint:6,change:+2,ramp:4" \
   --velocity-change "sprint:6+,factor:1.25,reason:team-scaled"
 
 # Team reduction - 2 developers leaving after sprint 8
-jira-monte-carlo -f data.csv \
+sprint-radar -f data.csv \
   --team-change "sprint:8,change:-2" \
   --velocity-change "sprint:8+,factor:0.75,reason:team-reduced"
 
 # Complex scenario: vacation, then new hire, then permanent productivity boost
-jira-monte-carlo -f data.csv \
+sprint-radar -f data.csv \
   --velocity-change "sprint:2-3,factor:0.8,reason:key-dev-vacation" \
   --team-change "sprint:4,change:+1,ramp:3" \
   --velocity-change "sprint:7+,factor:1.1,reason:process-improvements"
 
 # Model partial capacity (e.g., someone working 50% on another project)
-jira-monte-carlo -f data.csv \
+sprint-radar -f data.csv \
   --velocity-change "sprint:3+,factor:0.9,reason:shared-resource"
 ```
 
@@ -512,10 +512,10 @@ The tool supports customizable themes for HTML reports:
 ### Using Themes
 ```bash
 # Use Opreto theme (default)
-uv run python -m src.presentation.cli -f data.csv
+sprint-radar -f data.csv
 
 # Use generic theme
-uv run python -m src.presentation.cli -f data.csv --theme generic
+sprint-radar -f data.csv --theme generic
 ```
 
 ### Theme Architecture
@@ -525,7 +525,7 @@ The styling system follows clean architecture principles:
 - **Infrastructure Layer**: FileThemeRepository for theme persistence
 - **Presentation Layer**: StyleGenerator for CSS generation
 
-Themes are stored in `~/.jira-monte-carlo/themes.json` and can be customized.
+Themes are stored in `~/.sprint-radar/themes.json` and can be customized.
 
 ## Documentation
 
@@ -581,7 +581,7 @@ To support new data formats:
 
 ## Configuration Files
 
-Configuration is stored in `~/.jira-monte-carlo/`:
+Configuration is stored in `~/.sprint-radar/`:
 - `field_mapping.json`: Jira field mappings
 - `status_mapping.json`: Status categorization
 - `themes.json`: Visual themes for reports

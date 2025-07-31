@@ -325,6 +325,6 @@ class MultiProjectReportGenerator:
             model_name = model_info.report_title.replace(" Report", "")
             title = f"Multi-Project {model_name} Dashboard"
         else:
-            title = "Multi-Project Forecasting Dashboard"
+            title = "Sprint Radar Multi-Project Dashboard"
 
         return self.base_template.render(title=title, styles=styles, content=content)

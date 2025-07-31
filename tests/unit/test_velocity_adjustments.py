@@ -1,6 +1,7 @@
 """Tests for velocity adjustment functionality"""
 
 import pytest
+
 from src.domain.velocity_adjustments import (
     ProductivityCurve,
     ScenarioComparison,

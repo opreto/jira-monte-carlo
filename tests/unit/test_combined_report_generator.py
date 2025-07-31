@@ -3,7 +3,6 @@
 import json
 from unittest.mock import Mock
 
-
 from src.domain.entities import SimulationConfig, SimulationResult
 from src.domain.value_objects import VelocityMetrics
 from src.domain.velocity_adjustments import (

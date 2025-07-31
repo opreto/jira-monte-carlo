@@ -293,6 +293,16 @@ class TestVelocityAdjustmentParser:
         assert change.ramp_up_sprints == 3
         assert change.productivity_curve == ProductivityCurve.LINEAR
 
+    def test_parse_team_change_with_float_ramp(self):
+        """Test parsing team change with float ramp value"""
+        parser = VelocityAdjustmentParser()
+        change = parser.parse_team_change("sprint:3,change:+0.5,ramp:2.5,curve:linear")
+
+        assert change.sprint == 3
+        assert change.change == 0.5
+        assert change.ramp_up_sprints == 2.5
+        assert change.productivity_curve == ProductivityCurve.LINEAR
+
     def test_parse_invalid_formats(self):
         """Test parsing invalid formats raises errors"""
         parser = VelocityAdjustmentParser()

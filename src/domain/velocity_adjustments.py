@@ -67,7 +67,7 @@ class TeamChange:
 
     sprint: int
     change: float  # +2 for additions, -2 for departures, +0.5 for part-time
-    ramp_up_sprints: int = 3
+    ramp_up_sprints: float = 3.0
     productivity_curve: ProductivityCurve = ProductivityCurve.LINEAR
 
     def get_productivity_factor(self, sprints_since_change: int) -> float:

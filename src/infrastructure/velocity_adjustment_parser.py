@@ -114,11 +114,11 @@ class VelocityAdjustmentParser:
                 raise ValueError(f"Invalid change: {parts['change']}") from e
 
             # Optional ramp-up (only for additions)
-            ramp_up = 3  # default
+            ramp_up = 3.0  # default
             if "ramp" in parts:
                 try:
-                    ramp_up = int(parts["ramp"])
-                    if ramp_up < 1:
+                    ramp_up = float(parts["ramp"])
+                    if ramp_up < 1.0:
                         raise ValueError("Ramp-up must be at least 1 sprint")
                 except ValueError as e:
                     raise ValueError(f"Invalid ramp: {parts['ramp']}") from e

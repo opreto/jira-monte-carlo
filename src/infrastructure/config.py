@@ -18,7 +18,9 @@ class JiraConfig:
     username: str
     api_token: str
     project_key: Optional[str] = None
-    jql_filter: Optional[str] = None
+    jql_filter: Optional[str] = None  # Legacy, now used as forecast_jql if forecast_jql not set
+    history_jql: Optional[str] = None
+    forecast_jql: Optional[str] = None
 
     @classmethod
     def from_env(cls) -> "JiraConfig":
@@ -37,12 +39,19 @@ class JiraConfig:
                 missing.append("ATLASSIAN_API_TOKEN")
             raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
 
+        # Support both old and new environment variable names
+        jql_filter = os.getenv("JIRA_JQL_FILTER")
+        forecast_jql = os.getenv("FORECAST_JQL", jql_filter)
+        history_jql = os.getenv("HISTORY_JQL")
+        
         return cls(
             url=url,
             username=username,
             api_token=api_token,
             project_key=os.getenv("JIRA_PROJECT_KEY"),
-            jql_filter=os.getenv("JIRA_JQL_FILTER"),
+            jql_filter=jql_filter,
+            history_jql=history_jql,
+            forecast_jql=forecast_jql,
         )
 
     def validate(self) -> None:

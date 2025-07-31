@@ -224,6 +224,7 @@ classDiagram
 - `src/domain/forecasting.py` - Forecasting model interfaces
 - `src/domain/process_health.py` - Process health analysis domain models
 - `src/domain/velocity_adjustments.py` - Velocity change prediction models
+- `src/domain/ml_heuristics.py` - ML-enhanced heuristic models and decision tracking
 
 #### Process Health Domain Models
 
@@ -279,6 +280,53 @@ The system supports:
 - Team scaling with productivity curves
 - Bounded adjustments (never negative)
 
+#### ML-Enhanced Heuristics Domain Models
+
+The ML-enhanced heuristics system provides privacy-preserving machine learning optimization for team-specific patterns:
+
+```python
+# Key domain models for ML optimization
+- MLHeuristic: Base class for ML-optimized heuristics
+  - name: Heuristic identifier
+  - model_path: Persistent model storage location
+  - feedback_history: Learning from past predictions
+  - train(): Update model with new data
+  - predict(): Generate optimized recommendations
+  - get_confidence(): Model confidence in predictions
+
+- VelocityLookbackOptimizer(MLHeuristic): Optimizes historical sprint lookback
+  - Learns from velocity stability patterns
+  - Detects seasonal variations
+  - Identifies optimal lookback window (2-20 sprints)
+  - Provides explanations for decisions
+
+- SprintHealthLookbackOptimizer(MLHeuristic): Optimizes health metric lookback  
+  - Balances recency vs data sufficiency
+  - Adapts to team maturity
+  - Considers metric volatility
+  - Separate optimization from velocity
+
+- MLDecision: Individual ML-driven decision
+  - decision_type: What was decided (e.g., "lookback_sprints")
+  - value: The recommended value
+  - confidence: 0.0-1.0 confidence score
+  - explanation: Human-readable reasoning
+  - factors: Contributing factors to the decision
+
+- MLDecisionSet: Collection of ML decisions for transparency
+  - decisions: List of MLDecision objects
+  - overall_confidence: Aggregate confidence
+  - add_decision(): Track individual decisions
+  - to_dict(): Export for reporting
+```
+
+The ML system features:
+- **Privacy-First Design**: All models stored locally in `~/.sprint-radar/ml_models/`
+- **Project Isolation**: Separate models per project/team
+- **Transparent Decisions**: Every ML decision includes explanations
+- **Graceful Fallback**: Defaults to heuristics when ML unavailable
+- **Visual Indicators**: 🧠 emoji shows ML-optimized values in reports
+
 ### 2. Application Layer (Use Cases)
 
 Contains application-specific business rules and orchestrates the flow of data.
@@ -295,6 +343,8 @@ flowchart LR
         WC([ClassifyWorkUseCase])
         PH([AnalyzeProcessHealthUseCase])
         LT([AnalyzeLeadTimeUseCase])
+        MLV([MLEnhancedVelocityUseCase])
+        MLSH([MLEnhancedSprintHealthUseCase])
     end
     
     subgraph Services
@@ -328,6 +378,10 @@ flowchart LR
     style MP fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
     style CS fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
     style WC fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+    style PH fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+    style LT fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+    style MLV fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+    style MLSH fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
 
     %% Style services
     style SS fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
@@ -351,6 +405,7 @@ flowchart LR
 - `src/application/use_cases.py` - Core business operations
 - `src/application/process_health_use_cases.py` - Process health analysis operations
 - `src/application/velocity_prediction_use_cases.py` - Velocity change prediction operations
+- `src/application/ml_enhanced_use_cases.py` - ML-enhanced velocity and health analysis
 - `src/application/csv_processing_factory.py` - Factory for CSV processors
 - `src/application/bootstrap.py` - Dependency injection setup
 - `src/application/csv_adapters.py` - Adapters to bridge infrastructure with domain
@@ -928,10 +983,92 @@ The system now supports plugin-driven capability detection through dependency in
 - **Repository Analyzers**: Implement `RepositoryAnalyzer` interface
 - **Scenario Generators**: Create domain-specific scenarios
 
+## ML-Enhanced Heuristics Architecture
+
+The ML-enhanced heuristics system provides intelligent, privacy-preserving optimization of forecasting parameters based on team-specific patterns.
+
+### Design Principles
+
+1. **Privacy-First**: All ML models and data stored locally, no external APIs
+2. **Project Isolation**: Each project/team has its own ML models
+3. **Transparent Decisions**: Every ML decision includes explanations
+4. **Graceful Degradation**: Falls back to heuristics when ML unavailable
+5. **Progressive Learning**: Models improve over time with more data
+
+### Architecture Components
+
+```mermaid
+%%{init: { 'flowchart': { 'curve': 'basis', 'htmlLabels': false }}}%%
+flowchart TB
+    subgraph Application["Application Layer"]
+        MLUC([ML-Enhanced Use Cases])
+        VUC([Velocity Use Case])
+        HUC([Health Use Case])
+    end
+    
+    subgraph Domain["Domain Layer"]
+        MLH([MLHeuristic Base])
+        VLO([VelocityLookbackOptimizer])
+        SLO([SprintHealthLookbackOptimizer])
+        MLD([MLDecision])
+        MLDS([MLDecisionSet])
+    end
+    
+    subgraph Infrastructure["Infrastructure Layer"]
+        MLP([Model Persistence])
+        FS([File System])
+    end
+    
+    MLUC --> VUC
+    MLUC --> HUC
+    VUC --> VLO
+    HUC --> SLO
+    VLO --> MLH
+    SLO --> MLH
+    MLH --> MLD
+    MLH --> MLDS
+    MLH --> MLP
+    MLP --> FS
+    
+    style MLUC fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+    style VUC fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+    style HUC fill:#D7E7FA,stroke:#335CA5,stroke-width:2px
+    style MLH fill:#FFF,stroke:#222,stroke-width:2px
+    style VLO fill:#FFF,stroke:#222,stroke-width:2px
+    style SLO fill:#FFF,stroke:#222,stroke-width:2px
+    style MLD fill:#F7EFE3,stroke:#A1793B,stroke-width:2px
+    style MLDS fill:#F7EFE3,stroke:#A1793B,stroke-width:2px
+    style MLP fill:#B9ECE4,stroke:#33846A,stroke-width:2px
+    style FS fill:#B9ECE4,stroke:#33846A,stroke-width:2px
+```
+
+### ML Model Storage
+
+Models are stored in `~/.sprint-radar/ml_models/{project_key}/`:
+- `velocity_lookback_model.pkl` - Velocity lookback optimization model
+- `sprint_health_lookback_model.pkl` - Sprint health lookback model
+- `model_metadata.json` - Training history and performance metrics
+
+### Decision Transparency
+
+Each ML decision includes:
+1. **Value**: The recommended parameter (e.g., lookback_sprints=8)
+2. **Confidence**: 0.0-1.0 score indicating model certainty
+3. **Explanation**: Human-readable reasoning
+4. **Factors**: Contributing data points that influenced the decision
+
+### Integration with Reports
+
+ML decisions are integrated seamlessly:
+- Visual indicators (🧠) show ML-optimized values
+- Tooltips provide decision explanations
+- Confidence levels displayed for transparency
+- Fallback to heuristics clearly indicated
+
 ## Future Architecture Considerations
 
 ### Velocity Change Prediction Enhancements
-- **Machine Learning Integration**
+- **Advanced Machine Learning**
   - Learn from historical vacation impacts
   - Predict seasonal velocity patterns
   - Team-specific productivity models

@@ -296,7 +296,8 @@
       "Bash(SuperClaude install)",
       "Bash(SuperClaude install:*)",
       "Bash(sprint-radar:*)",
-      "mcp__sequential-thinking__sequentialthinking"
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(USE_REFACTORED_CLI=true sprint-radar --help)"
     ],
     "deny": []
   }

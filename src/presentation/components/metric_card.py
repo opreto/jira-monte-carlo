@@ -8,7 +8,7 @@ from ..models.view_models import MetricCardViewModel
 
 class MetricCardComponent(Component):
     """Component for rendering metric cards"""
-    
+
     def get_template(self) -> str:
         """Get metric card template"""
         return """
@@ -31,7 +31,7 @@ class MetricCardComponent(Component):
     </div>
 </div>
         """
-    
+
     def get_context(
         self,
         label: str,
@@ -40,10 +40,10 @@ class MetricCardComponent(Component):
         trend: Optional[str] = None,
         trend_value: Optional[str] = None,
         color: str = "primary",
-        icon: Optional[str] = None
+        icon: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Get metric card context
-        
+
         Args:
             label: Metric label
             value: Metric value
@@ -52,48 +52,53 @@ class MetricCardComponent(Component):
             trend_value: Optional trend value
             color: Card color theme
             icon: Optional icon
-            
+
         Returns:
             Context dictionary
         """
         return {
-            'label': label,
-            'value': value,
-            'unit': unit,
-            'trend': trend,
-            'trend_value': trend_value,
-            'color': color,
-            'icon': icon
+            "label": label,
+            "value": value,
+            "unit": unit,
+            "trend": trend,
+            "trend_value": trend_value,
+            "color": color,
+            "icon": icon,
         }
-    
+
     @classmethod
-    def from_view_model(cls, view_model: MetricCardViewModel) -> 'MetricCardComponent':
+    def from_view_model(cls, view_model: MetricCardViewModel) -> "MetricCardComponent":
         """Create component from view model
-        
+
         Args:
             view_model: Metric card view model
-            
+
         Returns:
             Metric card component
         """
         component = cls()
-        component._context = {
-            'label': view_model.label,
-            'value': view_model.value,
-            'unit': view_model.unit,
-            'trend': view_model.trend,
-            'trend_value': view_model.trend_value,
-            'color': view_model.color,
-            'icon': view_model.icon
+        component._rendered_context = {
+            "label": view_model.label,
+            "value": view_model.value,
+            "unit": view_model.unit,
+            "trend": view_model.trend,
+            "trend_value": view_model.trend_value,
+            "color": view_model.color,
+            "icon": view_model.icon,
         }
         return component
-    
-    def get_context(self, **kwargs) -> Dict[str, Any]:
-        """Get context, using stored context if available"""
-        if hasattr(self, '_context'):
-            return self._context
-        return super().get_context(**kwargs)
-    
+
+    def render(self, **kwargs) -> str:
+        """Render the component, using pre-rendered context if available"""
+        if hasattr(self, "_rendered_context"):
+            # Use pre-rendered context from from_view_model
+            template_str = self.get_template()
+            template = self._environment.from_string(template_str)
+            return template.render(**self._rendered_context)
+
+        # Otherwise use normal rendering
+        return super().render(**kwargs)
+
     def get_styles(self) -> str:
         """Get metric card styles"""
         return """
@@ -219,16 +224,16 @@ class MetricCardComponent(Component):
 
 class MetricCardGridComponent(Component):
     """Component for rendering a grid of metric cards"""
-    
+
     def __init__(self, cards: List[MetricCardComponent]):
         """Initialize with metric cards
-        
+
         Args:
             cards: List of metric card components
         """
         super().__init__()
         self.cards = cards
-    
+
     def get_template(self) -> str:
         """Get metric card grid template"""
         return """
@@ -238,13 +243,11 @@ class MetricCardGridComponent(Component):
     {% endfor %}
 </div>
         """
-    
+
     def get_context(self, **kwargs) -> Dict[str, Any]:
         """Get grid context with rendered cards"""
-        return {
-            'cards': [card.render() for card in self.cards]
-        }
-    
+        return {"cards": [card.render() for card in self.cards]}
+
     def get_styles(self) -> str:
         """Get grid styles plus card styles"""
         grid_styles = """

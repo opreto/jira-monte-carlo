@@ -50,9 +50,15 @@ class HTMLReportGenerator:
         # Generate charts - handle None simulation_results
         charts = {}
         if simulation_results:
-            charts["probability_distribution"] = self._create_probability_chart(simulation_results, config)
-            charts["forecast_timeline"] = self._create_forecast_timeline(simulation_results)
-            charts["confidence_intervals"] = self._create_confidence_chart(simulation_results)
+            charts["probability_distribution"] = self._create_probability_chart(
+                simulation_results, config
+            )
+            charts["forecast_timeline"] = self._create_forecast_timeline(
+                simulation_results
+            )
+            charts["confidence_intervals"] = self._create_confidence_chart(
+                simulation_results
+            )
         else:
             # Create empty charts
             empty_fig = go.Figure()
@@ -77,7 +83,9 @@ class HTMLReportGenerator:
 
         # Velocity trend can still be shown even without simulation
         if velocity_metrics and historical_data:
-            charts["velocity_trend"] = self._create_velocity_trend_chart(historical_data, velocity_metrics)
+            charts["velocity_trend"] = self._create_velocity_trend_chart(
+                historical_data, velocity_metrics
+            )
         else:
             empty_fig = go.Figure()
             empty_fig.update_layout(title="No Velocity Data Available")
@@ -85,7 +93,9 @@ class HTMLReportGenerator:
 
         # Story size breakdown chart (returns dict with pie and bar)
         if story_size_breakdown:
-            charts["story_size_breakdown"] = self._create_story_size_breakdown_chart(story_size_breakdown)
+            charts["story_size_breakdown"] = self._create_story_size_breakdown_chart(
+                story_size_breakdown
+            )
         else:
             empty_json = go.Figure().to_json()
             charts["story_size_breakdown"] = {"pie": empty_json, "bar": empty_json}
@@ -96,36 +106,50 @@ class HTMLReportGenerator:
             # Aging analysis charts
             if process_health_metrics.aging_analysis:
                 process_health_charts["aging_distribution"] = (
-                    self.process_health_charts.create_aging_distribution_chart(process_health_metrics.aging_analysis)
+                    self.process_health_charts.create_aging_distribution_chart(
+                        process_health_metrics.aging_analysis
+                    )
                 )
-                process_health_charts["aging_by_status"] = self.process_health_charts.create_aging_by_status_chart(
-                    process_health_metrics.aging_analysis
+                process_health_charts["aging_by_status"] = (
+                    self.process_health_charts.create_aging_by_status_chart(
+                        process_health_metrics.aging_analysis
+                    )
                 )
 
             # WIP analysis charts
             if process_health_metrics.wip_analysis:
-                process_health_charts["wip_by_status"] = self.process_health_charts.create_wip_by_status_chart(
-                    process_health_metrics.wip_analysis
+                process_health_charts["wip_by_status"] = (
+                    self.process_health_charts.create_wip_by_status_chart(
+                        process_health_metrics.wip_analysis
+                    )
                 )
 
             # Sprint health charts
             if process_health_metrics.sprint_health:
                 process_health_charts["sprint_completion_trend"] = (
-                    self.process_health_charts.create_sprint_health_trend_chart(process_health_metrics.sprint_health)
+                    self.process_health_charts.create_sprint_health_trend_chart(
+                        process_health_metrics.sprint_health
+                    )
                 )
                 process_health_charts["sprint_scope_change"] = (
-                    self.process_health_charts.create_sprint_scope_change_chart(process_health_metrics.sprint_health)
+                    self.process_health_charts.create_sprint_scope_change_chart(
+                        process_health_metrics.sprint_health
+                    )
                 )
 
             # Blocked items charts
             if process_health_metrics.blocked_items:
                 process_health_charts["blocked_severity"] = (
-                    self.process_health_charts.create_blocked_items_severity_chart(process_health_metrics.blocked_items)
+                    self.process_health_charts.create_blocked_items_severity_chart(
+                        process_health_metrics.blocked_items
+                    )
                 )
 
             # Overall health score
-            process_health_charts["health_score_gauge"] = self.process_health_charts.create_process_health_score_gauge(
-                process_health_metrics.health_score
+            process_health_charts["health_score_gauge"] = (
+                self.process_health_charts.create_process_health_score_gauge(
+                    process_health_metrics.health_score
+                )
             )
 
             # Health score breakdown
@@ -146,7 +170,9 @@ class HTMLReportGenerator:
             "simulation_results": simulation_results,
             "charts": charts,
             "percentiles": self._format_percentiles(simulation_results),
-            "summary_stats": self._calculate_summary_stats(simulation_results, velocity_metrics, config),
+            "summary_stats": self._calculate_summary_stats(
+                simulation_results, velocity_metrics, config
+            ),
             "model_info": model_info,
             "process_health_metrics": process_health_metrics,
             "process_health_charts": process_health_charts,
@@ -189,7 +215,9 @@ class HTMLReportGenerator:
             combined_scenario_data=context.get("combined_scenario_data"),
         )
 
-    def _create_probability_chart(self, results: SimulationResult, config: SimulationConfig) -> str:
+    def _create_probability_chart(
+        self, results: SimulationResult, config: SimulationConfig
+    ) -> str:
         # Use the sprint counts directly if available
         if hasattr(results, "completion_sprints") and results.completion_sprints:
             completion_sprints = results.completion_sprints
@@ -249,7 +277,9 @@ class HTMLReportGenerator:
                 line_width=3,
                 annotation_text=f"<b>{confidence * 100:.0f}%</b>",
                 annotation_position="top right",
-                annotation_font=dict(size=14, color=self.chart_colors["low_confidence"]),
+                annotation_font=dict(
+                    size=14, color=self.chart_colors["low_confidence"]
+                ),
             )
 
         fig.update_layout(
@@ -268,7 +298,9 @@ class HTMLReportGenerator:
                 tickmode="linear",
                 tick0=min(sprints_sorted) if sprints_sorted else 0,
                 dtick=1,
-                range=[min(sprints_sorted) - 0.5, max(sprints_sorted) + 0.5] if sprints_sorted else [0, 10],
+                range=[min(sprints_sorted) - 0.5, max(sprints_sorted) + 0.5]
+                if sprints_sorted
+                else [0, 10],
                 showgrid=True,
                 gridwidth=1,
                 gridcolor="rgba(128,128,128,0.1)",
@@ -305,14 +337,18 @@ class HTMLReportGenerator:
 
         return fig.to_json()
 
-    def _create_velocity_trend_chart(self, historical: HistoricalData, metrics: VelocityMetrics) -> str:
+    def _create_velocity_trend_chart(
+        self, historical: HistoricalData, metrics: VelocityMetrics
+    ) -> str:
         if not historical.velocities:
             return go.Figure().to_json()
 
         fig = go.Figure()
 
         # Use sprint names if available, otherwise use dates
-        x_values = historical.sprint_names if historical.sprint_names else historical.dates
+        x_values = (
+            historical.sprint_names if historical.sprint_names else historical.dates
+        )
         hover_template = (
             "<b>%{x}</b><br>Velocity: %{y:.1f}<extra></extra>"
             if historical.sprint_names
@@ -362,9 +398,12 @@ class HTMLReportGenerator:
             y_mean = sum(historical.velocities) / len(historical.velocities)
 
             numerator = sum(
-                (x_numeric[i] - x_mean) * (historical.velocities[i] - y_mean) for i in range(len(x_numeric))
+                (x_numeric[i] - x_mean) * (historical.velocities[i] - y_mean)
+                for i in range(len(x_numeric))
             )
-            denominator = sum((x_numeric[i] - x_mean) ** 2 for i in range(len(x_numeric)))
+            denominator = sum(
+                (x_numeric[i] - x_mean) ** 2 for i in range(len(x_numeric))
+            )
 
             if denominator != 0:
                 slope = numerator / denominator
@@ -539,7 +578,9 @@ class HTMLReportGenerator:
 
         return fig.to_json()
 
-    def _create_story_size_breakdown_chart(self, story_size_breakdown: Dict[float, int]) -> Dict[str, str]:
+    def _create_story_size_breakdown_chart(
+        self, story_size_breakdown: Dict[float, int]
+    ) -> Dict[str, str]:
         """Create both pie and bar charts showing distribution of remaining stories by size"""
         if not story_size_breakdown:
             empty = go.Figure().to_json()
@@ -573,7 +614,9 @@ class HTMLReportGenerator:
                 labels=labels,
                 values=values,
                 hole=0.4,
-                marker=dict(colors=colors[: len(sizes)], line=dict(color="white", width=2)),
+                marker=dict(
+                    colors=colors[: len(sizes)], line=dict(color="white", width=2)
+                ),
                 textinfo="label+percent",
                 textposition="outside",
                 hovertemplate="<b>%{label}</b><br>"
@@ -787,7 +830,9 @@ class HTMLReportGenerator:
                     ),
                     showlegend=False,
                     name=f"{confidence_text if len(confidences) > 1 else f'{confidences[0] * 100:.0f}%'} Confidence",
-                    hovertemplate="<b>%{x|%b %d, %Y}</b><br>" + label.replace("<br>", "<br>") + "<extra></extra>",
+                    hovertemplate="<b>%{x|%b %d, %Y}</b><br>"
+                    + label.replace("<br>", "<br>")
+                    + "<extra></extra>",
                 )
             )
 
@@ -865,13 +910,21 @@ class HTMLReportGenerator:
             # Use semantic colors based on confidence levels
             # Industry standard: higher confidence = more conservative = safer (green)
             if c <= 0.5:
-                colors.append(self.chart_colors["low_confidence"])  # Red - Aggressive estimate
+                colors.append(
+                    self.chart_colors["low_confidence"]
+                )  # Red - Aggressive estimate
             elif c <= 0.7:
-                colors.append(self.chart_colors["medium_confidence"])  # Amber - Moderate risk
+                colors.append(
+                    self.chart_colors["medium_confidence"]
+                )  # Amber - Moderate risk
             elif c <= 0.85:
-                colors.append(self.chart_colors["medium_confidence"])  # Amber - Moderate risk
+                colors.append(
+                    self.chart_colors["medium_confidence"]
+                )  # Amber - Moderate risk
             else:
-                colors.append(self.chart_colors["high_confidence"])  # Green - Conservative estimate
+                colors.append(
+                    self.chart_colors["high_confidence"]
+                )  # Green - Conservative estimate
 
         fig = go.Figure(
             data=[

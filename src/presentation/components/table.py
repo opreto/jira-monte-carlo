@@ -8,7 +8,7 @@ from ..models.view_models import TableRowViewModel
 
 class TableComponent(Component):
     """Component for rendering data tables"""
-    
+
     def get_template(self) -> str:
         """Get table template"""
         return """
@@ -49,7 +49,7 @@ class TableComponent(Component):
     </div>
 </div>
         """
-    
+
     def get_context(
         self,
         rows: List[TableRowViewModel],
@@ -58,10 +58,10 @@ class TableComponent(Component):
         headers: Optional[List[str]] = None,
         table_class: str = "",
         striped: bool = True,
-        hover: bool = True
+        hover: bool = True,
     ) -> Dict[str, Any]:
         """Get table context
-        
+
         Args:
             rows: List of table row view models
             title: Optional table title
@@ -70,7 +70,7 @@ class TableComponent(Component):
             table_class: Additional CSS classes
             striped: Whether to stripe rows
             hover: Whether to highlight on hover
-            
+
         Returns:
             Context dictionary
         """
@@ -80,23 +80,23 @@ class TableComponent(Component):
             headers = rows[0].cells
             has_header = True
             rows = rows[1:]  # Remove header from rows
-        
+
         # Build table classes
         classes = [table_class]
         if striped:
             classes.append("table--striped")
         if hover:
             classes.append("table--hover")
-        
+
         return {
-            'title': title,
-            'description': description,
-            'rows': rows,
-            'headers': headers,
-            'has_header': has_header,
-            'table_class': " ".join(classes).strip()
+            "title": title,
+            "description": description,
+            "rows": rows,
+            "headers": headers,
+            "has_header": has_header,
+            "table_class": " ".join(classes).strip(),
         }
-    
+
     def get_styles(self) -> str:
         """Get table styles"""
         return """
@@ -254,7 +254,7 @@ class TableComponent(Component):
 
 class SummaryTableComponent(TableComponent):
     """Specialized table component for forecast summaries"""
-    
+
     def get_template(self) -> str:
         """Get summary table template with special formatting"""
         return """
@@ -288,39 +288,46 @@ class SummaryTableComponent(TableComponent):
     {% endif %}
 </div>
         """
-    
+
     def get_context(
         self,
         rows: List[TableRowViewModel],
         title: str = "Forecast Summary",
         description: Optional[str] = None,
-        footnote: Optional[str] = None
+        footnote: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Get summary table context
-        
+
         Args:
             rows: Table rows
             title: Table title
             description: Optional description
             footnote: Optional footnote
-            
+
         Returns:
             Context dictionary
         """
         # Default headers for summary table
-        headers = ["Confidence Level", "Sprints to Complete", "Completion Date", "Probability"]
-        
+        headers = [
+            "Confidence Level",
+            "Sprints to Complete",
+            "Completion Date",
+            "Probability",
+        ]
+
         return {
-            'title': title,
-            'description': description,
-            'rows': rows,
-            'headers': headers,
-            'footnote': footnote
+            "title": title,
+            "description": description,
+            "rows": rows,
+            "headers": headers,
+            "footnote": footnote,
         }
-    
+
     def get_styles(self) -> str:
         """Get summary table specific styles"""
-        return super().get_styles() + """
+        return (
+            super().get_styles()
+            + """
 
 .summary-table-container {
     background: var(--card-bg, #ffffff);
@@ -380,3 +387,4 @@ class SummaryTableComponent(TableComponent):
     text-align: center;
 }
         """
+        )

@@ -8,7 +8,7 @@ from .base import Component
 
 class FooterComponent(Component):
     """Footer component for Sprint Radar reports"""
-    
+
     def get_template(self) -> str:
         """Get footer template"""
         return """
@@ -46,7 +46,7 @@ class FooterComponent(Component):
     {% endif %}
 </footer>
         """
-    
+
     def get_context(
         self,
         footer_text: str = "Sprint Radar - Agile Analytics Platform",
@@ -54,10 +54,10 @@ class FooterComponent(Component):
         simulation_count: Optional[str] = None,
         links: Optional[List[Dict[str, Any]]] = None,
         copyright_holder: str = "Opreto",
-        copyright_year: Optional[int] = None
+        copyright_year: Optional[int] = None,
     ) -> Dict[str, Any]:
         """Get footer context
-        
+
         Args:
             footer_text: Main footer text
             methodology_description: Optional methodology description
@@ -65,24 +65,24 @@ class FooterComponent(Component):
             links: Optional list of footer links
             copyright_holder: Copyright holder name
             copyright_year: Copyright year (defaults to current year)
-            
+
         Returns:
             Context dictionary
         """
         if copyright_year is None:
             copyright_year = datetime.now().year
-        
+
         return {
-            'footer_text': footer_text,
-            'methodology_description': methodology_description,
-            'simulation_count': simulation_count,
-            'has_links': bool(links),
-            'links': links or [],
-            'has_copyright': True,
-            'copyright_year': copyright_year,
-            'copyright_holder': copyright_holder
+            "footer_text": footer_text,
+            "methodology_description": methodology_description,
+            "simulation_count": simulation_count,
+            "has_links": bool(links),
+            "links": links or [],
+            "has_copyright": True,
+            "copyright_year": copyright_year,
+            "copyright_holder": copyright_holder,
         }
-    
+
     def get_styles(self) -> str:
         """Get footer-specific styles"""
         return """

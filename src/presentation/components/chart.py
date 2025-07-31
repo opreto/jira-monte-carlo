@@ -9,7 +9,7 @@ from ..models.view_models import ChartViewModel
 
 class ChartComponent(Component):
     """Component for rendering Plotly charts"""
-    
+
     def get_template(self) -> str:
         """Get chart template"""
         return """
@@ -49,7 +49,7 @@ class ChartComponent(Component):
     })();
 </script>
         """
-    
+
     def get_context(
         self,
         chart_id: str,
@@ -59,10 +59,10 @@ class ChartComponent(Component):
         layout: Dict[str, Any] = None,
         insights: Optional[List[str]] = None,
         responsive: bool = True,
-        show_toolbar: bool = True
+        show_toolbar: bool = True,
     ) -> Dict[str, Any]:
         """Get chart context
-        
+
         Args:
             chart_id: Unique chart identifier
             title: Chart title
@@ -72,61 +72,64 @@ class ChartComponent(Component):
             insights: Optional list of insights
             responsive: Whether chart should be responsive
             show_toolbar: Whether to show Plotly toolbar
-            
+
         Returns:
             Context dictionary
         """
         # Ensure data is in array format for Plotly
         if data and not isinstance(data, list):
             data = [data]
-        
+
         return {
-            'chart_id': chart_id,
-            'title': title,
-            'description': description,
-            'data_json': json.dumps(data or {}),
-            'layout_json': json.dumps(layout or {}),
-            'insights': insights,
-            'responsive': responsive,
-            'show_toolbar': show_toolbar
+            "chart_id": chart_id,
+            "title": title,
+            "description": description,
+            "data_json": json.dumps(data or {}),
+            "layout_json": json.dumps(layout or {}),
+            "insights": insights,
+            "responsive": responsive,
+            "show_toolbar": show_toolbar,
         }
-    
+
     @classmethod
-    def from_view_model(cls, view_model: ChartViewModel) -> 'ChartComponent':
+    def from_view_model(cls, view_model: ChartViewModel) -> "ChartComponent":
         """Create component from view model
-        
+
         Args:
             view_model: Chart view model
-            
+
         Returns:
             Chart component
         """
         component = cls()
-        component._context = {
-            'chart_id': view_model.chart_id,
-            'title': view_model.title,
-            'description': view_model.description,
-            'data': view_model.data,
-            'layout': view_model.layout,
-            'insights': view_model.insights,
-            'responsive': view_model.responsive,
-            'show_toolbar': view_model.interactive
+        # Create a pre-rendered context that will be used by render()
+        data = view_model.data
+        if not isinstance(data, list):
+            data = [data]
+
+        component._rendered_context = {
+            "chart_id": view_model.chart_id,
+            "title": view_model.title,
+            "description": view_model.description,
+            "data_json": json.dumps(data),
+            "layout_json": json.dumps(view_model.layout or {}),
+            "insights": view_model.insights,
+            "responsive": view_model.responsive,
+            "show_toolbar": view_model.interactive,
         }
         return component
-    
-    def get_context(self, **kwargs) -> Dict[str, Any]:
-        """Get context, using stored context if available"""
-        if hasattr(self, '_context'):
-            context = self._context.copy()
-            # Convert data to JSON
-            data = context.get('data', {})
-            if not isinstance(data, list):
-                data = [data]
-            context['data_json'] = json.dumps(data)
-            context['layout_json'] = json.dumps(context.get('layout', {}))
-            return context
-        return super().get_context(**kwargs)
-    
+
+    def render(self, **kwargs) -> str:
+        """Render the component, using pre-rendered context if available"""
+        if hasattr(self, "_rendered_context"):
+            # Use pre-rendered context from from_view_model
+            template_str = self.get_template()
+            template = self._environment.from_string(template_str)
+            return template.render(**self._rendered_context)
+
+        # Otherwise use normal rendering
+        return super().render(**kwargs)
+
     def get_styles(self) -> str:
         """Get chart styles"""
         return """
@@ -207,10 +210,10 @@ class ChartComponent(Component):
 
 class ChartGridComponent(Component):
     """Component for rendering a grid of charts"""
-    
+
     def __init__(self, charts: List[ChartComponent], columns: int = 2):
         """Initialize with charts
-        
+
         Args:
             charts: List of chart components
             columns: Number of columns in grid
@@ -218,7 +221,7 @@ class ChartGridComponent(Component):
         super().__init__()
         self.charts = charts
         self.columns = columns
-    
+
     def get_template(self) -> str:
         """Get chart grid template"""
         return """
@@ -230,14 +233,14 @@ class ChartGridComponent(Component):
     {% endfor %}
 </div>
         """
-    
+
     def get_context(self, **kwargs) -> Dict[str, Any]:
         """Get grid context with rendered charts"""
         return {
-            'charts': [chart.render() for chart in self.charts],
-            'columns': self.columns
+            "charts": [chart.render() for chart in self.charts],
+            "columns": self.columns,
         }
-    
+
     def get_styles(self) -> str:
         """Get grid styles plus chart styles"""
         grid_styles = """

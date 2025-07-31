@@ -265,7 +265,7 @@
       "Bash(open multi_report.html)",
       "Bash(open:*)",
       "Bash(pip install:*)",
-      "Bash(jira-monte-carlo:*)",
+      "Bash(sprint-radar:*)",
       "Bash(git restore:*)",
       "Bash(csvstat:*)",
       "Bash(cut:*)",
@@ -294,7 +294,8 @@
       "WebFetch(domain:github.com)",
       "Bash(SuperClaude --version)",
       "Bash(SuperClaude install)",
-      "Bash(SuperClaude install:*)"
+      "Bash(SuperClaude install:*)",
+      "Bash(sprint-radar:*)"
     ],
     "deny": []
   }

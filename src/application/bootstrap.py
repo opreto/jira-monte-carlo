@@ -32,7 +32,7 @@ class ApplicationBootstrap:
     """
 
     def __init__(self, config_dir: Optional[Path] = None):
-        self.config_dir = config_dir or Path.home() / ".jira-monte-carlo"
+        self.config_dir = config_dir or Path.home() / ".sprint-radar"
         self._csv_processing_factory = None
         self._style_service = None
         self._forecasting_factory = None

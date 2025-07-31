@@ -13,7 +13,7 @@ class StyleService:
 
     def __init__(self, config_dir: Optional[Path] = None):
         if config_dir is None:
-            config_dir = Path.home() / ".jira-monte-carlo"
+            config_dir = Path.home() / ".sprint-radar"
         self.theme_repository: ThemeRepository = FileThemeRepository(config_dir)
         self._current_theme: Optional[Theme] = None
         self._style_generator: Optional[StyleGenerator] = None

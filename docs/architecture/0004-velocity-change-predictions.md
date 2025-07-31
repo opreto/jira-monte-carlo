@@ -146,11 +146,11 @@ class ScenarioReportGenerator:
 
 ```bash
 # Simple vacation
-jira-monte-carlo -f data.csv \
+sprint-radar -f data.csv \
   --velocity-change "sprint:3,factor:0.5,reason:vacation"
 
 # Complex scenario with dual reports
-jira-monte-carlo -f data.csv \
+sprint-radar -f data.csv \
   --velocity-change "sprint:2-3,factor:0.8,reason:holidays" \
   --team-change "sprint:4,change:+1,ramp:3" \
   --output forecast.html

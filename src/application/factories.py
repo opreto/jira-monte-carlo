@@ -71,7 +71,7 @@ class StyleServiceFactory:
             raise ValueError("No theme repository registered")
 
         if config_dir is None:
-            config_dir = Path.home() / ".jira-monte-carlo"
+            config_dir = Path.home() / ".sprint-radar"
 
         return self._theme_repository_class(config_dir)
 

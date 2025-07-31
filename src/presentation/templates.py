@@ -428,7 +428,7 @@ class ReportTemplates:
 <div class="header">
     <h1>
         {% if model_info and model_info.report_title %}{{ model_info.report_title }}
-        {% else %}Statistical Forecasting Report{% endif %}
+        {% else %}Sprint Radar Analytics{% endif %}
         {% if project_name %}: {{ project_name }}{% endif %}
     </h1>
     {% if model_info and model_info.report_subtitle %}
@@ -757,8 +757,7 @@ class ReportTemplates:
 
 <div class="footer">
     <p>
-        {% if model_info and model_info.name %}{{ model_info.name }}
-        {% else %}Statistical Forecasting{% endif %} by Opreto Agile Analytics
+        Sprint Radar - Agile Analytics Platform by Opreto
     </p>
     {% if model_info and model_info.methodology_description %}
     <p>{{ model_info.methodology_description }}</p>
@@ -868,8 +867,7 @@ class ReportTemplates:
         template_str = """
 <div class="header">
     <h1>
-        {% if model_info and model_info.report_title %}Multi-Project {{ model_info.name }} Dashboard
-        {% else %}Multi-Project Forecasting Dashboard{% endif %}
+        Sprint Radar Multi-Project Dashboard
     </h1>
     <p class="subtitle">
         {% if model_info and model_info.report_subtitle %}{{ model_info.report_subtitle }} • {% endif %}
@@ -986,7 +984,7 @@ class ReportTemplates:
 </div>
 
 <div class="footer">
-    <p>Statistical Forecasting by Opreto Agile Analytics</p>
+    <p>Sprint Radar - Agile Analytics Platform by Opreto</p>
 </div>
 
 <script>

@@ -85,8 +85,8 @@ class MonteCarloModel(ForecastingModel):
             supports_probability_distribution=True,
             required_historical_periods=3,  # Need at least 3 data points for meaningful stats
             configuration_class=MonteCarloConfiguration,
-            report_title="Monte Carlo Simulation Report",
-            report_subtitle="Statistical forecasting using Monte Carlo method",
+            report_title="Sprint Radar Analytics Report",
+            report_subtitle="Comprehensive agile analytics and forecasting",
             methodology_description=(
                 "Uses random sampling from historical velocity data to simulate thousands of "
                 "possible project outcomes, providing confidence intervals for completion dates."

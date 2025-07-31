@@ -342,11 +342,12 @@ class AnalyzeSprintHealthUseCase:
                 # Sprint completed nothing - assume some work was committed
                 committed_points = 20.0  # Default commitment
 
-            # For scope changes, use variable estimates based on sprint size
-            # Larger sprints tend to have more scope changes
-            scope_factor = min(completed_points / 50.0, 1.5) if completed_points > 0 else 1.0
-            added_points = completed_points * (0.10 + 0.05 * scope_factor)  # 10-17.5% scope increase
-            removed_points = completed_points * (0.03 + 0.02 * scope_factor)  # 3-6% scope decrease
+            # For scope changes, use more realistic estimates
+            # Calculate as percentage of committed points, not completed points
+            # This gives more reasonable scope change percentages
+            scope_factor = min(committed_points / 50.0, 1.5) if committed_points > 0 else 1.0
+            added_points = committed_points * (0.10 + 0.05 * scope_factor)  # 10-17.5% of commitment
+            removed_points = committed_points * (0.03 + 0.02 * scope_factor)  # 3-6% of commitment
 
             # Calculate completion rate (will now be around 80% on average)
             completion_rate = completed_points / committed_points if committed_points > 0 else 0

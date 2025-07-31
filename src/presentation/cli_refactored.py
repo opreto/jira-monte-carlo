@@ -9,7 +9,7 @@ import click
 from rich.console import Console
 from rich.logging import RichHandler
 
-from .cli.orchestrators.main_orchestrator import MainOrchestrator
+from .cli_new.orchestrators.main_orchestrator import MainOrchestrator
 
 # Configure logging
 logging.basicConfig(

@@ -186,6 +186,11 @@ logger = logging.getLogger(__name__)
     help="Include process health metrics in the report",
 )
 @click.option(
+    "--exclude-process-health",
+    is_flag=True,
+    help="Exclude process health section from the report",
+)
+@click.option(
     "--wip-limit",
     multiple=True,
     help="WIP limits in format 'status:limit' (e.g., 'in_progress:10')",
@@ -234,6 +239,7 @@ def main(
     min_velocity: float,
     model: str,
     include_process_health: bool,
+    exclude_process_health: bool,
     wip_limit: tuple,
     velocity_change: tuple,
     team_change: tuple,
@@ -731,9 +737,9 @@ def main(
         from ..domain.reporting_capabilities import ReportType
 
         process_health_metrics = None
-        # Always analyze process health - let the data availability determine what's shown
+        # Analyze process health unless explicitly excluded
         # The --include-process-health flag is now deprecated but kept for compatibility
-        if True:  # Always enabled
+        if not exclude_process_health:  # Analyze unless excluded
             console.print("\n[yellow]Analyzing process health metrics...[/yellow]")
 
             # Check if we have the required data for process health
@@ -821,13 +827,15 @@ def main(
                 project_name = f"Project {project_info['key']}"
             else:
                 project_name = "Jira Project"
-            # Get JQL query if available
+            # Get JQL queries if available
             jql_query = analysis_result.get("jql_query")
+            jql_queries = analysis_result.get("jql_queries", {})
             # Get Jira URL from environment
             jira_url = os.getenv("JIRA_URL")
         else:
             # For file sources, use filename
             project_name = Path(csv_path).stem
+            jql_queries = {}
 
         # Ensure output path is in reports directory
         output_path = Path(output)
@@ -863,6 +871,7 @@ def main(
                 process_health_metrics=process_health_metrics,
                 reporting_capabilities=reporting_capabilities,
                 jql_query=jql_query,
+                jql_queries=jql_queries,
                 jira_url=jira_url,
             )
 
@@ -884,6 +893,7 @@ def main(
                 process_health_metrics=process_health_metrics,
                 reporting_capabilities=reporting_capabilities,
                 jql_query=jql_query,
+                jql_queries=jql_queries,
                 jira_url=jira_url,
             )
 

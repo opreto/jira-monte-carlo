@@ -59,43 +59,98 @@ class JiraApiDataSource:
     def parse(self) -> Tuple[List[Issue], List[Sprint]]:
         """
         Fetch issues and sprints from Jira API.
+        
+        If history_jql is configured, uses dual-query approach:
+        1. Fetch forecast items (backlog) using forecast_jql
+        2. Fetch historical items for velocity using history_jql
+        3. Extract sprints from historical data
+        4. Return forecast items with historical sprints
 
         Returns:
             Tuple of (issues, sprints)
         """
         try:
-            # Build JQL query
-            jql = self._build_jql_query()
-            logger.info(f"Fetching issues with JQL: {jql}")
-
-            # Create cache key based on JQL and project
-            # Use hash for long JQL queries to avoid filesystem path length limits
             import hashlib
-
-            jql_hash = hashlib.sha256(jql.encode()).hexdigest()[:16]
-            cache_key = f"jira_issues_{self.config.url.replace('https://', '').replace('/', '_')}_{jql_hash}"
-
-            # Check cache first
-            cached_data = self.cache.get(cache_key)
-            if cached_data is not None:
-                logger.info("Using cached Jira data")
-                issues = cached_data["issues"]
-                sprints = cached_data["sprints"]
+            
+            # Check if we should use dual-query approach
+            if self.config.history_jql:
+                logger.info("Using dual-query approach (separate history and forecast JQLs)")
+                
+                # Fetch forecast items (backlog to predict)
+                forecast_jql = self._build_forecast_jql()
+                logger.info(f"Fetching forecast items with JQL: {forecast_jql}")
+                
+                forecast_hash = hashlib.sha256(forecast_jql.encode()).hexdigest()[:16]
+                forecast_cache_key = f"jira_forecast_{self.config.url.replace('https://', '').replace('/', '_')}_{forecast_hash}"
+                
+                # Check cache for forecast items
+                cached_forecast = self.cache.get(forecast_cache_key)
+                if cached_forecast is not None:
+                    logger.info("Using cached forecast data")
+                    forecast_issues = cached_forecast
+                else:
+                    logger.info("Cache miss, fetching forecast items from Jira API")
+                    forecast_issues = self._fetch_all_issues(forecast_jql)
+                    logger.info(f"Fetched {len(forecast_issues)} forecast items")
+                    self.cache.set(forecast_cache_key, forecast_issues)
+                
+                # Fetch historical items for velocity calculation
+                history_jql = self._build_history_jql()
+                logger.info(f"Fetching historical items with JQL: {history_jql}")
+                
+                history_hash = hashlib.sha256(history_jql.encode()).hexdigest()[:16]
+                history_cache_key = f"jira_history_{self.config.url.replace('https://', '').replace('/', '_')}_{history_hash}"
+                
+                # Check cache for historical data
+                cached_history = self.cache.get(history_cache_key)
+                if cached_history is not None:
+                    logger.info("Using cached history data")
+                    history_issues = cached_history["issues"]
+                    sprints = cached_history["sprints"]
+                else:
+                    logger.info("Cache miss, fetching historical items from Jira API")
+                    history_issues = self._fetch_all_issues(history_jql)
+                    logger.info(f"Fetched {len(history_issues)} historical items")
+                    
+                    # Extract sprints from historical data
+                    sprints = self._extract_sprints(history_issues)
+                    logger.info(f"Extracted {len(sprints)} sprints from historical data")
+                    
+                    self.cache.set(history_cache_key, {"issues": history_issues, "sprints": sprints})
+                
+                # Return forecast issues with historical sprints
+                return forecast_issues, sprints
+                
+            else:
+                # Use legacy single-query approach
+                logger.info("Using single-query approach (legacy behavior)")
+                jql = self._build_jql_query()
+                logger.info(f"Fetching issues with JQL: {jql}")
+                
+                jql_hash = hashlib.sha256(jql.encode()).hexdigest()[:16]
+                cache_key = f"jira_issues_{self.config.url.replace('https://', '').replace('/', '_')}_{jql_hash}"
+                
+                # Check cache first
+                cached_data = self.cache.get(cache_key)
+                if cached_data is not None:
+                    logger.info("Using cached Jira data")
+                    issues = cached_data["issues"]
+                    sprints = cached_data["sprints"]
+                    return issues, sprints
+                
+                # Fetch issues from API
+                logger.info("Cache miss, fetching from Jira API")
+                issues = self._fetch_all_issues(jql)
+                logger.info(f"Fetched {len(issues)} issues from Jira")
+                
+                # Extract sprints from issues
+                sprints = self._extract_sprints(issues)
+                logger.info(f"Extracted {len(sprints)} sprints from issues")
+                
+                # Cache the results
+                self.cache.set(cache_key, {"issues": issues, "sprints": sprints})
+                
                 return issues, sprints
-
-            # Fetch issues from API
-            logger.info("Cache miss, fetching from Jira API")
-            issues = self._fetch_all_issues(jql)
-            logger.info(f"Fetched {len(issues)} issues from Jira")
-
-            # Extract sprints from issues
-            sprints = self._extract_sprints(issues)
-            logger.info(f"Extracted {len(sprints)} sprints from issues")
-
-            # Cache the results
-            self.cache.set(cache_key, {"issues": issues, "sprints": sprints})
-
-            return issues, sprints
 
         except Exception as e:
             if hasattr(e, "response") and hasattr(e.response, "status_code"):
@@ -127,6 +182,21 @@ class JiraApiDataSource:
         jql += " ORDER BY created DESC"
 
         return jql
+    
+    def _build_forecast_jql(self) -> str:
+        """Build JQL query for forecast items (backlog)"""
+        # Use forecast_jql if available, otherwise fall back to jql_filter
+        if self.config.forecast_jql:
+            return self.config.forecast_jql
+        return self._build_jql_query()
+    
+    def _build_history_jql(self) -> str:
+        """Build JQL query for historical items (velocity calculation)"""
+        if self.config.history_jql:
+            return self.config.history_jql
+        # This should not be called if history_jql is not set
+        # The parse method checks for this
+        return self._build_jql_query()
 
     def _fetch_all_issues(self, jql: str) -> List[Issue]:
         """
@@ -604,3 +674,16 @@ class JiraApiDataSource:
     def get_jql_query(self) -> str:
         """Get the JQL query being used"""
         return self._build_jql_query()
+    
+    def get_jql_queries(self) -> Dict[str, str]:
+        """Get both JQL queries (forecast and history)"""
+        queries = {}
+        
+        # Forecast JQL (backlog items)
+        queries["forecast"] = self._build_forecast_jql()
+        
+        # History JQL (velocity calculation) - only if configured
+        if self.config.history_jql:
+            queries["history"] = self._build_history_jql()
+        
+        return queries

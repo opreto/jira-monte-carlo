@@ -12,6 +12,7 @@ This document details all the heuristics, thresholds, and algorithms used throug
 6. [Aging Analysis](#aging-analysis)
 7. [Work In Progress (WIP) Analysis](#work-in-progress-wip-analysis)
 8. [Blocked Items Analysis](#blocked-items-analysis)
+9. [Lookback Period Auto-Detection](#lookback-period-auto-detection)
 
 ## Monte Carlo Simulation
 
@@ -302,3 +303,52 @@ Calculated based on:
 3. Use multiple confidence levels to communicate uncertainty
 4. Monitor process health metrics weekly or bi-weekly
 5. Document any manual adjustments or overrides
+
+## Lookback Period Auto-Detection
+
+The system automatically determines the optimal number of historical sprints to analyze when `--lookback-sprints auto` is used (default).
+
+### Heuristic Algorithm
+
+The auto-detection balances three key factors:
+1. **Statistical Significance**: Having enough data points for meaningful analysis
+2. **Recency**: Using recent data that reflects current team performance
+3. **Data Availability**: Adapting to the amount of historical data available
+
+### Detection Rules
+
+| Available Sprints | Lookback Period | Rationale |
+|------------------|-----------------|-----------|
+| ≤ 6 | All sprints | Use all available data when limited |
+| 7-12 | 6 sprints | Standard agile retrospective period (6-12 weeks) |
+| 13-24 | 8-10 sprints | 2-3 months of data for better statistical confidence |
+| 25-52 | 12 sprints | One quarter of data balances recency with significance |
+| > 52 | 16-20 sprints | Cap at ~5 months to maintain relevance |
+
+### Implementation Details
+
+```python
+if total_sprints <= 6:
+    return total_sprints
+elif total_sprints <= 12:
+    return 6
+elif total_sprints <= 24:
+    return min(10, total_sprints // 2)
+elif total_sprints <= 52:
+    return 12
+else:
+    return min(20, total_sprints // 3)
+```
+
+### Usage
+
+- **Default Behavior**: The system uses `auto` by default, intelligently selecting the lookback period
+- **Manual Override**: Specify a number to override: `--lookback-sprints 10`
+- **Applies To**: Both velocity calculations and sprint health metrics for consistency
+
+### Benefits
+
+1. **Adaptive**: Automatically adjusts to team maturity and data availability
+2. **Consistent**: Same heuristic used across all analytics for coherent reporting
+3. **Balanced**: Avoids using too little data (low confidence) or too old data (irrelevant)
+4. **Smart Defaults**: New teams get appropriate analysis without configuration

@@ -56,7 +56,7 @@ class ForecastRequest:
     project_name: Optional[str] = None
     remaining_work: Optional[float] = None
     velocity_field: str = "Story Points"
-    lookback_sprints: int = 6
+    lookback_sprints: int = -1  # -1 means auto-detect
     sprint_length: int = 14
     simulations: int = 10000
     confidence_levels: List[int] = field(default_factory=lambda: [50, 70, 85, 95])

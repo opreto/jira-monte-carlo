@@ -21,7 +21,34 @@ class CalculateVelocityUseCase:
         self.issue_repo = issue_repo
         self.sprint_repo = sprint_repo
 
-    def execute(self, lookback_sprints: int = 6, velocity_field: str = "story_points") -> VelocityMetrics:
+    def calculate_optimal_lookback(self, total_sprints: int) -> int:
+        """Calculate optimal lookback period based on available data.
+
+        Uses a heuristic approach that balances:
+        - Having enough data for statistical significance
+        - Using recent data that reflects current team performance
+        - Adapting to the amount of available historical data
+
+        Heuristic rules:
+        - If ≤6 sprints available: use all sprints
+        - If 7-12 sprints: use 6 sprints (standard agile retrospective period)
+        - If 13-24 sprints: use 8-10 sprints (2-3 months of data)
+        - If 25-52 sprints: use 12 sprints (one quarter)
+        - If >52 sprints: use 16-20 sprints (limit to ~5 months for relevance)
+        """
+        if total_sprints <= 6:
+            return total_sprints
+        elif total_sprints <= 12:
+            return 6
+        elif total_sprints <= 24:
+            return min(10, total_sprints // 2)
+        elif total_sprints <= 52:
+            return 12
+        else:
+            # For very long histories, cap at 20 sprints (~5 months)
+            return min(20, total_sprints // 3)
+
+    def execute(self, lookback_sprints: int = -1, velocity_field: str = "story_points") -> VelocityMetrics:
         # Get all sprints first
         all_sprints = self.sprint_repo.get_all()
 
@@ -50,6 +77,11 @@ class CalculateVelocityUseCase:
                         sprint_velocity += 1
                 if sprint_velocity > 0:
                     velocities.append(sprint_velocity)
+
+        # Auto-detect optimal lookback if not specified
+        if lookback_sprints == -1:
+            lookback_sprints = self.calculate_optimal_lookback(len(velocities))
+            logger.info(f"Auto-detected optimal lookback: {lookback_sprints} sprints from {len(velocities)} available")
 
         # Take only the last N sprints if we have more
         if len(velocities) > lookback_sprints:

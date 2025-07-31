@@ -62,7 +62,7 @@ class TeamChange:
     """Represents a team size change"""
 
     sprint: int
-    change: int  # +2 for additions, -2 for departures
+    change: float  # +2 for additions, -2 for departures, +0.5 for part-time
     ramp_up_sprints: int = 3
     productivity_curve: ProductivityCurve = ProductivityCurve.LINEAR
 
@@ -99,13 +99,29 @@ class TeamChange:
             sprint_desc = f"sprint +{self.sprint - 1}"
             after_desc = f"after sprint +{self.sprint - 1}"
 
+        # Format the change amount
+        if self.change == int(self.change):
+            change_str = str(int(abs(self.change)))
+        else:
+            change_str = f"{abs(self.change):.1f}"
+
+        # Handle part-time descriptions
+        if abs(self.change) == 0.5:
+            person_desc = "part-time developer"
+        elif abs(self.change) == 1:
+            person_desc = "developer"
+        elif self.change == int(self.change):
+            person_desc = "developers"
+        else:
+            person_desc = "FTE"  # Full-Time Equivalent
+
         if self.change > 0:
             return (
-                f"Adding {self.change} developer{'s' if self.change > 1 else ''} "
+                f"Adding {change_str} {person_desc} "
                 f"starting {sprint_desc} (ramp-up: {self.ramp_up_sprints} sprints)"
             )
         else:
-            return f"Removing {abs(self.change)} developer{'s' if abs(self.change) > 1 else ''} {after_desc}"
+            return f"Removing {change_str} {person_desc} {after_desc}"
 
 
 @dataclass
@@ -160,15 +176,41 @@ class VelocityScenario:
         reason_desc = "; ".join(reasons) if reasons else "No adjustments"
         return adjusted_velocity, reason_desc
 
-    def get_summary(self) -> str:
+    def get_summary(self, team_size: int = 2) -> str:
         """Get a summary of all adjustments in this scenario"""
         summaries = []
 
+        # Calculate overall velocity impact
+        overall_impact = 1.0
+
+        # Add velocity adjustments
         for adj in self.adjustments:
             summaries.append(adj.get_description())
+            # For permanent changes, track the impact
+            if adj.sprint_end is None:
+                overall_impact *= adj.factor
 
+        # Add team changes and calculate long-term impact
         for change in self.team_changes:
-            summaries.append(change.get_description())
+            if change.change > 0:
+                # Calculate eventual impact after ramp-up
+                eventual_team_size = team_size + change.change
+                eventual_impact = eventual_team_size / team_size
+                impact_pct = (eventual_impact - 1) * 100
+
+                if change.change == 0.5:
+                    summaries.append(f"Adding part-time developer (+{impact_pct:.0f}% capacity after ramp-up)")
+                elif change.change == int(change.change):
+                    summaries.append(
+                        f"Adding {int(change.change)} developer{'s' if change.change > 1 else ''} "
+                        f"(+{impact_pct:.0f}% capacity after ramp-up)"
+                    )
+                else:
+                    summaries.append(f"Adding {change.change:.1f} FTE (+{impact_pct:.0f}% capacity after ramp-up)")
+            else:
+                impact = (team_size + change.change) / team_size
+                impact_pct = (1 - impact) * 100
+                summaries.append(f"Reducing team by {abs(change.change):.1f} FTE (-{impact_pct:.0f}% capacity)")
 
         if not summaries:
             return "No adjustments applied"

@@ -94,6 +94,7 @@ class GenerateScenarioComparisonUseCase:
         baseline: SimulationResult,
         adjusted: SimulationResult,
         scenario: VelocityScenario,
+        team_size: int = 2,
     ) -> ScenarioComparison:
         """Generate comparison metrics and descriptions"""
         # Get key percentiles
@@ -126,7 +127,7 @@ class GenerateScenarioComparisonUseCase:
             adjusted_p50_sprints=int(adjusted_p50),
             adjusted_p85_sprints=int(adjusted_p85),
             velocity_impact_percentage=velocity_impact,
-            scenario_description=scenario.get_summary(),
+            scenario_description=scenario.get_summary(team_size),
         )
 
 

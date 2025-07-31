@@ -183,11 +183,24 @@ class TestVelocityScenario:
             ],
         )
 
-        summary = scenario.get_summary()
+        summary = scenario.get_summary(team_size=4)
         assert "80% capacity for next 2 sprints (holidays)" in summary
         assert "110% capacity for from sprint +9 onwards (improvements)" in summary
-        assert "Adding 2 developers starting sprint +4" in summary
-        assert "Removing 1 developer after sprint +14" in summary
+        assert "Adding 2 developers (+50% capacity after ramp-up)" in summary
+        assert "Reducing team by 1.0 FTE (-25% capacity)" in summary
+
+    def test_scenario_summary_with_fractional_team(self):
+        """Test scenario summary with part-time team member"""
+        scenario = VelocityScenario(
+            name="Part-time addition",
+            adjustments=[],
+            team_changes=[
+                TeamChange(1, 0.5, 3),  # Add 0.5 FTE
+            ],
+        )
+
+        summary = scenario.get_summary(team_size=2)
+        assert "Adding part-time developer (+25% capacity after ramp-up)" in summary
 
 
 class TestVelocityAdjustmentParser:
@@ -251,6 +264,16 @@ class TestVelocityAdjustmentParser:
         assert change.change == 2
         assert change.ramp_up_sprints == 4
         assert change.productivity_curve == ProductivityCurve.EXPONENTIAL
+
+    def test_parse_fractional_team_change(self):
+        """Test parsing fractional team member (part-time)"""
+        parser = VelocityAdjustmentParser()
+        change = parser.parse_team_change("sprint:1,change:+0.5,ramp:3")
+
+        assert change.sprint == 1
+        assert change.change == 0.5
+        assert change.ramp_up_sprints == 3
+        assert change.productivity_curve == ProductivityCurve.LINEAR
 
     def test_parse_invalid_formats(self):
         """Test parsing invalid formats raises errors"""

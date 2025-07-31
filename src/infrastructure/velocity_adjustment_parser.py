@@ -101,11 +101,11 @@ class VelocityAdjustmentParser:
                 change_str = parts["change"]
                 # Handle explicit + or - prefix
                 if change_str.startswith("+"):
-                    change = int(change_str[1:])
+                    change = float(change_str[1:])
                 elif change_str.startswith("-"):
-                    change = -int(change_str[1:])
+                    change = -float(change_str[1:])
                 else:
-                    change = int(change_str)
+                    change = float(change_str)
 
                 if change == 0:
                     raise ValueError("Change must be non-zero")

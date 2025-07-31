@@ -233,6 +233,18 @@ When both queries are configured:
 
 If only FORECAST_JQL is set, it's used for both purposes (backward compatible).
 
+### Smart Lookback Period Auto-Detection
+
+Sprint Radar now intelligently determines the optimal number of historical sprints to analyze by default. The `--lookback-sprints` option defaults to "auto", which:
+
+- Uses all data when you have ≤6 sprints
+- Selects 6 sprints for teams with 7-12 sprints (standard retrospective period)
+- Uses 8-10 sprints for teams with 13-24 sprints (2-3 months of data)
+- Analyzes 12 sprints for teams with 25-52 sprints (one quarter)
+- Caps at 16-20 sprints for very mature teams (maintains relevance)
+
+You can override this by specifying a number: `--lookback-sprints 10`
+
 ### Command Line Options
 
 ```
@@ -261,7 +273,7 @@ Status Mapping Options:
 
 Analysis Options:
   --velocity-field TEXT          Velocity metric: story_points, time_estimate, or count (default: story_points)
-  --lookback-sprints INT         Number of sprints to analyze for velocity (default: 6)
+  --lookback-sprints TEXT        Number of sprints to analyze for velocity (default: auto)
   --max-velocity-age INT         Maximum age of velocity data in days (default: 240)
   --outlier-std-devs FLOAT       Standard deviations for outlier detection (default: 2.0)
   --min-velocity FLOAT           Minimum velocity threshold (default: 10.0)

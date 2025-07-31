@@ -290,8 +290,34 @@ class AnalyzeSprintHealthUseCase:
         self.issue_repository = issue_repository
         self.sprint_repository = sprint_repository
 
-    def execute(self, lookback_sprints: int = 12) -> Optional[SprintHealthAnalysis]:
+    def calculate_optimal_lookback(self, total_sprints: int) -> int:
+        """Calculate optimal lookback period for sprint health analysis.
+
+        Uses same heuristic as velocity calculation for consistency.
+        """
+        if total_sprints <= 6:
+            return total_sprints
+        elif total_sprints <= 12:
+            return 6
+        elif total_sprints <= 24:
+            return min(10, total_sprints // 2)
+        elif total_sprints <= 52:
+            return 12
+        else:
+            # For very long histories, cap at 20 sprints (~5 months)
+            return min(20, total_sprints // 3)
+
+    def execute(self, lookback_sprints: int = -1) -> Optional[SprintHealthAnalysis]:
         """Analyze sprint health metrics"""
+        # Auto-detect optimal lookback if not specified
+        if lookback_sprints == -1:
+            all_sprints = self.sprint_repository.get_all()
+            lookback_sprints = self.calculate_optimal_lookback(len(all_sprints))
+            logger.info(
+                f"Sprint health auto-detected optimal lookback: {lookback_sprints} sprints "
+                f"from {len(all_sprints)} available"
+            )
+
         sprints = self.sprint_repository.get_last_n_sprints(lookback_sprints)
 
         if not sprints:

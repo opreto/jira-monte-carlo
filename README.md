@@ -180,6 +180,12 @@ JIRA_URL=https://yourcompany.atlassian.net
 JIRA_USERNAME=your.email@company.com
 ATLASSIAN_API_TOKEN=your-api-token
 JIRA_PROJECT_KEY=PROJ
+
+# Optional: Dual JQL for separate velocity calculation and forecasting
+# FORECAST_JQL filters backlog items to forecast (e.g., specific labels/epics)
+FORECAST_JQL="statusCategory != Done AND labels = mvp"
+# HISTORY_JQL filters completed work for velocity calculation
+HISTORY_JQL="project = PROJ AND statusCategory = Done AND resolved >= -52w"
 EOF
 
 # Generate report from Jira API (uses JIRA_PROJECT_KEY from .env)
@@ -203,6 +209,29 @@ To get an Atlassian API token:
 2. Click "Create API token"
 3. Give it a descriptive name
 4. Copy the token to your .env file
+
+#### Dual JQL Support (Advanced)
+
+Sprint Radar supports using separate JQL queries for velocity calculation and forecasting. This is useful when you want to:
+- Forecast only specific items (e.g., MVP features, specific epic)
+- Use broader historical data for more accurate velocity calculations
+- Exclude certain types of work from forecasts while including them in velocity
+
+Example:
+```bash
+# In .env file:
+# Forecast only MVP-labeled items
+FORECAST_JQL="statusCategory != Done AND labels = mvp"
+# Calculate velocity from all completed work in the last year
+HISTORY_JQL="project = PROJ AND statusCategory = Done AND resolved >= -52w"
+```
+
+When both queries are configured:
+- **Forecast Query**: Filters the backlog items to be predicted
+- **History Query**: Filters completed work for velocity calculation
+- Both queries are displayed in the generated report for transparency
+
+If only FORECAST_JQL is set, it's used for both purposes (backward compatible).
 
 ### Command Line Options
 
@@ -236,7 +265,8 @@ Analysis Options:
   --max-velocity-age INT         Maximum age of velocity data in days (default: 240)
   --outlier-std-devs FLOAT       Standard deviations for outlier detection (default: 2.0)
   --min-velocity FLOAT           Minimum velocity threshold (default: 10.0)
-  --include-process-health       Include process health metrics in the report
+  --include-process-health       Include process health metrics in the report (deprecated)
+  --exclude-process-health       Exclude process health section from the report
 
 Velocity Change Prediction (What-If Analysis):
   --velocity-change TEXT         Model velocity changes (format: "sprint:N[-M],factor:F[,reason:R]")

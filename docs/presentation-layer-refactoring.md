@@ -67,7 +67,7 @@ src/presentation/
 
 1. **Created command pattern architecture**:
 ```
-src/presentation/cli/
+src/presentation/cli_new/    # Renamed from 'cli' to avoid naming conflict with cli.py
 ├── commands/
 │   ├── base.py              # Command interface and base classes
 │   ├── import_data.py       # Import data from CSV/API sources
@@ -78,6 +78,8 @@ src/presentation/cli/
 ├── container.py             # Dependency injection container
 └── __init__.py
 ```
+
+> **Note**: The directory was renamed from `cli/` to `cli_new/` to avoid Python module resolution conflicts with the existing `cli.py` file.
 
 2. **Decomposed monolithic cli.py** (1,111 lines → modular components):
 

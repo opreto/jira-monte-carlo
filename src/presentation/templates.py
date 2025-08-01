@@ -425,7 +425,7 @@ class ReportTemplates:
         </svg>
     </button>
     
-    <div class="container" id="main-content">
+    <div class="main-container" id="main-content">
         {{ content }}
     </div>
     

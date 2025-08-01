@@ -22,7 +22,7 @@ class ChartComponent(Component):
         {% endif %}
     </div>
     <div class="chart-content">
-        <div id="{{ chart_id }}" class="plotly-chart" style="height: clamp(250px, 30vh, 500px);"></div>
+        <div id="{{ chart_id }}" class="plotly-chart"></div>
     </div>
     {% if insights %}
     <div class="chart-insights">
@@ -157,77 +157,33 @@ class ChartComponent(Component):
     def get_styles(self) -> str:
         """Get chart styles"""
         return """
-.chart-container {
-    background: var(--card-bg, #ffffff);
-    border: 1px solid var(--border-color, #e5e5e5);
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.chart-header {
-    margin-bottom: 1rem;
-}
-
-.chart-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text-primary, #1a1a1a);
-    margin: 0 0 0.5rem 0;
-}
-
-.chart-description {
-    font-size: 0.875rem;
-    color: var(--text-secondary, #666666);
-    margin: 0;
-}
-
-.chart-content {
-    margin-bottom: 1rem;
-}
-
-.plotly-chart {
-    width: 100%;
-    min-height: 400px;
-}
-
+/* Chart insights section */
 .chart-insights {
     border-top: 1px solid var(--border-color, #e5e5e5);
-    padding-top: 1rem;
+    padding-block-start: var(--space-s);
+    margin-block-start: var(--space-m);
 }
 
 .insights-title {
-    font-size: 1rem;
+    font-size: var(--step-1);
     font-weight: 600;
     color: var(--text-primary, #1a1a1a);
-    margin: 0 0 0.5rem 0;
+    margin-block-end: var(--space-xs);
 }
 
 .insights-list {
     margin: 0;
-    padding-left: 1.5rem;
+    padding-inline-start: var(--space-m);
 }
 
 .insights-list li {
-    font-size: 0.875rem;
+    font-size: var(--step--1);
     color: var(--text-secondary, #666666);
-    margin-bottom: 0.25rem;
+    margin-block-end: var(--space-2xs);
 }
 
 .insights-list li:last-child {
-    margin-bottom: 0;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .chart-container {
-        padding: 1rem;
-    }
-    
-    .plotly-chart {
-        min-height: 300px;
-    }
+    margin-block-end: 0;
 }
         """
 
@@ -249,11 +205,9 @@ class ChartGridComponent(Component):
     def get_template(self) -> str:
         """Get chart grid template"""
         return """
-<div class="chart-grid chart-grid--cols-{{ columns }}">
+<div class="chart-grid">
     {% for chart_html in charts %}
-    <div class="chart-grid__item">
-        {{ chart_html|safe }}
-    </div>
+    {{ chart_html|safe }}
     {% endfor %}
 </div>
         """
@@ -267,43 +221,8 @@ class ChartGridComponent(Component):
 
     def get_styles(self) -> str:
         """Get grid styles plus chart styles"""
-        grid_styles = """
-.chart-grid {
-    display: grid;
-    gap: 2rem;
-    margin-bottom: 2rem;
-}
-
-.chart-grid--cols-1 {
-    grid-template-columns: 1fr;
-}
-
-.chart-grid--cols-2 {
-    grid-template-columns: repeat(2, 1fr);
-}
-
-.chart-grid--cols-3 {
-    grid-template-columns: repeat(3, 1fr);
-}
-
-.chart-grid__item {
-    min-width: 0; /* Prevent grid blowout */
-}
-
-@media (max-width: 1024px) {
-    .chart-grid--cols-3 {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 768px) {
-    .chart-grid--cols-2,
-    .chart-grid--cols-3 {
-        grid-template-columns: 1fr;
-    }
-}
-        """
-        # Include chart styles
+        # Chart grid styles are now in responsive.css
+        # Just return chart styles if available
         if self.charts:
-            return grid_styles + "\n" + self.charts[0].get_styles()
-        return grid_styles
+            return self.charts[0].get_styles()
+        return ""

@@ -1,341 +1,351 @@
 /* ================================================
-   Sprint Radar - Mobile-First Responsive Design System
+   Sprint Radar - Modern Responsive Design System
+   Container Queries + CSS Grid + Fluid Typography
    ================================================ */
 
 /* ================================================
-   1. CSS Custom Properties & Breakpoints
+   1. CSS Custom Properties & Design Tokens
    ================================================ */
 :root {
-  /* Breakpoints */
-  --breakpoint-xs: 0;        /* Extra small devices (phones, <576px) */
-  --breakpoint-sm: 576px;    /* Small devices (landscape phones) */
-  --breakpoint-md: 768px;    /* Medium devices (tablets) */
-  --breakpoint-lg: 1024px;   /* Large devices (desktops) */
-  --breakpoint-xl: 1440px;   /* Extra large devices (large desktops) */
-  --breakpoint-xxl: 1920px;  /* XXL devices (4K displays) */
-  --breakpoint-xxxl: 2560px; /* Ultra-wide and 4K+ displays */
+  /* Fluid Space Scale - Using clamp() for smooth scaling */
+  --space-3xs: clamp(0.25rem, 0.5vi, 0.375rem);
+  --space-2xs: clamp(0.5rem, 1vi, 0.75rem);
+  --space-xs: clamp(0.75rem, 1.5vi, 1rem);
+  --space-s: clamp(1rem, 2vi, 1.25rem);
+  --space-m: clamp(1.5rem, 3vi, 2rem);
+  --space-l: clamp(2rem, 4vi, 3rem);
+  --space-xl: clamp(3rem, 6vi, 4rem);
+  --space-2xl: clamp(4rem, 8vi, 6rem);
+  --space-3xl: clamp(6rem, 12vi, 8rem);
 
-  /* Fluid Typography Scale (Mobile-First) */
-  --font-size-base: clamp(14px, 2vw, 16px);
-  --font-size-xs: clamp(11px, 1.5vw, 12px);
-  --font-size-sm: clamp(12px, 1.8vw, 14px);
-  --font-size-md: var(--font-size-base);
-  --font-size-lg: clamp(16px, 2.5vw, 20px);
-  --font-size-xl: clamp(20px, 3vw, 24px);
-  --font-size-2xl: clamp(24px, 4vw, 32px);
-  --font-size-3xl: clamp(30px, 5vw, 48px);
-  --font-size-4xl: clamp(36px, 6vw, 64px);
+  /* Fluid Typography - Optimized for readability */
+  --step--2: clamp(0.69rem, 0.66rem + 0.18vi, 0.80rem);
+  --step--1: clamp(0.83rem, 0.78rem + 0.29vi, 1.00rem);
+  --step-0: clamp(1.00rem, 0.91rem + 0.43vi, 1.25rem);
+  --step-1: clamp(1.20rem, 1.07rem + 0.63vi, 1.56rem);
+  --step-2: clamp(1.44rem, 1.26rem + 0.89vi, 1.95rem);
+  --step-3: clamp(1.73rem, 1.48rem + 1.24vi, 2.44rem);
+  --step-4: clamp(2.07rem, 1.73rem + 1.70vi, 3.05rem);
+  --step-5: clamp(2.49rem, 2.03rem + 2.31vi, 3.82rem);
 
-  /* Responsive Spacing Scale - Compact */
-  --spacing-responsive-xs: clamp(0.125rem, 0.5vw, 0.25rem);
-  --spacing-responsive-sm: clamp(0.25rem, 1vw, 0.5rem);
-  --spacing-responsive-md: clamp(0.5rem, 1.5vw, 0.75rem);
-  --spacing-responsive-lg: clamp(0.75rem, 2vw, 1rem);
-  --spacing-responsive-xl: clamp(1rem, 2.5vw, 1.5rem);
-  --spacing-responsive-xxl: clamp(1.5rem, 3vw, 2rem);
+  /* Container breakpoints for container queries */
+  --container-sm: 384px;
+  --container-md: 640px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
 
-  /* Container Widths */
-  --container-sm: 540px;
-  --container-md: 720px;
-  --container-lg: 960px;
-  --container-xl: 1140px;
-  --container-xxl: 1320px;
-  --container-xxxl: 1800px;
-  --container-max: 2400px;
+  /* Content widths */
+  --content-max: 1440px;
+  --content-wide: 1920px;
+  --content-full: 2560px;
 
-  /* Grid Gaps */
-  --grid-gap-mobile: 1rem;
-  --grid-gap-tablet: 1.5rem;
-  --grid-gap-desktop: 2rem;
-  --grid-gap-4k: 2.5rem;
+  /* Layout tokens */
+  --grid-gap: clamp(1rem, 2vi, 2rem);
+  --section-gap: var(--space-l);
+  --component-gap: var(--space-m);
+  
+  /* Border radius */
+  --radius-s: 0.25rem;
+  --radius-m: 0.5rem;
+  --radius-l: 0.75rem;
+  --radius-xl: 1rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
 }
 
 /* ================================================
-   2. Base Responsive Typography
+   2. Base Styles & Typography
    ================================================ */
 html {
-  font-size: 16px; /* Base for rem calculations */
-  -webkit-text-size-adjust: 100%; /* Prevent font scaling in landscape */
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
-  font-size: var(--font-size-base);
-  line-height: 1.5;
+  font-size: var(--step-0);
+  line-height: 1.6;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Fluid Typography for Headings */
+/* Fluid Typography */
 h1 {
-  font-size: var(--font-size-3xl);
-  line-height: 1.2;
-  margin-bottom: var(--spacing-responsive-md);
+  font-size: var(--step-5);
+  line-height: 1.1;
+  margin-block-end: var(--space-m);
 }
 
 h2 {
-  font-size: var(--font-size-2xl);
-  line-height: 1.3;
-  margin-bottom: var(--spacing-responsive-md);
+  font-size: var(--step-4);
+  line-height: 1.2;
+  margin-block-end: var(--space-m);
 }
 
 h3 {
-  font-size: var(--font-size-xl);
-  line-height: 1.4;
-  margin-bottom: var(--spacing-responsive-sm);
+  font-size: var(--step-3);
+  line-height: 1.3;
+  margin-block-end: var(--space-s);
 }
 
 h4 {
-  font-size: var(--font-size-lg);
+  font-size: var(--step-2);
+  line-height: 1.4;
+  margin-block-end: var(--space-s);
+}
+
+h5 {
+  font-size: var(--step-1);
   line-height: 1.5;
-  margin-bottom: var(--spacing-responsive-sm);
+  margin-block-end: var(--space-xs);
+}
+
+h6 {
+  font-size: var(--step-0);
+  line-height: 1.5;
+  margin-block-end: var(--space-xs);
+}
+
+p {
+  margin-block-end: var(--space-s);
 }
 
 /* ================================================
-   3. Responsive Container System
+   3. Container Query Setup
    ================================================ */
-.container {
+
+/* Main content container */
+.main-container {
+  container-type: inline-size;
+  container-name: main;
   width: 100%;
-  padding-right: var(--spacing-responsive-md);
-  padding-left: var(--spacing-responsive-md);
-  margin-right: auto;
-  margin-left: auto;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-inline: var(--space-m);
 }
 
-/* Container sizes at different breakpoints */
-@media (min-width: 576px) {
-  .container {
-    max-width: var(--container-sm);
-  }
-}
-
-@media (min-width: 768px) {
-  .container {
-    max-width: var(--container-md);
-    padding-right: var(--spacing-responsive-lg);
-    padding-left: var(--spacing-responsive-lg);
-  }
-}
-
-@media (min-width: 1024px) {
-  .container {
-    max-width: var(--container-lg);
-  }
-}
-
-@media (min-width: 1440px) {
-  .container {
-    max-width: var(--container-xl);
-  }
-}
-
-@media (min-width: 1920px) {
-  .container {
-    max-width: var(--container-xxl);
-    padding-right: var(--spacing-responsive-xl);
-    padding-left: var(--spacing-responsive-xl);
-  }
-}
-
-@media (min-width: 2560px) {
-  .container {
-    max-width: var(--container-xxxl);
-  }
-}
-
-/* Fluid container for ultra-wide displays */
-.container-fluid {
+/* Wide container for full-width sections */
+.wide-container {
+  container-type: inline-size;
+  container-name: wide;
   width: 100%;
-  max-width: var(--container-max);
-  padding-right: var(--spacing-responsive-lg);
-  padding-left: var(--spacing-responsive-lg);
-  margin-right: auto;
-  margin-left: auto;
+  max-width: var(--content-wide);
+  margin-inline: auto;
+  padding-inline: var(--space-m);
+}
+
+/* Section containers */
+.section-container {
+  container-type: inline-size;
+  container-name: section;
+  margin-block-end: var(--section-gap);
+}
+
+/* Component containers */
+.component-container {
+  container-type: inline-size;
+  container-name: component;
 }
 
 /* ================================================
-   4. Responsive Grid System
+   4. Modern Grid System with Container Queries
    ================================================ */
 
-/* Mobile-First Grid */
+/* Base Grid - Intrinsic sizing with auto-fit */
 .grid {
   display: grid;
-  gap: var(--grid-gap-mobile);
+  gap: var(--grid-gap);
   width: 100%;
 }
 
-/* Auto-fit grid with minimum column width */
+/* Auto-responsive grid using min() */
 .grid-auto {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
 }
 
-/* Specific column counts */
-.grid-1 { grid-template-columns: 1fr; }
-.grid-2 { grid-template-columns: repeat(2, 1fr); }
-.grid-3 { grid-template-columns: repeat(3, 1fr); }
-.grid-4 { grid-template-columns: repeat(4, 1fr); }
-.grid-6 { grid-template-columns: repeat(6, 1fr); }
-
-/* Tablet and up */
-@media (min-width: 768px) {
-  .grid {
-    gap: var(--grid-gap-tablet);
-  }
-  
-  .grid-md-1 { grid-template-columns: 1fr; }
-  .grid-md-2 { grid-template-columns: repeat(2, 1fr); }
-  .grid-md-3 { grid-template-columns: repeat(3, 1fr); }
-  .grid-md-4 { grid-template-columns: repeat(4, 1fr); }
-  .grid-md-6 { grid-template-columns: repeat(6, 1fr); }
-}
-
-/* Desktop and up */
-@media (min-width: 1024px) {
-  .grid {
-    gap: var(--grid-gap-desktop);
-  }
-  
-  .grid-lg-1 { grid-template-columns: 1fr; }
-  .grid-lg-2 { grid-template-columns: repeat(2, 1fr); }
-  .grid-lg-3 { grid-template-columns: repeat(3, 1fr); }
-  .grid-lg-4 { grid-template-columns: repeat(4, 1fr); }
-  .grid-lg-6 { grid-template-columns: repeat(6, 1fr); }
-  .grid-lg-8 { grid-template-columns: repeat(8, 1fr); }
-}
-
-/* 4K and up */
-@media (min-width: 1920px) {
-  .grid {
-    gap: var(--grid-gap-4k);
-  }
-  
-  .grid-xxl-2 { grid-template-columns: repeat(2, 1fr); }
-  .grid-xxl-3 { grid-template-columns: repeat(3, 1fr); }
-  .grid-xxl-4 { grid-template-columns: repeat(4, 1fr); }
-  .grid-xxl-6 { grid-template-columns: repeat(6, 1fr); }
-  .grid-xxl-8 { grid-template-columns: repeat(8, 1fr); }
-  .grid-xxl-12 { grid-template-columns: repeat(12, 1fr); }
-}
-
-/* ================================================
-   5. Responsive Metrics Grid
-   ================================================ */
-.metrics-grid {
-  display: grid;
-  gap: var(--grid-gap-mobile);
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 576px) {
-  .metrics-grid {
+/* Container query-based grid layouts */
+@container (min-width: 640px) {
+  .grid-responsive {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (min-width: 768px) {
-  .metrics-grid {
+@container (min-width: 1024px) {
+  .grid-responsive {
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--grid-gap-tablet);
   }
 }
 
-@media (min-width: 1024px) {
-  .metrics-grid {
+@container (min-width: 1280px) {
+  .grid-responsive {
     grid-template-columns: repeat(4, 1fr);
-    gap: var(--grid-gap-desktop);
   }
 }
 
-@media (min-width: 1440px) {
-  .metrics-grid {
-    grid-template-columns: repeat(6, 1fr);
+/* Chart grid with container queries */
+.chart-grid {
+  container-type: inline-size;
+  container-name: charts;
+  display: grid;
+  gap: var(--component-gap);
+  grid-template-columns: 1fr;
+}
+
+@container charts (min-width: 768px) {
+  .chart-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* Metric card responsive adjustments */
-.metric-card {
-  padding: var(--spacing-responsive-md);
-  transition: transform 0.2s ease;
-}
-
-.metric-card .value {
-  font-size: clamp(1.75rem, 5vw, 2.5rem);
-}
-
-.metric-card .label {
-  font-size: var(--font-size-sm);
-}
-
-/* Touch-friendly hover states */
-@media (hover: hover) {
-  .metric-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+@container charts (min-width: 1200px) {
+  .chart-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
+}
+
+/* Metrics grid with auto-fit */
+.metrics-grid {
+  display: grid;
+  gap: var(--space-s);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
 }
 
 /* ================================================
-   6. Responsive Charts
+   5. Chart Container System
    ================================================ */
+
+/* Individual chart container */
 .chart-container {
-  padding: var(--spacing-responsive-md);
-  margin-bottom: var(--spacing-responsive-lg);
+  container-type: inline-size;
+  container-name: chart;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e5e5e5);
+  border-radius: var(--radius-m);
+  padding: var(--space-m);
+  box-shadow: var(--shadow-sm);
+  
+  /* Prevent layout overflow */
+  min-width: 0;
+  overflow: hidden;
 }
 
-/* Dynamic chart heights based on viewport - Compact design */
-.chart-container > div {
+/* Chart content wrapper */
+.chart-content {
+  position: relative;
+  width: 100%;
+  /* Intrinsic aspect ratio for charts */
+  aspect-ratio: 16 / 10;
   min-height: 250px;
-  height: 40vh;
-  max-height: 400px;
+  max-height: 500px;
+  container-type: size;
 }
 
-@media (min-width: 768px) {
-  .chart-container > div {
-    min-height: 300px;
-    height: 35vh;
+/* Container query-based chart sizing */
+@container chart (max-width: 400px) {
+  .chart-content {
+    aspect-ratio: 4 / 3;
+    max-height: 300px;
+  }
+  
+  .chart-title {
+    font-size: var(--step-1);
+  }
+}
+
+@container chart (min-width: 600px) {
+  .chart-content {
+    aspect-ratio: 16 / 9;
+    max-height: 400px;
+  }
+}
+
+@container chart (min-width: 900px) {
+  .chart-content {
+    aspect-ratio: 2 / 1;
     max-height: 450px;
   }
 }
 
-@media (min-width: 1440px) {
-  .chart-container > div {
-    min-height: 300px;
-    height: 30vh;
-    max-height: 500px;
-  }
+/* Plotly chart specific */
+.plotly-chart {
+  width: 100%;
+  height: 100%;
 }
 
-@media (min-width: 1920px) {
-  .chart-container > div {
-    min-height: 300px;
-    height: 25vh;
-    max-height: 500px;
-  }
+/* Chart header styling */
+.chart-header {
+  margin-block-end: var(--space-s);
 }
 
-/* Further reduce spacing on 4K displays */
-@media (min-width: 1920px) {
-  :root {
-    --spacing-responsive-xs: 0.25rem;
-    --spacing-responsive-sm: 0.375rem;
-    --spacing-responsive-md: 0.5rem;
-    --spacing-responsive-lg: 0.75rem;
-    --spacing-responsive-xl: 1rem;
-    --spacing-responsive-xxl: 1.25rem;
-  }
+.chart-title {
+  font-size: var(--step-2);
+  font-weight: 600;
+  color: var(--text-primary, #1a1a1a);
+  margin: 0;
 }
 
-/* Chart description responsive text */
 .chart-description {
-  font-size: var(--font-size-sm);
-  padding: var(--spacing-responsive-sm) var(--spacing-responsive-md);
+  font-size: var(--step--1);
+  color: var(--text-secondary, #666666);
+  margin-block-start: var(--space-xs);
 }
 
-@media (min-width: 768px) {
-  .chart-description {
-    font-size: var(--font-size-base);
+/* ================================================
+   6. Metric Cards with Container Queries
+   ================================================ */
+
+.metric-card {
+  container-type: inline-size;
+  container-name: metric;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e5e5e5);
+  border-radius: var(--radius-m);
+  padding: var(--space-s);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.metric-card .value {
+  font-size: var(--step-3);
+  font-weight: 700;
+  color: var(--text-primary, #1a1a1a);
+  line-height: 1;
+}
+
+.metric-card .label {
+  font-size: var(--step--1);
+  color: var(--text-secondary, #666666);
+  margin-block-start: var(--space-2xs);
+}
+
+/* Container query for compact metrics */
+@container metric (max-width: 200px) {
+  .metric-card {
+    padding: var(--space-xs);
+  }
+  
+  .metric-card .value {
+    font-size: var(--step-2);
+  }
+  
+  .metric-card .label {
+    font-size: var(--step--2);
+  }
+}
+
+/* Hover state for non-touch devices */
+@media (hover: hover) {
+  .metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
   }
 }
 
 /* ================================================
-   7. Responsive Tables
+   7. Responsive Tables with Container Queries
    ================================================ */
 .table-responsive {
   overflow-x: auto;
@@ -400,20 +410,24 @@ th, td {
 }
 
 /* ================================================
-   8. Touch-Optimized Components
+   8. Interactive Elements
    ================================================ */
 
-/* Larger touch targets for mobile */
-button, 
+/* Touch-optimized targets */
+button,
 .btn,
 .toggle-btn,
-a {
+a.btn {
   min-height: 44px;
   min-width: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-responsive-sm) var(--spacing-responsive-md);
+  padding: var(--space-xs) var(--space-s);
+  border-radius: var(--radius-m);
+  font-size: var(--step-0);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 /* Touch-friendly form inputs */
@@ -440,7 +454,7 @@ textarea {
 }
 
 /* ================================================
-   9. Responsive Navigation
+   9. Navigation with Container Queries
    ================================================ */
 .nav-container {
   padding: var(--spacing-responsive-sm);
@@ -482,7 +496,7 @@ textarea {
 }
 
 /* ================================================
-   10. Responsive Utilities
+   10. Utility Classes
    ================================================ */
 
 /* Display utilities */
@@ -490,6 +504,22 @@ textarea {
 .d-block { display: block !important; }
 .d-flex { display: flex !important; }
 .d-grid { display: grid !important; }
+
+/* Container query display utilities */
+@container (max-width: 640px) {
+  .cq-sm-none { display: none !important; }
+  .cq-sm-block { display: block !important; }
+}
+
+@container (min-width: 640px) {
+  .cq-md-none { display: none !important; }
+  .cq-md-block { display: block !important; }
+}
+
+@container (min-width: 1024px) {
+  .cq-lg-none { display: none !important; }
+  .cq-lg-block { display: block !important; }
+}
 
 /* Responsive display utilities */
 @media (min-width: 576px) {

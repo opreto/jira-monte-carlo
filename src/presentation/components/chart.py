@@ -43,8 +43,11 @@ class ChartComponent(Component):
         
         // Apply responsive layout adjustments
         const viewportWidth = window.innerWidth;
-        if (viewportWidth < 768) {
-            layout.margin = { t: 30, l: 40, r: 10, b: 40 };
+        const isMobile = viewportWidth < 768;
+        
+        if (isMobile) {
+            // Mobile adjustments
+            layout.margin = { t: 40, l: 40, r: 10, b: 40 };
             layout.font = layout.font || {};
             layout.font.size = 12;
             if (layout.showlegend !== false) {
@@ -53,6 +56,20 @@ class ChartComponent(Component):
             if (layout.xaxis && layout.xaxis.title) {
                 layout.xaxis.tickangle = -45;
             }
+            
+            // Disable all interactions on mobile to prevent swipe conflicts
+            config.staticPlot = true;
+            config.displayModeBar = false;
+            config.scrollZoom = false;
+            config.doubleClick = false;
+            config.showTips = false;
+            config.dragmode = false;
+            
+            // Add title padding to prevent overlap with any remaining controls
+            if (layout.title) {
+                layout.title.pad = layout.title.pad || {};
+                layout.title.pad.t = 20;
+            }
         } else if (viewportWidth >= 1920) {
             layout.margin = { t: 50, l: 80, r: 30, b: 80 };
             layout.font = layout.font || {};
@@ -60,6 +77,21 @@ class ChartComponent(Component):
         }
         
         Plotly.newPlot('{{ chart_id }}', data, layout, config);
+        
+        // Additional mobile touch prevention
+        if (isMobile) {
+            var chartElement = document.getElementById('{{ chart_id }}');
+            if (chartElement) {
+                // Prevent touch events from bubbling up
+                chartElement.addEventListener('touchstart', function(e) {
+                    e.stopPropagation();
+                }, { passive: true });
+                
+                // Add visual indicator that chart is static on mobile
+                chartElement.style.position = 'relative';
+                chartElement.setAttribute('data-mobile-static', 'true');
+            }
+        }
     })();
 </script>
         """

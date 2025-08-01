@@ -723,7 +723,42 @@ textarea {
 }
 
 /* ================================================
-   13. Accessibility Enhancements
+   13. Mobile Chart Styles
+   ================================================ */
+
+/* Static chart indicator for mobile */
+@media (max-width: 767px) {
+  .plotly-chart[data-mobile-static="true"]::after {
+    content: "Tap and hold to view details";
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .chart-container:hover .plotly-chart[data-mobile-static="true"]::after,
+  .chart-container:active .plotly-chart[data-mobile-static="true"]::after {
+    opacity: 1;
+  }
+  
+  /* Prevent accidental interactions */
+  .plotly-chart {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: pan-y; /* Allow vertical scrolling only */
+  }
+}
+
+/* ================================================
+   14. Accessibility Enhancements
    ================================================ */
 
 /* Focus visible for keyboard navigation */

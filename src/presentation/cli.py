@@ -58,6 +58,24 @@ console = Console()
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
+
+
+def _convert_chart_to_dict(chart_json: str) -> dict:
+    """Convert chart JSON string to dict for React component"""
+    import json
+
+    try:
+        chart_data = json.loads(chart_json)
+        # Extract data and layout from Plotly figure structure
+        return {
+            "data": chart_data.get("data", []),
+            "layout": chart_data.get("layout", {}),
+        }
+    except (json.JSONDecodeError, TypeError):
+        # Return empty chart if parsing fails
+        return {"data": [], "layout": {}}
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -187,11 +205,6 @@ logger = logging.getLogger(__name__)
     help="Forecasting model to use (default: monte_carlo)",
 )
 @click.option(
-    "--include-process-health",
-    is_flag=True,
-    help="Include process health metrics in the report",
-)
-@click.option(
     "--exclude-process-health",
     is_flag=True,
     help="Exclude process health section from the report",
@@ -226,6 +239,11 @@ logger = logging.getLogger(__name__)
     is_flag=True,
     help="Enable ML-optimized heuristics (experimental)",
 )
+@click.option(
+    "--use-react",
+    is_flag=True,
+    help="Use React-based report generator (experimental)",
+)
 def main(
     csv_files: tuple,
     num_simulations: int,
@@ -249,7 +267,6 @@ def main(
     outlier_std_devs: float,
     min_velocity: float,
     model: str,
-    include_process_health: bool,
     exclude_process_health: bool,
     wip_limit: tuple,
     velocity_change: tuple,
@@ -257,6 +274,7 @@ def main(
     clear_cache: bool,
     cache_info: bool,
     enable_ml: bool,
+    use_react: bool,
 ):
     console.print("[bold blue]Sprint Radar - Agile Analytics Platform[/bold blue]")
 
@@ -411,6 +429,7 @@ def main(
             data_format,
             data_source_factory,
             enable_ml,
+            use_react,
         )
         return
 
@@ -821,8 +840,7 @@ def main(
 
         process_health_metrics = None
         # Analyze process health unless explicitly excluded
-        # The --include-process-health flag is now deprecated but kept for compatibility
-        if not exclude_process_health:  # Analyze unless excluded
+        if not exclude_process_health:
             console.print("\n[yellow]Analyzing process health metrics...[/yellow]")
 
             # Check if we have the required data for process health
@@ -916,7 +934,137 @@ def main(
         # Generate report
         console.print("\n[yellow]Generating HTML report...[/yellow]")
         style_service = StyleService()
-        report_generator = HTMLReportGenerator(style_service, theme)
+
+        # Generate charts data if using React
+        charts_data = {}
+        baseline_charts_data = {}
+        adjusted_charts_data = {}
+
+        if use_react:
+            # Create chart generators to generate charts
+            from .report_generator import HTMLReportGenerator as ChartGenerator
+            from .process_health_charts import ProcessHealthChartGenerator
+
+            chart_gen = ChartGenerator(style_service, theme)
+
+            # If we have both baseline and adjusted results (team change scenario), generate charts for both
+            if team_change and adjusted_results and results:
+                # Generate baseline charts
+                baseline_charts_data["probability_distribution"] = (
+                    _convert_chart_to_dict(
+                        chart_gen._create_probability_chart(results, config)
+                    )
+                )
+                baseline_charts_data["forecast_timeline"] = _convert_chart_to_dict(
+                    chart_gen._create_forecast_timeline(results)
+                )
+                baseline_charts_data["confidence_intervals"] = _convert_chart_to_dict(
+                    chart_gen._create_confidence_chart(results)
+                )
+
+                # Generate adjusted charts
+                adjusted_charts_data["probability_distribution"] = (
+                    _convert_chart_to_dict(
+                        chart_gen._create_probability_chart(adjusted_results, config)
+                    )
+                )
+                adjusted_charts_data["forecast_timeline"] = _convert_chart_to_dict(
+                    chart_gen._create_forecast_timeline(adjusted_results)
+                )
+                adjusted_charts_data["confidence_intervals"] = _convert_chart_to_dict(
+                    chart_gen._create_confidence_chart(adjusted_results)
+                )
+
+                # Use adjusted as the default view
+                charts_data = adjusted_charts_data.copy()
+            else:
+                # Single scenario - use results as is
+                chart_results = adjusted_results if adjusted_results else results
+
+                # Generate main forecast charts
+                charts_data["probability_distribution"] = _convert_chart_to_dict(
+                    chart_gen._create_probability_chart(chart_results, config)
+                )
+                charts_data["forecast_timeline"] = _convert_chart_to_dict(
+                    chart_gen._create_forecast_timeline(chart_results)
+                )
+                charts_data["confidence_intervals"] = _convert_chart_to_dict(
+                    chart_gen._create_confidence_chart(chart_results)
+                )
+
+            # Velocity trend is the same for both scenarios
+            charts_data["velocity_trend"] = _convert_chart_to_dict(
+                chart_gen._create_velocity_trend_chart(
+                    historical_data, velocity_metrics
+                )
+            )
+
+            # Generate process health charts if available
+            if process_health_metrics:
+                # Get chart colors for health charts
+                from .style_generator import StyleGenerator
+
+                style_gen = StyleGenerator(style_service.get_theme(theme))
+                chart_colors = style_gen.get_chart_colors()
+                health_chart_gen = ProcessHealthChartGenerator(chart_colors)
+
+                charts_data["health_score_gauge"] = _convert_chart_to_dict(
+                    health_chart_gen.create_process_health_score_gauge(
+                        process_health_metrics.health_score
+                    )
+                )
+
+                # Add aging work items chart
+                if (
+                    hasattr(process_health_metrics, "aging_analysis")
+                    and process_health_metrics.aging_analysis
+                ):
+                    charts_data["aging_distribution"] = _convert_chart_to_dict(
+                        health_chart_gen.create_aging_distribution_chart(
+                            process_health_metrics.aging_analysis
+                        )
+                    )
+                    charts_data["aging_by_status"] = _convert_chart_to_dict(
+                        health_chart_gen.create_aging_by_status_chart(
+                            process_health_metrics.aging_analysis
+                        )
+                    )
+
+                # Add WIP chart
+                if (
+                    hasattr(process_health_metrics, "wip_analysis")
+                    and process_health_metrics.wip_analysis
+                ):
+                    charts_data["wip_by_status"] = _convert_chart_to_dict(
+                        health_chart_gen.create_wip_by_status_chart(
+                            process_health_metrics.wip_analysis
+                        )
+                    )
+
+                # Add sprint health charts
+                if (
+                    hasattr(process_health_metrics, "sprint_health")
+                    and process_health_metrics.sprint_health
+                ):
+                    charts_data["sprint_completion_trend"] = _convert_chart_to_dict(
+                        health_chart_gen.create_sprint_health_trend_chart(
+                            process_health_metrics.sprint_health
+                        )
+                    )
+                    charts_data["sprint_scope_changes"] = _convert_chart_to_dict(
+                        health_chart_gen.create_sprint_scope_change_chart(
+                            process_health_metrics.sprint_health
+                        )
+                    )
+
+        # Choose report generator based on flag
+        if use_react:
+            from .react_report_generator import ReactReportGenerator
+
+            console.print("[cyan]Using React-based report generator[/cyan]")
+            report_generator = ReactReportGenerator(style_service, theme)
+        else:
+            report_generator = HTMLReportGenerator(style_service, theme)
 
         # Extract project name, JQL query, and Jira URL
         jql_query = None
@@ -981,6 +1129,9 @@ def main(
                 jql_queries=jql_queries,
                 jira_url=jira_url,
                 ml_decisions=ml_decisions,
+                charts_data=charts_data,
+                baseline_charts_data=baseline_charts_data if use_react else None,
+                adjusted_charts_data=adjusted_charts_data if use_react else None,
             )
 
             console.print(
@@ -988,23 +1139,38 @@ def main(
             )
         else:
             # Generate single report
-            report_path = report_generator.generate(
-                simulation_results=results,
-                velocity_metrics=velocity_metrics,
-                historical_data=historical_data,
-                remaining_work=remaining_work,
-                config=config,
-                output_path=output_path,
-                project_name=project_name,
-                model_info=model_info,
-                story_size_breakdown=story_size_breakdown,
-                process_health_metrics=process_health_metrics,
-                reporting_capabilities=reporting_capabilities,
-                jql_query=jql_query,
-                jql_queries=jql_queries,
-                jira_url=jira_url,
-                ml_decisions=ml_decisions,
-            )
+            # Add charts_data for React report generator
+            kwargs = {
+                "simulation_results": results,
+                "velocity_metrics": velocity_metrics,
+                "historical_data": historical_data,
+                "remaining_work": remaining_work,
+                "config": config,
+                "output_path": output_path,
+                "project_name": project_name,
+                "model_info": model_info,
+                "story_size_breakdown": story_size_breakdown,
+                "process_health_metrics": process_health_metrics,
+                "reporting_capabilities": reporting_capabilities,
+                "jql_query": jql_query,
+                "jql_queries": jql_queries,
+                "jira_url": jira_url,
+                "ml_decisions": ml_decisions,
+            }
+
+            if use_react:
+                if charts_data:
+                    kwargs["charts_data"] = charts_data
+                # Calculate summary stats for React reports
+                # Use HTMLReportGenerator to calculate summary stats since ReactReportGenerator doesn't inherit from it
+                from .report_generator import HTMLReportGenerator
+
+                temp_gen = HTMLReportGenerator(style_service, theme)
+                kwargs["summary_stats"] = temp_gen._calculate_summary_stats(
+                    results, velocity_metrics, config
+                )
+
+            report_path = report_generator.generate(**kwargs)
 
         console.print(f"\n[green]✓ Report generated: {report_path}[/green]")
 
@@ -1037,6 +1203,7 @@ def process_multiple_csvs(
     data_format: str,
     data_source_factory,
     enable_ml: bool,
+    use_react: bool,
 ):
     """Process multiple CSV files and generate multi-project report"""
 

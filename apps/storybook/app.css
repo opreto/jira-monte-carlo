@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design System CSS Variables */
+:root {
+  /* Light mode variables */
+  --color-background: #ffffff;
+  --color-background-surface: #f9fafb;
+  --color-background-elevated: #ffffff;
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-border-focus: #03564c;
+  
+  /* Base colors */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  --color-gray-950: #030712;
+  
+  --color-primary-50: #e6f4f2;
+  --color-primary-100: #cce9e5;
+  --color-primary-200: #99d3ca;
+  --color-primary-300: #66bcb0;
+  --color-primary-400: #33a695;
+  --color-primary-500: #03564c;
+  --color-primary-600: #024840;
+  --color-primary-700: #023a33;
+  --color-primary-800: #022d2c;
+  --color-primary-900: #011f1f;
+  
+  --color-white: #ffffff;
+  --color-black: #000000;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #111827;
+    --color-background-surface: #1f2937;
+    --color-background-elevated: #374151;
+    --color-text-primary: #f9fafb;
+    --color-text-secondary: #d1d5db;
+    --color-text-muted: #9ca3af;
+    --color-border: #374151;
+    --color-border-focus: #03564c;
+  }
+}
+
+/* Base reset and styles */
+@layer base {
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  
+  * {
+    @apply border-border;
+  }
+}
+
+/* Component layer for design system components */
+@layer components {
+  /* Card styles */
+  .card {
+    @apply rounded-lg border bg-background;
+  }
+  
+  .card-header {
+    @apply flex flex-col space-y-1.5 p-6;
+  }
+  
+  .card-title {
+    @apply text-2xl font-semibold leading-none tracking-tight;
+  }
+  
+  .card-description {
+    @apply text-sm text-muted-foreground;
+  }
+  
+  .card-content {
+    @apply p-6 pt-0;
+  }
+  
+  .card-footer {
+    @apply flex items-center p-6 pt-0;
+  }
+}
+
+/* Utility overrides */
+@layer utilities {
+  /* Focus styles */
+  .focus-visible\:ring-primary:focus-visible {
+    @apply ring-primary-500;
+  }
+}

@@ -7,6 +7,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from .value_objects import VelocityMetrics
+from .velocity_adjustments import VelocityScenario
 
 
 class ModelType(Enum):
@@ -69,6 +70,20 @@ class MonteCarloConfiguration(ModelConfiguration):
             errors.append("Number of simulations should be at least 100")
         if self.variance_multiplier <= 0:
             errors.append("Variance multiplier must be positive")
+        return errors
+
+
+@dataclass
+class MonteCarloConfigurationWithScenario(MonteCarloConfiguration):
+    """Monte Carlo configuration with velocity scenario support"""
+
+    velocity_scenario: Optional[VelocityScenario] = None
+    baseline_team_size: int = 5  # For team change calculations
+
+    def validate(self) -> List[str]:
+        errors = super().validate()
+        if self.baseline_team_size <= 0:
+            errors.append("Baseline team size must be positive")
         return errors
 
 

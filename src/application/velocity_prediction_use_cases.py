@@ -46,15 +46,37 @@ class ApplyVelocityAdjustmentsUseCase:
         # Generate adjusted forecast
         logger.info(f"Applying scenario: {scenario.name}")
 
-        # Create adjusted velocity metrics
-        adjusted_metrics = self._create_adjusted_metrics(
-            velocity_metrics, scenario, config, team_size
-        )
+        # Create configuration with scenario
+        if (
+            hasattr(config, "__class__")
+            and config.__class__.__name__ == "MonteCarloConfiguration"
+        ):
+            # Import here to avoid circular dependency
+            from ..domain.forecasting import MonteCarloConfigurationWithScenario
 
-        # Run forecast with adjusted metrics
-        adjusted_result = self.forecasting_model.forecast(
-            remaining_work, adjusted_metrics, config
-        )
+            # Create extended configuration with scenario
+            scenario_config = MonteCarloConfigurationWithScenario(
+                confidence_levels=config.confidence_levels,
+                sprint_duration_days=config.sprint_duration_days,
+                num_simulations=config.num_simulations,
+                use_historical_variance=config.use_historical_variance,
+                variance_multiplier=config.variance_multiplier,
+                velocity_scenario=scenario,
+                baseline_team_size=team_size,
+            )
+
+            # Run forecast with scenario configuration
+            adjusted_result = self.forecasting_model.forecast(
+                remaining_work, velocity_metrics, scenario_config
+            )
+        else:
+            # For non-Monte Carlo models, fall back to averaging approach
+            adjusted_metrics = self._create_adjusted_metrics(
+                velocity_metrics, scenario, config, team_size
+            )
+            adjusted_result = self.forecasting_model.forecast(
+                remaining_work, adjusted_metrics, config
+            )
 
         return baseline_result, adjusted_result
 

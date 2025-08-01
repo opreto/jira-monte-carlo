@@ -13,6 +13,7 @@ from ..domain.forecasting import (
     ModelInfo,
     ModelType,
     MonteCarloConfiguration,
+    MonteCarloConfigurationWithScenario,
     PredictionInterval,
 )
 from ..domain.value_objects import VelocityMetrics
@@ -140,20 +141,39 @@ class MonteCarloModel(ForecastingModel):
         # Apply variance multiplier for sensitivity analysis
         adjusted_std_dev = velocity_metrics.std_dev * config.variance_multiplier
 
+        # Check if we have a velocity scenario
+        velocity_scenario = None
+        baseline_team_size = 5
+        if isinstance(config, MonteCarloConfigurationWithScenario):
+            velocity_scenario = config.velocity_scenario
+            baseline_team_size = config.baseline_team_size
+
         for _ in range(config.num_simulations):
             sprints = 0
             work_remaining = remaining_work
 
             while work_remaining > 0:
-                # Sample velocity from normal distribution
+                # Sample base velocity from normal distribution
                 if config.use_historical_variance and adjusted_std_dev > 0:
-                    velocity = random.gauss(velocity_metrics.average, adjusted_std_dev)
+                    base_velocity = random.gauss(
+                        velocity_metrics.average, adjusted_std_dev
+                    )
                 else:
                     # Use fixed velocity if no variance
-                    velocity = velocity_metrics.average
+                    base_velocity = velocity_metrics.average
 
                 # Ensure positive velocity
-                velocity = max(0.1, velocity)
+                base_velocity = max(0.1, base_velocity)
+
+                # Apply velocity scenario adjustments if available
+                if velocity_scenario:
+                    # Sprint numbers start at 1
+                    adjusted_velocity, _ = velocity_scenario.get_adjusted_velocity(
+                        sprints + 1, base_velocity, baseline_team_size
+                    )
+                    velocity = adjusted_velocity
+                else:
+                    velocity = base_velocity
 
                 work_remaining -= velocity
                 sprints += 1

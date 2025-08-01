@@ -29,6 +29,8 @@ A high-performance agile project analytics and forecasting platform. Sprint Rada
 - **Clickable Issue Links**: Direct links to Jira issues in HTML reports
 - **Health Score Visualization**: Gauge charts and breakdowns with 0-100% bounded scores
 - **ML-Enhanced Heuristics**: Privacy-preserving machine learning optimizes lookback periods and forecasts based on your team's patterns
+- **React-Based Reports**: Modern React components with smooth chart animations for better user experience
+- **Velocity Scenario Modeling**: Model team changes and velocity adjustments with smooth animated transitions between scenarios
 
 ## Getting Started (Quick Setup for Jira API)
 
@@ -95,6 +97,14 @@ sprint-radar -f jira-api://MYPROJECT -o reports/myproject.html
 # Model vacation impact
 sprint-radar -f jira-api:// \
   --velocity-change "sprint:10,factor:0.7,reason:team vacation week"
+
+# Use React reports with smooth animations
+sprint-radar -f jira-api:// -o reports/forecast.html --use-react
+
+# Model team changes with animated transitions
+sprint-radar -f jira-api:// --use-react \
+  --team-change "sprint:5,change:+2,ramp:3" \
+  --velocity-change "sprint:8+,factor:1.2,reason:team expansion"
 
 # Include process health metrics
 sprint-radar -f jira-api:// --include-process-health
@@ -297,6 +307,7 @@ Analysis Options:
   --include-process-health       Include process health metrics in the report (deprecated)
   --exclude-process-health       Exclude process health section from the report
   --enable-ml                    Enable ML optimization for lookback periods
+  --use-react                    Use React-based report generator with smooth animations (experimental)
 
 Velocity Change Prediction (What-If Analysis):
   --velocity-change TEXT         Model velocity changes (format: "sprint:N[-M],factor:F[,reason:R]")
@@ -732,7 +743,15 @@ logging.basicConfig(level=logging.DEBUG)
 
 ### Planned Features
 
-#### Phase 1: Mobile Experience (Priority 1)
+#### Phase 1: Architectural Cleanup (Priority 1)
+- **Python-to-JavaScript Data Pipeline**
+  - Replace brittle kwargs-based data passing between Python reporting layer and React/JS layer
+  - Design a type-safe, versioned data contract between backend and frontend
+  - Implement proper serialization/deserialization with validation
+  - Consider using Protocol Buffers or JSON Schema for data structure definition
+  - Ensure backward compatibility during migration
+
+#### Phase 2: Mobile Experience (Priority 2)
 - **Responsive Design**
   - Implement responsive chart rendering
   - Create mobile-optimized templates
@@ -741,7 +760,7 @@ logging.basicConfig(level=logging.DEBUG)
   - Optimize data transfer for mobile networks
   - Progressive web app (PWA) capabilities
 
-#### Phase 2: Architecture Improvements (Priority 2)
+#### Phase 3: Architecture Improvements (Priority 3)
 - **Performance Optimizations**
   - Parallel CSV processing for multi-file imports
   - Caching for large datasets beyond API responses

@@ -57,13 +57,23 @@ class ChartComponent(Component):
                 layout.xaxis.tickangle = -45;
             }
             
-            // Disable all interactions on mobile to prevent swipe conflicts
-            config.staticPlot = true;
-            config.displayModeBar = false;
-            config.scrollZoom = false;
-            config.doubleClick = false;
-            config.showTips = false;
-            config.dragmode = false;
+            // Force disable all interactions on mobile to prevent swipe conflicts
+            config = {
+                staticPlot: true,
+                displayModeBar: false,
+                displaylogo: false,
+                scrollZoom: false,
+                doubleClick: false,
+                showTips: false,
+                dragmode: false,
+                showLink: false,
+                sendData: false,
+                showSendToCloud: false,
+                editable: false,
+                responsive: true,
+                modeBarButtonsToRemove: ['all'],
+                toImageButtonOptions: { display: false }
+            };
             
             // Add title padding to prevent overlap with any remaining controls
             if (layout.title) {
@@ -130,10 +140,8 @@ class ChartComponent(Component):
 
         # Get responsive config
         config = ResponsiveChartConfig.get_responsive_config()
-        if show_toolbar:
-            config["displayModeBar"] = True
-        else:
-            config["displayModeBar"] = False
+        # Override toolbar display based on parameter
+        config["displayModeBar"] = show_toolbar
 
         return {
             "chart_id": chart_id,

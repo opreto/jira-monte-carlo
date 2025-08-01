@@ -1,0 +1,32 @@
+{
+  "name": "@sprint-radar/report-builder",
+  "version": "1.0.0",
+  "description": "Static HTML report builder for Sprint Radar",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "tsx watch src/cli.ts",
+    "build": "tsup",
+    "build:report": "tsx src/cli.ts",
+    "clean": "rm -rf dist node_modules"
+  },
+  "dependencies": {
+    "@sprint-radar/ui": "*",
+    "@tailwindcss/postcss": "^4.1.11",
+    "commander": "^12.1.0",
+    "cssnano": "^7.0.6",
+    "plotly.js-dist-min": "^3.0.3",
+    "postcss": "^8.4.49",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwindcss": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.6",
+    "@types/react-dom": "^19.0.2",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

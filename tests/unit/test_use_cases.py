@@ -69,6 +69,51 @@ class TestCalculateVelocityUseCase:
         assert metrics.median == 0
         assert metrics.std_dev == 0
 
+    def test_calculate_optimal_lookback(self):
+        """Test the auto-detection heuristic for lookback period"""
+        issue_repo = Mock()
+        sprint_repo = Mock()
+        use_case = CalculateVelocityUseCase(issue_repo, sprint_repo)
+
+        # Test various scenarios
+        assert use_case.calculate_optimal_lookback(3) == 3  # Use all when ≤6
+        assert use_case.calculate_optimal_lookback(6) == 6  # Use all when ≤6
+        assert use_case.calculate_optimal_lookback(10) == 6  # Use 6 for 7-12
+        assert use_case.calculate_optimal_lookback(20) == 10  # Use 10 for 13-24
+        assert use_case.calculate_optimal_lookback(40) == 12  # Use 12 for 25-52
+        assert use_case.calculate_optimal_lookback(60) == 20  # Cap at 20 for >52
+        assert use_case.calculate_optimal_lookback(100) == 20  # Still cap at 20
+
+    def test_calculate_velocity_with_auto_lookback(self):
+        """Test velocity calculation with auto-detection (lookback_sprints=-1)"""
+        issue_repo = Mock()
+        sprint_repo = Mock()
+
+        # Create 20 sprints
+        sprints = []
+        for i in range(20):
+            sprint = Sprint(
+                name=f"Sprint {i + 1}",
+                start_date=datetime.now() - timedelta(days=14 * (20 - i)),
+                end_date=datetime.now() - timedelta(days=14 * (19 - i)),
+                completed_points=30.0 + i,  # Increasing velocity
+                completed_issues=[],
+            )
+            sprints.append(sprint)
+
+        sprint_repo.get_all.return_value = sprints
+
+        use_case = CalculateVelocityUseCase(issue_repo, sprint_repo)
+        # Use -1 to trigger auto-detection
+        metrics = use_case.execute(lookback_sprints=-1, velocity_field="story_points")
+
+        # With 20 sprints, it should use last 10
+        # The execute method will use the last 10 sprints (indices 10-19)
+        # Velocities would be 40, 41, 42, ..., 49 (last 10 sprints)
+        expected_velocities = [float(i) for i in range(40, 50)]
+        expected_avg = sum(expected_velocities) / len(expected_velocities)
+        assert metrics.average == expected_avg
+
 
 class TestRunMonteCarloSimulationUseCase:
     def test_monte_carlo_simulation(self):
@@ -90,7 +135,9 @@ class TestRunMonteCarloSimulationUseCase:
         )
 
         use_case = RunMonteCarloSimulationUseCase(issue_repo)
-        results = use_case.execute(remaining_work=100.0, velocity_metrics=velocity_metrics, config=config)
+        results = use_case.execute(
+            remaining_work=100.0, velocity_metrics=velocity_metrics, config=config
+        )
 
         # Assert structure
         assert len(results.percentiles) == 3
@@ -126,7 +173,9 @@ class TestCalculateRemainingWorkUseCase:
         issue_repo.get_by_status.return_value = issues
 
         use_case = CalculateRemainingWorkUseCase(issue_repo)
-        remaining = use_case.execute(todo_statuses=["To Do"], velocity_field="story_points")
+        remaining = use_case.execute(
+            todo_statuses=["To Do"], velocity_field="story_points"
+        )
 
         assert remaining == 40.0
 

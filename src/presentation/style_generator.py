@@ -12,20 +12,92 @@ class StyleGenerator:
     def generate_css(self) -> str:
         """Generate complete CSS from theme"""
         css_parts = [
+            "/* Sprint Radar CSS with Mobile-First Responsive Design */",
             self._generate_root_variables(),
+            self._generate_responsive_system(),
             self._generate_base_styles(),
             self._generate_typography_styles(),
             self._generate_component_styles(),
             self._generate_utility_styles(),
             self._generate_chart_styles(),
             self._generate_scenario_styles(),
+            self._generate_responsive_navigation(),
+            self._generate_responsive_tables(),
         ]
+        
+        # Include responsive.css content
+        from pathlib import Path
+        responsive_css_path = Path(__file__).parent / "static" / "css" / "responsive.css"
+        if responsive_css_path.exists():
+            css_parts.append("/* Modern Responsive Design System */")
+            css_parts.append(responsive_css_path.read_text())
 
         # Add custom CSS if provided
         if self.theme.custom_css:
             css_parts.append(self.theme.custom_css)
 
         return "\n\n".join(css_parts)
+
+    def _generate_responsive_system(self) -> str:
+        """Generate responsive design system"""
+        return """
+/* ================================================
+   Mobile-First Responsive Design System
+   ================================================ */
+
+/* Responsive Breakpoints */
+:root {
+    --breakpoint-xs: 0;
+    --breakpoint-sm: 576px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-xl: 1440px;
+    --breakpoint-xxl: 1920px;
+    --breakpoint-xxxl: 2560px;
+}
+
+/* Fluid Typography Scale */
+:root {
+    --font-size-base: clamp(14px, 2vw, 16px);
+    --font-size-xs: clamp(11px, 1.5vw, 12px);
+    --font-size-sm: clamp(12px, 1.8vw, 14px);
+    --font-size-lg: clamp(16px, 2.5vw, 20px);
+    --font-size-xl: clamp(20px, 3vw, 24px);
+    --font-size-2xl: clamp(24px, 4vw, 32px);
+    --font-size-3xl: clamp(30px, 5vw, 48px);
+}
+
+/* Responsive Spacing - More Compact */
+:root {
+    --spacing-responsive-xs: clamp(0.125rem, 0.5vw, 0.25rem);
+    --spacing-responsive-sm: clamp(0.25rem, 1vw, 0.5rem);
+    --spacing-responsive-md: clamp(0.5rem, 1.5vw, 0.75rem);
+    --spacing-responsive-lg: clamp(0.75rem, 2vw, 1rem);
+    --spacing-responsive-xl: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+/* Further reduce spacing on large screens */
+@media (min-width: 1920px) {
+    :root {
+        --spacing-responsive-xs: 0.25rem;
+        --spacing-responsive-sm: 0.375rem;
+        --spacing-responsive-md: 0.5rem;
+        --spacing-responsive-lg: 0.75rem;
+        --spacing-responsive-xl: 1rem;
+    }
+}
+
+/* Container System */
+:root {
+    --container-sm: 540px;
+    --container-md: 720px;
+    --container-lg: 960px;
+    --container-xl: 1140px;
+    --container-xxl: 1320px;
+    --container-xxxl: 1800px;
+    --container-fluid-max: 2400px;
+}
+"""
 
     def _generate_root_variables(self) -> str:
         """Generate CSS custom properties"""
@@ -76,9 +148,15 @@ class StyleGenerator:
     def _generate_base_styles(self) -> str:
         """Generate base HTML styles"""
         return f"""
+/* Responsive base */
+html {{
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+}}
+
 body {{
     font-family: {self.theme.typography.body.font_family};
-    font-size: {self.theme.typography.body.font_size};
+    font-size: var(--font-size-base);
     line-height: {self.theme.typography.body.line_height};
     color: var(--color-text-primary);
     background-color: var(--color-background);
@@ -86,54 +164,112 @@ body {{
     padding: 0;
 }}
 
+/* Responsive container */
 .container {{
-    max-width: 1400px;
+    width: 100%;
+    padding-right: var(--spacing-responsive-md);
+    padding-left: var(--spacing-responsive-md);
+    margin-right: auto;
+    margin-left: auto;
+}}
+
+@media (min-width: 576px) {{
+    .container {{ max-width: var(--container-sm); }}
+}}
+
+@media (min-width: 768px) {{
+    .container {{ 
+        max-width: var(--container-md);
+        padding-right: var(--spacing-responsive-lg);
+        padding-left: var(--spacing-responsive-lg);
+    }}
+}}
+
+@media (min-width: 1024px) {{
+    .container {{ max-width: var(--container-lg); }}
+}}
+
+@media (min-width: 1440px) {{
+    .container {{ max-width: var(--container-xl); }}
+}}
+
+@media (min-width: 1920px) {{
+    .container {{ 
+        max-width: var(--container-xxl);
+        padding-right: var(--spacing-responsive-xl);
+        padding-left: var(--spacing-responsive-xl);
+    }}
+}}
+
+@media (min-width: 2560px) {{
+    .container {{ max-width: var(--container-xxxl); }}
+}}
+
+/* Fluid container for ultra-wide */
+.container-fluid {{
+    width: 100%;
+    max-width: var(--container-fluid-max);
+    padding-right: var(--spacing-responsive-lg);
+    padding-left: var(--spacing-responsive-lg);
     margin: 0 auto;
-    padding: var(--spacing-lg);
 }}"""
 
     def _generate_typography_styles(self) -> str:
         """Generate typography styles"""
         return f"""
+/* Responsive typography */
 h1 {{
     font-family: {self.theme.typography.heading1.font_family};
-    font-size: {self.theme.typography.heading1.font_size};
+    font-size: var(--font-size-3xl);
     font-weight: {self.theme.typography.heading1.font_weight};
-    line-height: {self.theme.typography.heading1.line_height};
+    line-height: 1.2;
     letter-spacing: {self.theme.typography.heading1.letter_spacing or "normal"};
-    margin: 0 0 var(--spacing-md) 0;
+    margin: 0 0 var(--spacing-responsive-md) 0;
     color: var(--color-text-primary);
 }}
 
 h2 {{
     font-family: {self.theme.typography.heading2.font_family};
-    font-size: {self.theme.typography.heading2.font_size};
+    font-size: var(--font-size-2xl);
     font-weight: {self.theme.typography.heading2.font_weight};
-    line-height: {self.theme.typography.heading2.line_height};
+    line-height: 1.3;
     letter-spacing: {self.theme.typography.heading2.letter_spacing or "normal"};
-    margin: 0 0 var(--spacing-md) 0;
+    margin: 0 0 var(--spacing-responsive-md) 0;
     color: var(--color-text-primary);
 }}
 
 h3 {{
     font-family: {self.theme.typography.heading3.font_family};
-    font-size: {self.theme.typography.heading3.font_size};
+    font-size: var(--font-size-xl);
     font-weight: {self.theme.typography.heading3.font_weight};
-    line-height: {self.theme.typography.heading3.line_height};
-    margin: 0 0 var(--spacing-sm) 0;
+    line-height: 1.4;
+    margin: 0 0 var(--spacing-responsive-sm) 0;
     color: var(--color-text-primary);
+}}
+
+h4 {{
+    font-family: {self.theme.typography.heading3.font_family};
+    font-size: var(--font-size-lg);
+    font-weight: {self.theme.typography.heading3.font_weight};
+    line-height: 1.5;
+    margin: 0 0 var(--spacing-responsive-sm) 0;
+    color: var(--color-text-primary);
+}}
+
+p {{
+    margin: 0 0 var(--spacing-responsive-md) 0;
 }}
 
 .caption {{
     font-family: {self.theme.typography.caption.font_family};
-    font-size: {self.theme.typography.caption.font_size};
+    font-size: var(--font-size-sm);
     font-weight: {self.theme.typography.caption.font_weight};
     color: var(--color-text-secondary);
 }}
 
 .button {{
     font-family: {self.theme.typography.button.font_family};
-    font-size: {self.theme.typography.button.font_size};
+    font-size: var(--font-size-base);
     font-weight: {self.theme.typography.button.font_weight};
     letter-spacing: {self.theme.typography.button.letter_spacing or "normal"};
 }}"""
@@ -145,9 +281,9 @@ h3 {{
 .header {
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
     color: white;
-    padding: var(--spacing-xl) var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-md);
     border-radius: var(--border-radius-lg);
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
     box-shadow: var(--shadow-lg);
 }
 
@@ -161,62 +297,110 @@ h3 {{
     font-size: 1.1rem;
 }
 
-/* Metrics Grid */
+/* Responsive Metrics Grid */
 .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--spacing-lg);
-    margin-bottom: var(--spacing-xl);
+    gap: var(--spacing-responsive-sm);
+    margin-bottom: var(--spacing-responsive-md);
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 576px) {
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .metrics-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-responsive-md);
+    }
+}
+
+@media (min-width: 1024px) {
+    .metrics-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 1440px) {
+    .metrics-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
 }
 
 .metric-card {
     background: var(--color-surface);
-    padding: var(--spacing-lg);
+    padding: var(--spacing-responsive-md);
     border-radius: var(--border-radius-md);
     box-shadow: var(--shadow-md);
     text-align: center;
     border: var(--border-width) solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (hover: hover) {
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
 }
 
 .metric-card .value {
-    font-size: 2.5rem;
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
     font-weight: bold;
     color: var(--color-primary);
-    margin: var(--spacing-sm) 0;
+    margin: var(--spacing-responsive-sm) 0;
 }
 
 .metric-card .label {
     color: var(--color-text-secondary);
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm);
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
-/* Tables */
+/* Responsive Tables */
 .data-table {
     background: var(--color-surface);
     border-radius: var(--border-radius-md);
     box-shadow: var(--shadow-md);
     overflow: hidden;
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-responsive-xl);
 }
 
 .data-table h2 {
     margin: 0;
-    padding: var(--spacing-lg);
+    padding: var(--spacing-responsive-md) var(--spacing-responsive-lg);
     background: var(--color-surface);
     border-bottom: var(--border-width) solid var(--border-color);
 }
 
+/* Table wrapper for horizontal scroll */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 table {
     width: 100%;
+    min-width: 600px;
     border-collapse: collapse;
 }
 
 th, td {
-    padding: var(--spacing-md) var(--spacing-lg);
+    padding: var(--spacing-responsive-sm) var(--spacing-responsive-md);
     text-align: left;
     border-bottom: var(--border-width) solid var(--border-color);
+    font-size: var(--font-size-sm);
+}
+
+@media (min-width: 768px) {
+    th, td {
+        padding: var(--spacing-responsive-md) var(--spacing-responsive-lg);
+        font-size: var(--font-size-base);
+    }
 }
 
 th {
@@ -244,21 +428,69 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Charts */
+/* Responsive Charts */
 .chart-container {
     background: var(--color-surface);
     border-radius: var(--border-radius-md);
     box-shadow: var(--shadow-md);
-    padding: var(--spacing-lg);
-    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-responsive-sm);
+    margin-bottom: var(--spacing-responsive-md);
+}
+
+/* Further reduce spacing on tablets and up */
+@media (min-width: 768px) {
+    .chart-container {
+        padding: var(--spacing-responsive-md);
+    }
+}
+
+/* Minimal spacing on large displays */
+@media (min-width: 1920px) {
+    .chart-container {
+        margin-bottom: var(--spacing-responsive-sm);
+        padding: var(--spacing-responsive-sm);
+    }
 }
 
 .chart-container h2 {
-    margin: 0 0 var(--spacing-md) 0;
+    margin: 0 0 var(--spacing-responsive-md) 0;
     color: var(--color-text-primary);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-responsive-sm);
+}
+
+/* Responsive chart heights - Compact design */
+.chart-container > div[id] {
+    min-height: 250px;
+    height: 40vh;
+    max-height: 400px;
+}
+
+@media (min-width: 768px) {
+    .chart-container > div[id] {
+        min-height: 300px;
+        height: 35vh;
+        max-height: 450px;
+    }
+}
+
+@media (min-width: 1440px) {
+    .chart-container > div[id] {
+        min-height: 300px;
+        height: 30vh;
+        max-height: 500px;
+    }
+}
+
+@media (min-width: 1920px) {
+    .chart-container > div[id] {
+        min-height: 300px;
+        height: 25vh;
+        max-height: 500px;
+    }
 }
 
 /* Chart descriptions */
@@ -422,6 +654,34 @@ a:hover {
     border-color: var(--color-surface) transparent transparent transparent;
 }
 
+/* ML Decision Indicator */
+.ml-indicator {
+    margin-left: 0.5rem;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.ml-indicator .tooltip-icon {
+    background-color: rgba(var(--color-info-rgb, 33, 150, 243), 0.1);
+    border-color: var(--color-info);
+    font-size: 1rem;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+}
+
+.ml-indicator .tooltip-text {
+    min-width: 350px;
+    max-width: 450px;
+    font-size: 0.9rem;
+}
+
+.ml-indicator .tooltip-text strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--color-primary);
+}
+
 /* JQL Query Display */
 .jql-query-container {
     background: var(--color-surface);
@@ -516,22 +776,111 @@ a:hover {
     def _generate_utility_styles(self) -> str:
         """Generate utility styles"""
         return """
-/* Utility Classes */
+/* Responsive Utility Classes */
+
+/* Display utilities */
+.d-none { display: none !important; }
+.d-block { display: block !important; }
+.d-flex { display: flex !important; }
+.d-grid { display: grid !important; }
+
+@media (min-width: 576px) {
+    .d-sm-none { display: none !important; }
+    .d-sm-block { display: block !important; }
+    .d-sm-flex { display: flex !important; }
+    .d-sm-grid { display: grid !important; }
+}
+
+@media (min-width: 768px) {
+    .d-md-none { display: none !important; }
+    .d-md-block { display: block !important; }
+    .d-md-flex { display: flex !important; }
+    .d-md-grid { display: grid !important; }
+}
+
+@media (min-width: 1024px) {
+    .d-lg-none { display: none !important; }
+    .d-lg-block { display: block !important; }
+    .d-lg-flex { display: flex !important; }
+    .d-lg-grid { display: grid !important; }
+}
+
+/* Text alignment */
 .text-primary { color: var(--color-text-primary); }
 .text-secondary { color: var(--color-text-secondary); }
-.text-center { text-align: center; }
-.text-right { text-align: right; }
+.text-start { text-align: left !important; }
+.text-center { text-align: center !important; }
+.text-end { text-align: right !important; }
 
-.mt-sm { margin-top: var(--spacing-sm); }
-.mt-md { margin-top: var(--spacing-md); }
-.mt-lg { margin-top: var(--spacing-lg); }
-.mb-sm { margin-bottom: var(--spacing-sm); }
-.mb-md { margin-bottom: var(--spacing-md); }
-.mb-lg { margin-bottom: var(--spacing-lg); }
+@media (min-width: 768px) {
+    .text-md-start { text-align: left !important; }
+    .text-md-center { text-align: center !important; }
+    .text-md-end { text-align: right !important; }
+}
 
-.p-sm { padding: var(--spacing-sm); }
-.p-md { padding: var(--spacing-md); }
-.p-lg { padding: var(--spacing-lg); }"""
+/* Responsive spacing */
+.mt-0 { margin-top: 0 !important; }
+.mt-1 { margin-top: var(--spacing-responsive-xs) !important; }
+.mt-2 { margin-top: var(--spacing-responsive-sm) !important; }
+.mt-3 { margin-top: var(--spacing-responsive-md) !important; }
+.mt-4 { margin-top: var(--spacing-responsive-lg) !important; }
+.mt-5 { margin-top: var(--spacing-responsive-xl) !important; }
+
+.mb-0 { margin-bottom: 0 !important; }
+.mb-1 { margin-bottom: var(--spacing-responsive-xs) !important; }
+.mb-2 { margin-bottom: var(--spacing-responsive-sm) !important; }
+.mb-3 { margin-bottom: var(--spacing-responsive-md) !important; }
+.mb-4 { margin-bottom: var(--spacing-responsive-lg) !important; }
+.mb-5 { margin-bottom: var(--spacing-responsive-xl) !important; }
+
+.p-0 { padding: 0 !important; }
+.p-1 { padding: var(--spacing-responsive-xs) !important; }
+.p-2 { padding: var(--spacing-responsive-sm) !important; }
+.p-3 { padding: var(--spacing-responsive-md) !important; }
+.p-4 { padding: var(--spacing-responsive-lg) !important; }
+.p-5 { padding: var(--spacing-responsive-xl) !important; }
+
+/* Touch-optimized components */
+button, .btn, .toggle-btn, a.btn {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-responsive-sm) var(--spacing-responsive-md);
+    touch-action: manipulation;
+}
+
+/* Accessibility */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus visible for keyboard navigation */
+:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}"""
 
     def _generate_chart_styles(self) -> str:
         """Generate chart-specific styles"""
@@ -801,3 +1150,135 @@ a:hover {
                 "low_confidence": self.theme.colors.error.hex,
                 "neutral": self.theme.colors.info.hex,
             }
+
+    def _generate_responsive_navigation(self) -> str:
+        """Generate responsive navigation styles"""
+        return """
+/* ================================================
+   Responsive Navigation Patterns
+   ================================================ */
+
+.nav-container {
+    padding: var(--spacing-responsive-sm);
+}
+
+.nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-responsive-sm);
+}
+
+@media (min-width: 768px) {
+    .nav-list {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--spacing-responsive-md);
+    }
+}
+
+/* Mobile menu toggle (hamburger) */
+.mobile-menu-toggle {
+    display: block;
+    position: fixed;
+    top: var(--spacing-responsive-md);
+    right: var(--spacing-responsive-md);
+    z-index: 1000;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-md);
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mobile-menu-toggle:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+}
+
+@media (min-width: 768px) {
+    .mobile-menu-toggle {
+        display: none;
+    }
+}
+
+/* Mobile menu open state */
+.mobile-menu-open .nav-list {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    z-index: 999;
+    padding: 80px 20px 20px;
+    overflow-y: auto;
+}
+"""
+
+    def _generate_responsive_tables(self) -> str:
+        """Generate responsive table styles"""
+        return """
+/* ================================================
+   Responsive Tables
+   ================================================ */
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: var(--spacing-responsive-md);
+}
+
+/* Mobile-optimized table */
+@media (max-width: 767px) {
+    .mobile-table {
+        display: block;
+    }
+    
+    .mobile-table thead {
+        display: none;
+    }
+    
+    .mobile-table tbody,
+    .mobile-table tr,
+    .mobile-table td {
+        display: block;
+    }
+    
+    .mobile-table tr {
+        margin-bottom: var(--spacing-responsive-md);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        padding: var(--spacing-responsive-sm);
+        background: var(--color-surface);
+    }
+    
+    .mobile-table td {
+        position: relative;
+        padding-left: 40%;
+        text-align: right;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    .mobile-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: var(--spacing-responsive-sm);
+        width: 35%;
+        text-align: left;
+        font-weight: bold;
+        color: var(--color-text-secondary);
+    }
+    
+    .mobile-table td:first-child {
+        padding-top: var(--spacing-responsive-md);
+    }
+    
+    .mobile-table td:last-child {
+        padding-bottom: var(--spacing-responsive-md);
+    }
+}
+"""

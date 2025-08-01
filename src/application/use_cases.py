@@ -21,7 +21,36 @@ class CalculateVelocityUseCase:
         self.issue_repo = issue_repo
         self.sprint_repo = sprint_repo
 
-    def execute(self, lookback_sprints: int = 6, velocity_field: str = "story_points") -> VelocityMetrics:
+    def calculate_optimal_lookback(self, total_sprints: int) -> int:
+        """Calculate optimal lookback period based on available data.
+
+        Uses a heuristic approach that balances:
+        - Having enough data for statistical significance
+        - Using recent data that reflects current team performance
+        - Adapting to the amount of available historical data
+
+        Heuristic rules:
+        - If ≤6 sprints available: use all sprints
+        - If 7-12 sprints: use 6 sprints (standard agile retrospective period)
+        - If 13-24 sprints: use 8-10 sprints (2-3 months of data)
+        - If 25-52 sprints: use 12 sprints (one quarter)
+        - If >52 sprints: use 16-20 sprints (limit to ~5 months for relevance)
+        """
+        if total_sprints <= 6:
+            return total_sprints
+        elif total_sprints <= 12:
+            return 6
+        elif total_sprints <= 24:
+            return min(10, total_sprints // 2)
+        elif total_sprints <= 52:
+            return 12
+        else:
+            # For very long histories, cap at 20 sprints (~5 months)
+            return min(20, total_sprints // 3)
+
+    def execute(
+        self, lookback_sprints: int = -1, velocity_field: str = "story_points"
+    ) -> VelocityMetrics:
         # Get all sprints first
         all_sprints = self.sprint_repo.get_all()
 
@@ -51,6 +80,13 @@ class CalculateVelocityUseCase:
                 if sprint_velocity > 0:
                     velocities.append(sprint_velocity)
 
+        # Auto-detect optimal lookback if not specified
+        if lookback_sprints == -1:
+            lookback_sprints = self.calculate_optimal_lookback(len(velocities))
+            logger.info(
+                f"Auto-detected optimal lookback: {lookback_sprints} sprints from {len(velocities)} available"
+            )
+
         # Take only the last N sprints if we have more
         if len(velocities) > lookback_sprints:
             velocities = velocities[-lookback_sprints:]
@@ -64,7 +100,9 @@ class CalculateVelocityUseCase:
             x_mean = sum(x) / len(x)
             y_mean = sum(velocities) / len(velocities)
 
-            numerator = sum((x[i] - x_mean) * (velocities[i] - y_mean) for i in range(len(x)))
+            numerator = sum(
+                (x[i] - x_mean) * (velocities[i] - y_mean) for i in range(len(x))
+            )
             denominator = sum((x[i] - x_mean) ** 2 for i in range(len(x)))
 
             trend = numerator / denominator if denominator != 0 else 0.0
@@ -99,7 +137,9 @@ class RunMonteCarloSimulationUseCase:
 
         # Create Monte Carlo model for backward compatibility
         self.forecasting_model = model_factory.create(ModelType.MONTE_CARLO)
-        self.forecast_use_case = GenerateForecastUseCase(self.forecasting_model, issue_repo)
+        self.forecast_use_case = GenerateForecastUseCase(
+            self.forecasting_model, issue_repo
+        )
 
     def execute(
         self,
@@ -117,7 +157,9 @@ class RunMonteCarloSimulationUseCase:
         )
 
         # Run forecast using new model
-        forecast_result = self.forecast_use_case.execute(remaining_work, velocity_metrics, model_config)
+        forecast_result = self.forecast_use_case.execute(
+            remaining_work, velocity_metrics, model_config
+        )
 
         # Convert new ForecastResult to legacy SimulationResult
         percentiles = {}
@@ -138,7 +180,9 @@ class RunMonteCarloSimulationUseCase:
             min_sprints = min(forecast_result.probability_distribution.keys())
             max_sprints = max(forecast_result.probability_distribution.keys())
             bins = 50
-            bin_width = (max_sprints - min_sprints) / bins if max_sprints > min_sprints else 1
+            bin_width = (
+                (max_sprints - min_sprints) / bins if max_sprints > min_sprints else 1
+            )
             hist = [0.0] * bins
 
             # Populate histogram bins
@@ -190,7 +234,9 @@ class AnalyzeHistoricalDataUseCase:
         for issue in completed_issues:
             if issue.resolved:
                 week_start = issue.resolved - timedelta(days=issue.resolved.weekday())
-                week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+                week_start = week_start.replace(
+                    hour=0, minute=0, second=0, microsecond=0
+                )
 
                 if week_start not in weekly_data:
                     weekly_data[week_start] = []
@@ -203,8 +249,12 @@ class AnalyzeHistoricalDataUseCase:
         dates = []
 
         for week, issues in sorted(weekly_data.items()):
-            week_velocity = sum(issue.story_points for issue in issues if issue.story_points is not None)
-            week_cycle_times = [issue.cycle_time for issue in issues if issue.cycle_time is not None]
+            week_velocity = sum(
+                issue.story_points for issue in issues if issue.story_points is not None
+            )
+            week_cycle_times = [
+                issue.cycle_time for issue in issues if issue.cycle_time is not None
+            ]
 
             if week_velocity > 0:
                 velocities.append(week_velocity)
@@ -227,7 +277,9 @@ class CalculateRemainingWorkUseCase:
     def __init__(self, issue_repo: IssueRepository):
         self.issue_repo = issue_repo
 
-    def execute(self, todo_statuses: List[str], velocity_field: str = "story_points") -> float:
+    def execute(
+        self, todo_statuses: List[str], velocity_field: str = "story_points"
+    ) -> float:
         remaining_work = 0.0
 
         for status in todo_statuses:

@@ -1,0 +1,1 @@
+import{j as e}from"./jsx-runtime-D_zvdyIk.js";const s={parameters:{actions:{argTypesRegex:"^on[A-Z].*"},controls:{matchers:{color:/(background|color)$/i,date:/Date$/i}}},decorators:[r=>e.jsx("div",{className:"min-h-screen bg-background p-8",children:e.jsx(r,{})})]};export{s as default};

@@ -52,7 +52,9 @@ class GenerateForecastUseCase:
             ForecastResult with predictions
         """
         # Validate inputs
-        errors = self.forecasting_model.validate_inputs(remaining_work, velocity_metrics)
+        errors = self.forecasting_model.validate_inputs(
+            remaining_work, velocity_metrics
+        )
         if errors:
             raise ValueError(f"Invalid inputs for forecasting: {'; '.join(errors)}")
 
@@ -70,10 +72,15 @@ class GenerateForecastUseCase:
         )
 
         # Generate forecast
-        result = self.forecasting_model.forecast(remaining_work, velocity_metrics, config)
+        result = self.forecasting_model.forecast(
+            remaining_work, velocity_metrics, config
+        )
 
         # Log summary results
-        logger.info(f"Forecast complete: expected completion in " f"{result.expected_sprints:.1f} sprints")
+        logger.info(
+            f"Forecast complete: expected completion in "
+            f"{result.expected_sprints:.1f} sprints"
+        )
 
         return result
 

@@ -33,7 +33,9 @@ class DefaultModelFactory(ForecastingModelFactory):
             ModelType.MONTE_CARLO: MonteCarloConfiguration(),
         }
 
-    def create(self, model_type: ModelType, config: Optional[ModelConfiguration] = None) -> ForecastingModel:
+    def create(
+        self, model_type: ModelType, config: Optional[ModelConfiguration] = None
+    ) -> ForecastingModel:
         """Create a forecasting model instance"""
         if model_type not in self._models:
             raise ValueError(f"Unknown model type: {model_type}")

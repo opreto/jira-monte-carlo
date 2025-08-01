@@ -46,7 +46,11 @@ class VelocityAdjustment:
             if self.sprint_end == self.sprint_start + 1:
                 sprint_range = f"next {self.sprint_end - self.sprint_start + 1} sprints"
             else:
-                end_desc = f"sprint +{self.sprint_end - 1}" if self.sprint_end > 2 else "sprint after next"
+                end_desc = (
+                    f"sprint +{self.sprint_end - 1}"
+                    if self.sprint_end > 2
+                    else "sprint after next"
+                )
                 sprint_range = f"{sprint_range} through {end_desc}"
 
         percentage = int(self.factor * 100)
@@ -62,8 +66,8 @@ class TeamChange:
     """Represents a team size change"""
 
     sprint: int
-    change: int  # +2 for additions, -2 for departures
-    ramp_up_sprints: int = 3
+    change: float  # +2 for additions, -2 for departures, +0.5 for part-time
+    ramp_up_sprints: float = 3.0
     productivity_curve: ProductivityCurve = ProductivityCurve.LINEAR
 
     def get_productivity_factor(self, sprints_since_change: int) -> float:
@@ -99,13 +103,29 @@ class TeamChange:
             sprint_desc = f"sprint +{self.sprint - 1}"
             after_desc = f"after sprint +{self.sprint - 1}"
 
+        # Format the change amount
+        if self.change == int(self.change):
+            change_str = str(int(abs(self.change)))
+        else:
+            change_str = f"{abs(self.change):.1f}"
+
+        # Handle part-time descriptions
+        if abs(self.change) == 0.5:
+            person_desc = "part-time developer"
+        elif abs(self.change) == 1:
+            person_desc = "developer"
+        elif self.change == int(self.change):
+            person_desc = "developers"
+        else:
+            person_desc = "FTE"  # Full-Time Equivalent
+
         if self.change > 0:
             return (
-                f"Adding {self.change} developer{'s' if self.change > 1 else ''} "
+                f"Adding {change_str} {person_desc} "
                 f"starting {sprint_desc} (ramp-up: {self.ramp_up_sprints} sprints)"
             )
         else:
-            return f"Removing {abs(self.change)} developer{'s' if abs(self.change) > 1 else ''} {after_desc}"
+            return f"Removing {change_str} {person_desc} {after_desc}"
 
 
 @dataclass
@@ -116,7 +136,9 @@ class VelocityScenario:
     adjustments: List[VelocityAdjustment]
     team_changes: List[TeamChange]
 
-    def get_adjusted_velocity(self, sprint_number: int, base_velocity: float, team_size: int) -> Tuple[float, str]:
+    def get_adjusted_velocity(
+        self, sprint_number: int, base_velocity: float, team_size: int
+    ) -> Tuple[float, str]:
         """
         Calculate adjusted velocity for a given sprint
         Returns: (adjusted_velocity, reason_description)
@@ -146,12 +168,16 @@ class VelocityScenario:
                     adjusted_velocity *= team_factor
 
                     if sprints_since < change.ramp_up_sprints:
-                        reasons.append(f"New team member(s) at {int(productivity * 100)}% productivity")
+                        reasons.append(
+                            f"New team member(s) at {int(productivity * 100)}% productivity"
+                        )
                     else:
                         reasons.append(f"Team scaled up by {change.change}")
                 else:
                     # Removing team members
-                    team_factor = (current_team_size + change.change) / current_team_size
+                    team_factor = (
+                        current_team_size + change.change
+                    ) / current_team_size
                     adjusted_velocity *= team_factor
                     reasons.append(f"Team reduced by {abs(change.change)}")
 
@@ -160,15 +186,47 @@ class VelocityScenario:
         reason_desc = "; ".join(reasons) if reasons else "No adjustments"
         return adjusted_velocity, reason_desc
 
-    def get_summary(self) -> str:
+    def get_summary(self, team_size: int = 2) -> str:
         """Get a summary of all adjustments in this scenario"""
         summaries = []
 
+        # Calculate overall velocity impact
+        overall_impact = 1.0
+
+        # Add velocity adjustments
         for adj in self.adjustments:
             summaries.append(adj.get_description())
+            # For permanent changes, track the impact
+            if adj.sprint_end is None:
+                overall_impact *= adj.factor
 
+        # Add team changes and calculate long-term impact
         for change in self.team_changes:
-            summaries.append(change.get_description())
+            if change.change > 0:
+                # Calculate eventual impact after ramp-up
+                eventual_team_size = team_size + change.change
+                eventual_impact = eventual_team_size / team_size
+                impact_pct = (eventual_impact - 1) * 100
+
+                if change.change == 0.5:
+                    summaries.append(
+                        f"Adding part-time developer (+{impact_pct:.0f}% capacity after ramp-up)"
+                    )
+                elif change.change == int(change.change):
+                    summaries.append(
+                        f"Adding {int(change.change)} developer{'s' if change.change > 1 else ''} "
+                        f"(+{impact_pct:.0f}% capacity after ramp-up)"
+                    )
+                else:
+                    summaries.append(
+                        f"Adding {change.change:.1f} FTE (+{impact_pct:.0f}% capacity after ramp-up)"
+                    )
+            else:
+                impact = (team_size + change.change) / team_size
+                impact_pct = (1 - impact) * 100
+                summaries.append(
+                    f"Reducing team by {abs(change.change):.1f} FTE (-{impact_pct:.0f}% capacity)"
+                )
 
         if not summaries:
             return "No adjustments applied"
@@ -197,13 +255,21 @@ class ScenarioComparison:
 
         impact_parts = []
         if p50_diff > 0:
-            impact_parts.append(f"{p50_diff} sprint{'s' if p50_diff != 1 else ''} delay at 50% confidence")
+            impact_parts.append(
+                f"{p50_diff} sprint{'s' if p50_diff != 1 else ''} delay at 50% confidence"
+            )
         elif p50_diff < 0:
-            impact_parts.append(f"{abs(p50_diff)} sprint{'s' if abs(p50_diff) != 1 else ''} earlier at 50% confidence")
+            impact_parts.append(
+                f"{abs(p50_diff)} sprint{'s' if abs(p50_diff) != 1 else ''} earlier at 50% confidence"
+            )
 
         if p85_diff > 0:
-            impact_parts.append(f"{p85_diff} sprint{'s' if p85_diff != 1 else ''} delay at 85% confidence")
+            impact_parts.append(
+                f"{p85_diff} sprint{'s' if p85_diff != 1 else ''} delay at 85% confidence"
+            )
         elif p85_diff < 0:
-            impact_parts.append(f"{abs(p85_diff)} sprint{'s' if abs(p85_diff) != 1 else ''} earlier at 85% confidence")
+            impact_parts.append(
+                f"{abs(p85_diff)} sprint{'s' if abs(p85_diff) != 1 else ''} earlier at 85% confidence"
+            )
 
         return " and ".join(impact_parts)

@@ -69,7 +69,9 @@ class ScenarioReportGenerator:
             output_path=adjusted_path,
             project_name=project_name,
             model_info=model_info,
-            scenario_banner=self._create_adjusted_banner(scenario, comparison, baseline_path),
+            scenario_banner=self._create_adjusted_banner(
+                scenario, comparison, baseline_path
+            ),
             **kwargs,
         )
 

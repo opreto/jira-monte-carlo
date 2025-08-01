@@ -1,0 +1,57 @@
+{
+  "projectName": "Test Project",
+  "generatedAt": "2025-08-01T00:00:00Z",
+  "remainingWork": 100,
+  "velocityMetrics": {
+    "average": 20,
+    "median": 18,
+    "stdDev": 5,
+    "min": 10,
+    "max": 30,
+    "trend": 0.05
+  },
+  "simulationResults": {
+    "percentiles": {
+      "50": 5,
+      "70": 6,
+      "85": 7
+    }
+  },
+  "sprints": [],
+  "charts": {},
+  "processHealth": {
+    "score": 69.15194322417419,
+    "wipScore": 0,
+    "sprintHealthScore": 0,
+    "flowEfficiencyScore": 0,
+    "leadTimeScore": 0,
+    "defectRateScore": 0,
+    "blockedItemsScore": 0,
+    "health_score_breakdown": [
+      {
+        "name": "Aging Items",
+        "score": 0.2,
+        "description": "Based on 16 critical items out of 40 total",
+        "insights": ["16 items (40%) are stale or abandoned"],
+        "recommendations": ["Review and prioritize stale items"],
+        "detail_items": []
+      },
+      {
+        "name": "Work In Progress",
+        "score": 1.0,
+        "description": "3 items in progress, 0 WIP limit violations",
+        "insights": ["Team size: 3 active members", "All WIP limits are being respected"],
+        "recommendations": [],
+        "detail_items": null
+      },
+      {
+        "name": "Sprint Predictability",
+        "score": 0.8745582967252254,
+        "description": "Based on 10 recent sprints",
+        "insights": ["Average completion rate: 79%", "Completion rate improving by 8.2% per sprint"],
+        "recommendations": [],
+        "detail_items": null
+      }
+    ]
+  }
+}

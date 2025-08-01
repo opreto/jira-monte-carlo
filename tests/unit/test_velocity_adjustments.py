@@ -17,7 +17,9 @@ class TestVelocityAdjustment:
 
     def test_single_sprint_adjustment(self):
         """Test adjustment for a single sprint"""
-        adj = VelocityAdjustment(sprint_start=3, sprint_end=3, factor=0.5, reason="vacation")
+        adj = VelocityAdjustment(
+            sprint_start=3, sprint_end=3, factor=0.5, reason="vacation"
+        )
 
         assert not adj.applies_to_sprint(2)
         assert adj.applies_to_sprint(3)
@@ -26,24 +28,34 @@ class TestVelocityAdjustment:
 
     def test_sprint_range_adjustment(self):
         """Test adjustment for a sprint range"""
-        adj = VelocityAdjustment(sprint_start=5, sprint_end=7, factor=0.7, reason="summer holidays")
+        adj = VelocityAdjustment(
+            sprint_start=5, sprint_end=7, factor=0.7, reason="summer holidays"
+        )
 
         assert not adj.applies_to_sprint(4)
         assert adj.applies_to_sprint(5)
         assert adj.applies_to_sprint(6)
         assert adj.applies_to_sprint(7)
         assert not adj.applies_to_sprint(8)
-        assert adj.get_description() == "70% capacity for sprint +4 through sprint +6 (summer holidays)"
+        assert (
+            adj.get_description()
+            == "70% capacity for sprint +4 through sprint +6 (summer holidays)"
+        )
 
     def test_forever_adjustment(self):
         """Test adjustment that applies forever"""
-        adj = VelocityAdjustment(sprint_start=10, sprint_end=None, factor=1.2, reason="process improvements")  # Forever
+        adj = VelocityAdjustment(
+            sprint_start=10, sprint_end=None, factor=1.2, reason="process improvements"
+        )  # Forever
 
         assert not adj.applies_to_sprint(9)
         assert adj.applies_to_sprint(10)
         assert adj.applies_to_sprint(100)
         assert adj.applies_to_sprint(1000)
-        assert adj.get_description() == "120% capacity for from sprint +9 onwards (process improvements)"
+        assert (
+            adj.get_description()
+            == "120% capacity for from sprint +9 onwards (process improvements)"
+        )
 
 
 class TestTeamChange:
@@ -75,7 +87,9 @@ class TestTeamChange:
 
     def test_team_reduction(self):
         """Test removing team members"""
-        change = TeamChange(sprint=8, change=-2, ramp_up_sprints=0)  # No ramp-up for departures
+        change = TeamChange(
+            sprint=8, change=-2, ramp_up_sprints=0
+        )  # No ramp-up for departures
 
         # Always full productivity impact for departures
         assert change.get_productivity_factor(0) == 1.0
@@ -126,7 +140,9 @@ class TestVelocityScenario:
             VelocityAdjustment(10, None, 1.1, "improvements"),
         ]
 
-        scenario = VelocityScenario(name="Test Scenario", adjustments=adjustments, team_changes=[])
+        scenario = VelocityScenario(
+            name="Test Scenario", adjustments=adjustments, team_changes=[]
+        )
 
         base_velocity = 20.0
         team_size = 5
@@ -152,7 +168,9 @@ class TestVelocityScenario:
             TeamChange(4, 1, 2),  # Add 1 person at sprint 4
         ]
 
-        scenario = VelocityScenario(name="Scaling", adjustments=[], team_changes=team_changes)
+        scenario = VelocityScenario(
+            name="Scaling", adjustments=[], team_changes=team_changes
+        )
 
         base_velocity = 20.0
         team_size = 4
@@ -183,11 +201,24 @@ class TestVelocityScenario:
             ],
         )
 
-        summary = scenario.get_summary()
+        summary = scenario.get_summary(team_size=4)
         assert "80% capacity for next 2 sprints (holidays)" in summary
         assert "110% capacity for from sprint +9 onwards (improvements)" in summary
-        assert "Adding 2 developers starting sprint +4" in summary
-        assert "Removing 1 developer after sprint +14" in summary
+        assert "Adding 2 developers (+50% capacity after ramp-up)" in summary
+        assert "Reducing team by 1.0 FTE (-25% capacity)" in summary
+
+    def test_scenario_summary_with_fractional_team(self):
+        """Test scenario summary with part-time team member"""
+        scenario = VelocityScenario(
+            name="Part-time addition",
+            adjustments=[],
+            team_changes=[
+                TeamChange(1, 0.5, 3),  # Add 0.5 FTE
+            ],
+        )
+
+        summary = scenario.get_summary(team_size=2)
+        assert "Adding part-time developer (+25% capacity after ramp-up)" in summary
 
 
 class TestVelocityAdjustmentParser:
@@ -252,15 +283,39 @@ class TestVelocityAdjustmentParser:
         assert change.ramp_up_sprints == 4
         assert change.productivity_curve == ProductivityCurve.EXPONENTIAL
 
+    def test_parse_fractional_team_change(self):
+        """Test parsing fractional team member (part-time)"""
+        parser = VelocityAdjustmentParser()
+        change = parser.parse_team_change("sprint:1,change:+0.5,ramp:3")
+
+        assert change.sprint == 1
+        assert change.change == 0.5
+        assert change.ramp_up_sprints == 3
+        assert change.productivity_curve == ProductivityCurve.LINEAR
+
+    def test_parse_team_change_with_float_ramp(self):
+        """Test parsing team change with float ramp value"""
+        parser = VelocityAdjustmentParser()
+        change = parser.parse_team_change("sprint:3,change:+0.5,ramp:2.5,curve:linear")
+
+        assert change.sprint == 3
+        assert change.change == 0.5
+        assert change.ramp_up_sprints == 2.5
+        assert change.productivity_curve == ProductivityCurve.LINEAR
+
     def test_parse_invalid_formats(self):
         """Test parsing invalid formats raises errors"""
         parser = VelocityAdjustmentParser()
 
         # Missing required fields
-        with pytest.raises(ValueError, match="Invalid velocity change format.*Expected:"):
+        with pytest.raises(
+            ValueError, match="Invalid velocity change format.*Expected:"
+        ):
             parser.parse_velocity_change("factor:0.5")
 
-        with pytest.raises(ValueError, match="Invalid velocity change format.*Expected:"):
+        with pytest.raises(
+            ValueError, match="Invalid velocity change format.*Expected:"
+        ):
             parser.parse_velocity_change("sprint:3")
 
         with pytest.raises(ValueError, match="Invalid team change format.*Expected:"):

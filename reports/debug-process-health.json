@@ -1,0 +1,180 @@
+{
+  "score": 69.15194322417419,
+  "wipScore": 0,
+  "sprintHealthScore": 0,
+  "flowEfficiencyScore": 0,
+  "leadTimeScore": 0,
+  "defectRateScore": 0,
+  "blockedItemsScore": 0,
+  "health_score_breakdown": [
+    {
+      "name": "Aging Items",
+      "score": 0.19999999999999996,
+      "description": "Based on 16 critical items out of 40 total",
+      "insights": [
+        "16 items (40%) are stale or abandoned"
+      ],
+      "recommendations": [
+        "Review and prioritize stale items",
+        "Consider closing or archiving abandoned items",
+        "Focus on 'To Do' items (avg 77 days old)"
+      ],
+      "detail_items": [
+        {
+          "key": "PARA-62",
+          "summary": "Enforce a consistent UI style",
+          "age_days": 254,
+          "status": "To Do",
+          "assignee": "Unassigned",
+          "type": "abandoned"
+        },
+        {
+          "key": "PARA-68",
+          "summary": "Highlight currently running simulation step in Blockly",
+          "age_days": 246,
+          "status": "To Do",
+          "assignee": "Unassigned",
+          "type": "abandoned"
+        },
+        {
+          "key": "PARA-84",
+          "summary": "User interface for recipe locking",
+          "age_days": 230,
+          "status": "To Do",
+          "assignee": "Unassigned",
+          "type": "abandoned"
+        },
+        {
+          "key": "PARA-83",
+          "summary": "Load Blockly block definitions from config file",
+          "age_days": 230,
+          "status": "To Do",
+          "assignee": "Unassigned",
+          "type": "abandoned"
+        },
+        {
+          "key": "PARA-135",
+          "summary": "Link object references to recipe manager",
+          "age_days": 149,
+          "status": "To Do",
+          "assignee": "Unassigned",
+          "type": "abandoned"
+        },
+        {
+          "key": "PARA-140",
+          "summary": "Create UI for recipe transfer",
+          "age_days": 142,
+          "status": "To Do",
+          "assignee": "Unassigned",
+          "type": "abandoned"
+        },
+        {
+          "key": "PARA-146",
+          "summary": "Highlight curves on selected object",
+          "age_days": 136,
+          "status": "To Do",
+          "assignee": "Unassigned",
+          "type": "stale"
+        },
+        {
+          "key": "PARA-145",
+          "summary": "Create a ParaPro toolbar",
+          "age_days": 136,
+          "status": "To Do",
+          "assignee": "Unassigned",
+          "type": "stale"
+        },
+        {
+          "key": "PARA-141",
+          "summary": "Normal view for surface interactions",
+          "age_days": 136,
+          "status": "To Do",
+          "assignee": "Unassigned",
+          "type": "stale"
+        },
+        {
+          "key": "PARA-147",
+          "summary": "Block colour does not update until clicked",
+          "age_days": 135,
+          "status": "To Do",
+          "assignee": "Unassigned",
+          "type": "stale"
+        },
+        {
+          "key": "PARA-152",
+          "summary": "Create a licensing manager for ParaPro",
+          "age_days": 134,
+          "status": "To Do",
+          "assignee": "Unassigned",
+          "type": "stale"
+        },
+        {
+          "key": "PARA-160",
+          "summary": "Set ParaPro config to production mode",
+          "age_days": 128,
+          "status": "To Do",
+          "assignee": "Unassigned",
+          "type": "stale"
+        },
+        {
+          "key": "PARA-168",
+          "summary": "Spec Industrial PC",
+          "age_days": 122,
+          "status": "To Do",
+          "assignee": "Unassigned",
+          "type": "stale"
+        },
+        {
+          "key": "PARA-170",
+          "summary": "Implement ParaPro post-processor",
+          "age_days": 120,
+          "status": "To Do",
+          "assignee": "Unassigned",
+          "type": "stale"
+        },
+        {
+          "key": "PARA-189",
+          "summary": "Set explicit checks on blockly blocks",
+          "age_days": 87,
+          "status": "To Do",
+          "assignee": "Unassigned",
+          "type": "stale"
+        },
+        {
+          "key": "PARA-200",
+          "summary": "Handshake Program Transfer between ParaPro and Machine",
+          "age_days": 65,
+          "status": "To Do",
+          "assignee": "Unassigned",
+          "type": "stale"
+        }
+      ]
+    },
+    {
+      "name": "Work In Progress",
+      "score": 1.0,
+      "description": "3 items in progress, 0 WIP limit violations",
+      "insights": [
+        "Team size: 3 active members",
+        "All WIP limits are being respected"
+      ],
+      "recommendations": [],
+      "detail_items": null
+    },
+    {
+      "name": "Sprint Predictability",
+      "score": 0.8745582967252254,
+      "description": "Based on 10 recent sprints",
+      "insights": [
+        "Average completion rate: 79%",
+        "Completion rate improving by 8.2% per sprint"
+      ],
+      "recommendations": [],
+      "detail_items": null
+    }
+  ],
+  "aging_analysis": "AgingAnalysis(items_by_category={<AgingCategory.FRESH: 'fresh'>: [AgingItem(key='PARA-312', summary='ParaPro release tracking', status='Refinement', age_days=3, category=<AgingCategory.FRESH: 'fresh'>, assignee=None, last_updated=datetime.datetime(2025, 7, 28, 15, 24, 34, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 28, 15, 18, 34, tzinfo=datetime.timezone.utc), story_points=None), AgingItem(key='PARA-311', summary='Add `-SKIPMAINT` to RoboDK command line args', status='Refinement', age_days=3, category=<AgingCategory.FRESH: 'fresh'>, assignee=None, last_updated=datetime.datetime(2025, 7, 30, 9, 44, 3, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 28, 11, 3, 37, tzinfo=datetime.timezone.utc), story_points=None), AgingItem(key='PARA-310', summary='Write simulation integration tests for material handling', status='To Do', age_days=6, category=<AgingCategory.FRESH: 'fresh'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 14, 8, 50, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 25, 11, 25, 58, tzinfo=datetime.timezone.utc), story_points=5.0), AgingItem(key='PARA-309', summary='Simulation context', status='To Do', age_days=6, category=<AgingCategory.FRESH: 'fresh'>, assignee='Justin Fuerth', last_updated=datetime.datetime(2025, 7, 30, 10, 18, 57, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 25, 10, 43, 24, tzinfo=datetime.timezone.utc), story_points=3.0), AgingItem(key='PARA-308', summary='Collision map object model', status='In Progress', age_days=6, category=<AgingCategory.FRESH: 'fresh'>, assignee='Adan Moran-MacDonald', last_updated=datetime.datetime(2025, 7, 30, 11, 5, 6, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 25, 10, 42, 5, tzinfo=datetime.timezone.utc), story_points=5.0), AgingItem(key='PARA-307', summary='Enable collision checks during pick-and-place actions', status='To Do', age_days=6, category=<AgingCategory.FRESH: 'fresh'>, assignee='Justin Fuerth', last_updated=datetime.datetime(2025, 7, 30, 10, 24, 38, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 25, 10, 27, 32, tzinfo=datetime.timezone.utc), story_points=3.0), AgingItem(key='PARA-306', summary='Capture multiple selections of objects in RoboDK', status='To Do', age_days=6, category=<AgingCategory.FRESH: 'fresh'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 15, 1, 47, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 25, 10, 20, 14, tzinfo=datetime.timezone.utc), story_points=8.0), AgingItem(key='PARA-302', summary='Setting initial pose of components in loop blocks', status='To Do', age_days=8, category=<AgingCategory.FRESH: 'fresh'>, assignee=None, last_updated=datetime.datetime(2025, 7, 28, 11, 26, 28, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 23, 13, 8, 36, tzinfo=datetime.timezone.utc), story_points=5.0)], <AgingCategory.NORMAL: 'normal'>: [AgingItem(key='PARA-294', summary='Make error popups in recipe manager less intrusive', status='To Do', age_days=14, category=<AgingCategory.NORMAL: 'normal'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 11, 38, 20, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 17, 9, 59, 53, tzinfo=datetime.timezone.utc), story_points=2.0), AgingItem(key='PARA-293', summary='Add validation for Blockly input fields', status='To Do', age_days=14, category=<AgingCategory.NORMAL: 'normal'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 11, 39, 56, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 17, 9, 48, 21, tzinfo=datetime.timezone.utc), story_points=8.0), AgingItem(key='PARA-291', summary='Create a block to update fixture poses', status='To Do', age_days=15, category=<AgingCategory.NORMAL: 'normal'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 11, 40, 55, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 16, 11, 22, 41, tzinfo=datetime.timezone.utc), story_points=3.0), AgingItem(key='PARA-289', summary='Allow scene management of Blockly blocks in control flow blocks', status='To Do', age_days=15, category=<AgingCategory.NORMAL: 'normal'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 11, 42, 24, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 16, 9, 26, 7, tzinfo=datetime.timezone.utc), story_points=5.0), AgingItem(key='PARA-285', summary='Allow reordering of assembly components in for-loop', status='To Do', age_days=16, category=<AgingCategory.NORMAL: 'normal'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 11, 44, 2, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 15, 10, 24, 56, tzinfo=datetime.timezone.utc), story_points=3.0), AgingItem(key='PARA-282', summary='Position objects from blocks with variable blocks', status='To Do', age_days=17, category=<AgingCategory.NORMAL: 'normal'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 11, 45, 40, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 14, 11, 38, 9, tzinfo=datetime.timezone.utc), story_points=2.0), AgingItem(key='PARA-280', summary='Spike: Investigate locking down RoboDK station', status='To Do', age_days=17, category=<AgingCategory.NORMAL: 'normal'>, assignee=None, last_updated=datetime.datetime(2025, 7, 28, 11, 43, 32, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 14, 11, 20, 58, tzinfo=datetime.timezone.utc), story_points=None), AgingItem(key='PARA-276', summary='Define the Active Recipe', status='To Do', age_days=20, category=<AgingCategory.NORMAL: 'normal'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 11, 51, 3, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 11, 14, 57, 36, tzinfo=datetime.timezone.utc), story_points=2.0), AgingItem(key='PARA-274', summary='Remote recipe storage management', status='To Do', age_days=20, category=<AgingCategory.NORMAL: 'normal'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 12, 2, 29, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 11, 14, 40, 16, tzinfo=datetime.timezone.utc), story_points=8.0)], <AgingCategory.AGING: 'aging'>: [AgingItem(key='PARA-272', summary='Blockly screen incorporated into ParaPro instead of separate window', status='To Do', age_days=24, category=<AgingCategory.AGING: 'aging'>, assignee='Swapnil Patel', last_updated=datetime.datetime(2025, 7, 30, 10, 19, 27, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 7, 15, 8, 51, tzinfo=datetime.timezone.utc), story_points=8.0), AgingItem(key='PARA-269', summary='ParaPro conditional statement blocks', status='To Do', age_days=28, category=<AgingCategory.AGING: 'aging'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 14, 20, 22, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 3, 16, 27, 45, tzinfo=datetime.timezone.utc), story_points=5.0), AgingItem(key='PARA-261', summary='Simulation should capture collisions', status='To Do', age_days=29, category=<AgingCategory.AGING: 'aging'>, assignee=None, last_updated=datetime.datetime(2025, 7, 28, 11, 10, 1, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 2, 15, 2, 35, tzinfo=datetime.timezone.utc), story_points=5.0), AgingItem(key='PARA-260', summary='Simulation should set collision checking for appropriate elements', status='To Do', age_days=29, category=<AgingCategory.AGING: 'aging'>, assignee='Adan Moran-MacDonald', last_updated=datetime.datetime(2025, 7, 30, 10, 25, 23, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 7, 2, 15, 2, 15, tzinfo=datetime.timezone.utc), story_points=3.0), AgingItem(key='PARA-251', summary='Spike: Reskin Blockly', status='To Do', age_days=34, category=<AgingCategory.AGING: 'aging'>, assignee=None, last_updated=datetime.datetime(2025, 7, 28, 11, 44, 8, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 6, 27, 9, 41, 35, tzinfo=datetime.timezone.utc), story_points=None), AgingItem(key='PARA-245', summary='Filter reference frame selection in recipes', status='To Do', age_days=35, category=<AgingCategory.AGING: 'aging'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 14, 25, 18, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 6, 26, 17, 0, 46, tzinfo=datetime.timezone.utc), story_points=5.0), AgingItem(key='PARA-244', summary='Filter object selection in recipes by the assembly being built', status='To Do', age_days=35, category=<AgingCategory.AGING: 'aging'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 14, 30, 49, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 6, 26, 16, 58, 56, tzinfo=datetime.timezone.utc), story_points=5.0)], <AgingCategory.STALE: 'stale'>: [AgingItem(key='PARA-200', summary='Handshake Program Transfer between ParaPro and Machine', status='To Do', age_days=65, category=<AgingCategory.STALE: 'stale'>, assignee=None, last_updated=datetime.datetime(2025, 7, 17, 14, 9, 14, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 5, 27, 14, 39, 48, tzinfo=datetime.timezone.utc), story_points=3.0), AgingItem(key='PARA-189', summary='Set explicit checks on blockly blocks', status='To Do', age_days=87, category=<AgingCategory.STALE: 'stale'>, assignee=None, last_updated=datetime.datetime(2025, 7, 17, 14, 14, 56, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 5, 5, 13, 27, 6, tzinfo=datetime.timezone.utc), story_points=3.0), AgingItem(key='PARA-170', summary='Implement ParaPro post-processor', status='To Do', age_days=120, category=<AgingCategory.STALE: 'stale'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 14, 46, 16, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 4, 2, 13, 8, 43, tzinfo=datetime.timezone.utc), story_points=5.0), AgingItem(key='PARA-168', summary='Spec Industrial PC', status='To Do', age_days=122, category=<AgingCategory.STALE: 'stale'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 14, 46, 23, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 3, 31, 15, 35, 15, tzinfo=datetime.timezone.utc), story_points=2.0), AgingItem(key='PARA-160', summary='Set ParaPro config to production mode', status='To Do', age_days=128, category=<AgingCategory.STALE: 'stale'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 14, 47, 51, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 3, 25, 9, 27, 58, tzinfo=datetime.timezone.utc), story_points=1.0), AgingItem(key='PARA-152', summary='Create a licensing manager for ParaPro', status='To Do', age_days=134, category=<AgingCategory.STALE: 'stale'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 14, 56, 28, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 3, 19, 16, 23, 29, tzinfo=datetime.timezone.utc), story_points=8.0), AgingItem(key='PARA-147', summary='Block colour does not update until clicked', status='To Do', age_days=135, category=<AgingCategory.STALE: 'stale'>, assignee=None, last_updated=datetime.datetime(2025, 7, 17, 14, 18, 5, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 3, 18, 12, 3, 31, tzinfo=datetime.timezone.utc), story_points=3.0), AgingItem(key='PARA-146', summary='Highlight curves on selected object', status='To Do', age_days=136, category=<AgingCategory.STALE: 'stale'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 15, 1, 47, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 3, 17, 11, 11, 26, tzinfo=datetime.timezone.utc), story_points=5.0), AgingItem(key='PARA-145', summary='Create a ParaPro toolbar', status='To Do', age_days=136, category=<AgingCategory.STALE: 'stale'>, assignee=None, last_updated=datetime.datetime(2025, 7, 28, 11, 29, 47, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 3, 17, 10, 55, 33, tzinfo=datetime.timezone.utc), story_points=5.0), AgingItem(key='PARA-141', summary='Normal view for surface interactions', status='To Do', age_days=136, category=<AgingCategory.STALE: 'stale'>, assignee=None, last_updated=datetime.datetime(2025, 7, 28, 11, 27, 6, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 3, 17, 9, 44, tzinfo=datetime.timezone.utc), story_points=3.0)], <AgingCategory.ABANDONED: 'abandoned'>: [AgingItem(key='PARA-140', summary='Create UI for recipe transfer', status='To Do', age_days=142, category=<AgingCategory.ABANDONED: 'abandoned'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 15, 4, 43, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 3, 11, 7, 58, 27, tzinfo=datetime.timezone.utc), story_points=5.0), AgingItem(key='PARA-135', summary='Link object references to recipe manager', status='To Do', age_days=149, category=<AgingCategory.ABANDONED: 'abandoned'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 15, 6, 37, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 3, 4, 10, 23, 29, tzinfo=datetime.timezone.utc), story_points=3.0), AgingItem(key='PARA-84', summary='User interface for recipe locking', status='To Do', age_days=230, category=<AgingCategory.ABANDONED: 'abandoned'>, assignee=None, last_updated=datetime.datetime(2025, 7, 17, 14, 4, 53, tzinfo=datetime.timezone.utc), created=datetime.datetime(2024, 12, 13, 12, 8, 4, tzinfo=datetime.timezone.utc), story_points=8.0), AgingItem(key='PARA-83', summary='Load Blockly block definitions from config file', status='To Do', age_days=230, category=<AgingCategory.ABANDONED: 'abandoned'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 15, 12, 32, tzinfo=datetime.timezone.utc), created=datetime.datetime(2024, 12, 13, 9, 38, 52, tzinfo=datetime.timezone.utc), story_points=3.0), AgingItem(key='PARA-68', summary='Highlight currently running simulation step in Blockly', status='To Do', age_days=246, category=<AgingCategory.ABANDONED: 'abandoned'>, assignee=None, last_updated=datetime.datetime(2025, 7, 17, 14, 23, 13, tzinfo=datetime.timezone.utc), created=datetime.datetime(2024, 11, 27, 9, 57, 38, tzinfo=datetime.timezone.utc), story_points=8.0), AgingItem(key='PARA-62', summary='Enforce a consistent UI style', status='To Do', age_days=254, category=<AgingCategory.ABANDONED: 'abandoned'>, assignee=None, last_updated=datetime.datetime(2025, 7, 28, 11, 28, 15, tzinfo=datetime.timezone.utc), created=datetime.datetime(2024, 11, 19, 16, 8, 45, tzinfo=datetime.timezone.utc), story_points=5.0)]}, average_age_by_status={'Refinement': 3.0, 'To Do': 76.86486486486487, 'In Progress': 6.0}, oldest_items=[AgingItem(key='PARA-62', summary='Enforce a consistent UI style', status='To Do', age_days=254, category=<AgingCategory.ABANDONED: 'abandoned'>, assignee=None, last_updated=datetime.datetime(2025, 7, 28, 11, 28, 15, tzinfo=datetime.timezone.utc), created=datetime.datetime(2024, 11, 19, 16, 8, 45, tzinfo=datetime.timezone.utc), story_points=5.0), AgingItem(key='PARA-68', summary='Highlight currently running simulation step in Blockly', status='To Do', age_days=246, category=<AgingCategory.ABANDONED: 'abandoned'>, assignee=None, last_updated=datetime.datetime(2025, 7, 17, 14, 23, 13, tzinfo=datetime.timezone.utc), created=datetime.datetime(2024, 11, 27, 9, 57, 38, tzinfo=datetime.timezone.utc), story_points=8.0), AgingItem(key='PARA-84', summary='User interface for recipe locking', status='To Do', age_days=230, category=<AgingCategory.ABANDONED: 'abandoned'>, assignee=None, last_updated=datetime.datetime(2025, 7, 17, 14, 4, 53, tzinfo=datetime.timezone.utc), created=datetime.datetime(2024, 12, 13, 12, 8, 4, tzinfo=datetime.timezone.utc), story_points=8.0), AgingItem(key='PARA-83', summary='Load Blockly block definitions from config file', status='To Do', age_days=230, category=<AgingCategory.ABANDONED: 'abandoned'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 15, 12, 32, tzinfo=datetime.timezone.utc), created=datetime.datetime(2024, 12, 13, 9, 38, 52, tzinfo=datetime.timezone.utc), story_points=3.0), AgingItem(key='PARA-135', summary='Link object references to recipe manager', status='To Do', age_days=149, category=<AgingCategory.ABANDONED: 'abandoned'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 15, 6, 37, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 3, 4, 10, 23, 29, tzinfo=datetime.timezone.utc), story_points=3.0), AgingItem(key='PARA-140', summary='Create UI for recipe transfer', status='To Do', age_days=142, category=<AgingCategory.ABANDONED: 'abandoned'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 15, 4, 43, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 3, 11, 7, 58, 27, tzinfo=datetime.timezone.utc), story_points=5.0), AgingItem(key='PARA-146', summary='Highlight curves on selected object', status='To Do', age_days=136, category=<AgingCategory.STALE: 'stale'>, assignee=None, last_updated=datetime.datetime(2025, 7, 25, 15, 1, 47, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 3, 17, 11, 11, 26, tzinfo=datetime.timezone.utc), story_points=5.0), AgingItem(key='PARA-145', summary='Create a ParaPro toolbar', status='To Do', age_days=136, category=<AgingCategory.STALE: 'stale'>, assignee=None, last_updated=datetime.datetime(2025, 7, 28, 11, 29, 47, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 3, 17, 10, 55, 33, tzinfo=datetime.timezone.utc), story_points=5.0), AgingItem(key='PARA-141', summary='Normal view for surface interactions', status='To Do', age_days=136, category=<AgingCategory.STALE: 'stale'>, assignee=None, last_updated=datetime.datetime(2025, 7, 28, 11, 27, 6, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 3, 17, 9, 44, tzinfo=datetime.timezone.utc), story_points=3.0), AgingItem(key='PARA-147', summary='Block colour does not update until clicked', status='To Do', age_days=135, category=<AgingCategory.STALE: 'stale'>, assignee=None, last_updated=datetime.datetime(2025, 7, 17, 14, 18, 5, tzinfo=datetime.timezone.utc), created=datetime.datetime(2025, 3, 18, 12, 3, 31, tzinfo=datetime.timezone.utc), story_points=3.0)], blocked_items=[], total_items=40, thresholds={'fresh': 8, 'normal': 20, 'aging': 35, 'stale': 136})",
+  "wip_analysis": "WIPAnalysis(items_by_status={<WIPStatus.IN_PROGRESS: 'in_progress'>: [WIPItem(key='PARA-312', summary='ParaPro release tracking', status='Refinement', wip_status=<WIPStatus.IN_PROGRESS: 'in_progress'>, assignee=None, age_days=3, story_points=None), WIPItem(key='PARA-311', summary='Add `-SKIPMAINT` to RoboDK command line args', status='Refinement', wip_status=<WIPStatus.IN_PROGRESS: 'in_progress'>, assignee=None, age_days=3, story_points=None), WIPItem(key='PARA-308', summary='Collision map object model', status='In Progress', wip_status=<WIPStatus.IN_PROGRESS: 'in_progress'>, assignee='Adan Moran-MacDonald', age_days=6, story_points=5.0)], <WIPStatus.TODO: 'todo'>: [WIPItem(key='PARA-310', summary='Write simulation integration tests for material handling', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=6, story_points=5.0), WIPItem(key='PARA-309', summary='Simulation context', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee='Justin Fuerth', age_days=6, story_points=3.0), WIPItem(key='PARA-307', summary='Enable collision checks during pick-and-place actions', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee='Justin Fuerth', age_days=6, story_points=3.0), WIPItem(key='PARA-306', summary='Capture multiple selections of objects in RoboDK', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=6, story_points=8.0), WIPItem(key='PARA-302', summary='Setting initial pose of components in loop blocks', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=8, story_points=5.0), WIPItem(key='PARA-294', summary='Make error popups in recipe manager less intrusive', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=14, story_points=2.0), WIPItem(key='PARA-293', summary='Add validation for Blockly input fields', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=14, story_points=8.0), WIPItem(key='PARA-291', summary='Create a block to update fixture poses', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=15, story_points=3.0), WIPItem(key='PARA-289', summary='Allow scene management of Blockly blocks in control flow blocks', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=15, story_points=5.0), WIPItem(key='PARA-285', summary='Allow reordering of assembly components in for-loop', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=16, story_points=3.0), WIPItem(key='PARA-282', summary='Position objects from blocks with variable blocks', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=17, story_points=2.0), WIPItem(key='PARA-280', summary='Spike: Investigate locking down RoboDK station', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=17, story_points=None), WIPItem(key='PARA-276', summary='Define the Active Recipe', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=20, story_points=2.0), WIPItem(key='PARA-274', summary='Remote recipe storage management', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=20, story_points=8.0), WIPItem(key='PARA-272', summary='Blockly screen incorporated into ParaPro instead of separate window', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee='Swapnil Patel', age_days=24, story_points=8.0), WIPItem(key='PARA-269', summary='ParaPro conditional statement blocks', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=28, story_points=5.0), WIPItem(key='PARA-261', summary='Simulation should capture collisions', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=29, story_points=5.0), WIPItem(key='PARA-260', summary='Simulation should set collision checking for appropriate elements', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee='Adan Moran-MacDonald', age_days=29, story_points=3.0), WIPItem(key='PARA-251', summary='Spike: Reskin Blockly', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=34, story_points=None), WIPItem(key='PARA-245', summary='Filter reference frame selection in recipes', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=35, story_points=5.0), WIPItem(key='PARA-244', summary='Filter object selection in recipes by the assembly being built', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=35, story_points=5.0), WIPItem(key='PARA-200', summary='Handshake Program Transfer between ParaPro and Machine', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=65, story_points=3.0), WIPItem(key='PARA-189', summary='Set explicit checks on blockly blocks', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=87, story_points=3.0), WIPItem(key='PARA-170', summary='Implement ParaPro post-processor', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=120, story_points=5.0), WIPItem(key='PARA-168', summary='Spec Industrial PC', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=122, story_points=2.0), WIPItem(key='PARA-160', summary='Set ParaPro config to production mode', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=128, story_points=1.0), WIPItem(key='PARA-152', summary='Create a licensing manager for ParaPro', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=134, story_points=8.0), WIPItem(key='PARA-147', summary='Block colour does not update until clicked', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=135, story_points=3.0), WIPItem(key='PARA-146', summary='Highlight curves on selected object', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=136, story_points=5.0), WIPItem(key='PARA-145', summary='Create a ParaPro toolbar', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=136, story_points=5.0), WIPItem(key='PARA-141', summary='Normal view for surface interactions', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=136, story_points=3.0), WIPItem(key='PARA-140', summary='Create UI for recipe transfer', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=142, story_points=5.0), WIPItem(key='PARA-135', summary='Link object references to recipe manager', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=149, story_points=3.0), WIPItem(key='PARA-84', summary='User interface for recipe locking', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=230, story_points=8.0), WIPItem(key='PARA-83', summary='Load Blockly block definitions from config file', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=230, story_points=3.0), WIPItem(key='PARA-68', summary='Highlight currently running simulation step in Blockly', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=246, story_points=8.0), WIPItem(key='PARA-62', summary='Enforce a consistent UI style', status='To Do', wip_status=<WIPStatus.TODO: 'todo'>, assignee=None, age_days=254, story_points=5.0)]}, wip_by_assignee={'Justin Fuerth': 2, 'Adan Moran-MacDonald': 2, 'Swapnil Patel': 1}, total_wip=3, wip_limits={})",
+  "sprint_health": "SprintHealthAnalysis(sprint_metrics=[SprintHealth(sprint_name='Sprint 11', start_date=datetime.datetime(2025, 3, 5, 15, 27, 7, tzinfo=datetime.timezone.utc), end_date=datetime.datetime(2025, 3, 19, 5, 0, tzinfo=datetime.timezone.utc), committed_points=22.486611888442745, completed_points=16.0, added_points=2.7543089030657293, removed_points=0.8768574423418641, completion_rate=0.7115344934744654), SprintHealth(sprint_name='Sprint 12', start_date=datetime.datetime(2025, 3, 19, 14, 23, 45, tzinfo=datetime.timezone.utc), end_date=datetime.datetime(2025, 4, 2, 4, 0, tzinfo=datetime.timezone.utc), committed_points=85.79636070614599, completed_points=74.0, added_points=15.01436312357555, removed_points=5.147781642368759, completion_rate=0.8625074465973128), SprintHealth(sprint_name='Sprint 13', start_date=datetime.datetime(2025, 4, 2, 14, 41, 40, tzinfo=datetime.timezone.utc), end_date=datetime.datetime(2025, 4, 16, 4, 0, tzinfo=datetime.timezone.utc), committed_points=25.722683017282264, completed_points=18.0, added_points=3.2339247233358086, removed_points=1.0363430591615004, completion_rate=0.6997714813772096), SprintHealth(sprint_name='Sprint 14', start_date=datetime.datetime(2025, 4, 16, 14, 22, 4, tzinfo=datetime.timezone.utc), end_date=datetime.datetime(2025, 4, 30, 4, 0, tzinfo=datetime.timezone.utc), committed_points=26.926897418736235, completed_points=19.0, added_points=3.4177475464727682, removed_points=1.0978300444017446, completion_rate=0.7056141561552296), SprintHealth(sprint_name='Sprint 15', start_date=datetime.datetime(2025, 4, 30, 14, 21, 33, tzinfo=datetime.timezone.utc), end_date=datetime.datetime(2025, 5, 22, 4, 0, tzinfo=datetime.timezone.utc), committed_points=51.78616555234644, completed_points=42.0, added_points=7.860423497849677, removed_points=2.6263077436164064, completion_rate=0.8110274153730421), SprintHealth(sprint_name='Sprint 16', start_date=datetime.datetime(2025, 5, 22, 14, 21, 58, tzinfo=datetime.timezone.utc), end_date=datetime.datetime(2025, 6, 4, 14, 21, tzinfo=datetime.timezone.utc), committed_points=30.423139737889404, completed_points=23.0, added_points=3.9678814053000857, removed_points=1.28292116474114, completion_rate=0.7560034959624985), SprintHealth(sprint_name='Sprint 17', start_date=datetime.datetime(2025, 6, 4, 14, 20, 13, tzinfo=datetime.timezone.utc), end_date=datetime.datetime(2025, 6, 18, 14, 20, 43, tzinfo=datetime.timezone.utc), committed_points=41.141787560225524, completed_points=32.0, added_points=5.80682543967328, removed_points=1.911312300267057, completion_rate=0.7777979980368308), SprintHealth(sprint_name='Sprint 18', start_date=datetime.datetime(2025, 6, 20, 17, 48, 43, tzinfo=datetime.timezone.utc), end_date=datetime.datetime(2025, 7, 2, 4, 0, tzinfo=datetime.timezone.utc), committed_points=47.15424029140642, completed_points=41.0, added_points=6.938946406600338, removed_points=2.304036159726071, completion_rate=0.8694870227285161), SprintHealth(sprint_name='Sprint 19', start_date=datetime.datetime(2025, 7, 4, 14, 52, 40, tzinfo=datetime.timezone.utc), end_date=datetime.datetime(2025, 7, 17, 1, 4, tzinfo=datetime.timezone.utc), committed_points=40.748498218797145, completed_points=35.0, added_points=5.7352899289670285, removed_points=1.8866309893988402, completion_rate=0.858927360023654), SprintHealth(sprint_name='Sprint 20', start_date=datetime.datetime(2025, 7, 16, 14, 28, 8, tzinfo=datetime.timezone.utc), end_date=datetime.datetime(2025, 7, 30, 4, 0, tzinfo=datetime.timezone.utc), committed_points=40.05127754802514, completed_points=32.0, added_points=5.609232588031458, removed_points=1.843180259732331, completion_rate=0.7989757620497643)], average_completion_rate=0.7851646631778523, completion_rate_trend=0.0818553120325608, average_scope_change=9.408647807398907, predictability_score=0.8745582967252254)",
+  "blocked_items": null
+}

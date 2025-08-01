@@ -15,7 +15,9 @@ logger = logging.getLogger(__name__)
 class SmartCSVParser:
     """Enhanced CSV parser that handles column aggregation based on analysis results"""
 
-    def __init__(self, field_mapping: FieldMapping, column_groups: Dict[str, ColumnGroup]):
+    def __init__(
+        self, field_mapping: FieldMapping, column_groups: Dict[str, ColumnGroup]
+    ):
         self.field_mapping = field_mapping
         self.column_groups = column_groups
         self._column_aggregators = self._build_aggregators()
@@ -42,13 +44,21 @@ class SmartCSVParser:
                 column_names = [col.name for col in group.columns]
 
                 if group.aggregation_strategy == AggregationStrategy.LAST:
-                    aggregators[group_name] = lambda df, cols=column_names: self._aggregate_last(df, cols)
+                    aggregators[group_name] = (
+                        lambda df, cols=column_names: self._aggregate_last(df, cols)
+                    )
                 elif group.aggregation_strategy == AggregationStrategy.FIRST:
-                    aggregators[group_name] = lambda df, cols=column_names: self._aggregate_first(df, cols)
+                    aggregators[group_name] = (
+                        lambda df, cols=column_names: self._aggregate_first(df, cols)
+                    )
                 elif group.aggregation_strategy == AggregationStrategy.SUM:
-                    aggregators[group_name] = lambda df, cols=column_names: self._aggregate_sum(df, cols)
+                    aggregators[group_name] = (
+                        lambda df, cols=column_names: self._aggregate_sum(df, cols)
+                    )
                 elif group.aggregation_strategy == AggregationStrategy.CONCATENATE:
-                    aggregators[group_name] = lambda df, cols=column_names: self._aggregate_concat(df, cols)
+                    aggregators[group_name] = (
+                        lambda df, cols=column_names: self._aggregate_concat(df, cols)
+                    )
 
         return aggregators
 
@@ -60,7 +70,9 @@ class SmartCSVParser:
             try:
                 # Create aggregated column
                 aggregated_col = aggregator(df)
-                result_df = result_df.with_columns(aggregated_col.alias(f"_agg_{group_name}"))
+                result_df = result_df.with_columns(
+                    aggregated_col.alias(f"_agg_{group_name}")
+                )
                 logger.debug(f"Created aggregated column: _agg_{group_name}")
             except Exception as e:
                 logger.warning(f"Failed to aggregate {group_name}: {str(e)}")
@@ -74,7 +86,11 @@ class SmartCSVParser:
 
         for col_name in column_names:
             if col_name in df.columns:
-                result = pl.when(df[col_name].is_not_null()).then(df[col_name]).otherwise(result)
+                result = (
+                    pl.when(df[col_name].is_not_null())
+                    .then(df[col_name])
+                    .otherwise(result)
+                )
 
         return result
 
@@ -84,7 +100,11 @@ class SmartCSVParser:
 
         for col_name in reversed(column_names):  # Reverse to get first
             if col_name in df.columns:
-                result = pl.when(df[col_name].is_not_null()).then(df[col_name]).otherwise(result)
+                result = (
+                    pl.when(df[col_name].is_not_null())
+                    .then(df[col_name])
+                    .otherwise(result)
+                )
 
         return result
 
@@ -139,23 +159,33 @@ class EnhancedSprintExtractor:
 
         # Filter completed issues
         if "Resolved" in df.columns:
-            completed_df = df.filter((pl.col(status_column).is_in(done_statuses)) | (pl.col("Resolved").is_not_null()))
+            completed_df = df.filter(
+                (pl.col(status_column).is_in(done_statuses))
+                | (pl.col("Resolved").is_not_null())
+            )
         else:
             completed_df = df.filter(pl.col(status_column).is_in(done_statuses))
 
         # Group by sprint and calculate velocities
         sprint_velocities = {}
 
-        if sprint_col in completed_df.columns and story_points_column in completed_df.columns:
+        if (
+            sprint_col in completed_df.columns
+            and story_points_column in completed_df.columns
+        ):
             # Filter to only issues with sprints and story points
             valid_df = completed_df.filter(
-                (pl.col(sprint_col).is_not_null()) & (pl.col(story_points_column).is_not_null())
+                (pl.col(sprint_col).is_not_null())
+                & (pl.col(story_points_column).is_not_null())
             )
 
             if valid_df.height > 0:
                 grouped = valid_df.group_by(sprint_col).agg(
                     [
-                        pl.col(story_points_column).cast(pl.Float64, strict=False).sum().alias("total_points"),
+                        pl.col(story_points_column)
+                        .cast(pl.Float64, strict=False)
+                        .sum()
+                        .alias("total_points"),
                         pl.count().alias("issue_count"),
                     ]
                 )
@@ -169,12 +199,17 @@ class EnhancedSprintExtractor:
                         }
 
                 logger.info(
-                    f"Extracted velocities for {len(sprint_velocities)} sprints " f"from {valid_df.height} valid issues"
+                    f"Extracted velocities for {len(sprint_velocities)} sprints "
+                    f"from {valid_df.height} valid issues"
                 )
             else:
-                logger.warning("No valid issues found with both sprint and story points")
+                logger.warning(
+                    "No valid issues found with both sprint and story points"
+                )
         else:
-            logger.warning(f"Sprint column '{sprint_col}' or story points column '{story_points_column}' not found")
+            logger.warning(
+                f"Sprint column '{sprint_col}' or story points column '{story_points_column}' not found"
+            )
 
         return sprint_velocities
 
@@ -227,7 +262,9 @@ class VelocityExtractor:
             # Check for date clustering (sprints too close together)
             if sprint_dates_map:
                 # Sort sprints by date
-                sorted_sprint_data = sorted(sprint_dates_map.items(), key=lambda x: x[1][0])
+                sorted_sprint_data = sorted(
+                    sprint_dates_map.items(), key=lambda x: x[1][0]
+                )
 
                 # Check for sprints that are too close together (less than 7 days)
                 clustered_count = 0
@@ -239,7 +276,11 @@ class VelocityExtractor:
                         clustered_count += 1
 
                 # If more than 30% of sprints are clustered, use synthetic dates
-                clustering_ratio = clustered_count / len(sorted_sprint_data) if len(sorted_sprint_data) > 1 else 0
+                clustering_ratio = (
+                    clustered_count / len(sorted_sprint_data)
+                    if len(sorted_sprint_data) > 1
+                    else 0
+                )
 
                 if clustering_ratio > 0.3:
                     logger.info(
@@ -261,7 +302,9 @@ class VelocityExtractor:
         else:
             use_synthetic = True
             if not has_date_column:
-                logger.warning(f"No date column '{resolved_date_column}' found. Using synthetic dates.")
+                logger.warning(
+                    f"No date column '{resolved_date_column}' found. Using synthetic dates."
+                )
 
         # Generate synthetic dates if needed
         if use_synthetic or not velocity_data:
@@ -279,13 +322,17 @@ class VelocityExtractor:
                         parts.append(part)
                 return parts
 
-            sorted_sprints = sorted(sprint_velocities.items(), key=lambda x: natural_sort_key(x[0]))
+            sorted_sprints = sorted(
+                sprint_velocities.items(), key=lambda x: natural_sort_key(x[0])
+            )
 
             # Detect sprint duration
             sprint_duration = detect_sprint_duration(sorted_sprints)
 
             # Generate evenly spaced dates
-            base_date = datetime.now() - timedelta(days=len(sorted_sprints) * sprint_duration)
+            base_date = datetime.now() - timedelta(
+                days=len(sorted_sprints) * sprint_duration
+            )
 
             for i, (sprint_name, data) in enumerate(sorted_sprints):
                 sprint_date = base_date + timedelta(days=i * sprint_duration)
@@ -324,7 +371,9 @@ def parse_flexible_date(date_str: Any) -> Optional[datetime]:
 
     for fmt in date_formats:
         try:
-            return datetime.strptime(date_str.split(".")[0], fmt)  # Remove milliseconds if present
+            return datetime.strptime(
+                date_str.split(".")[0], fmt
+            )  # Remove milliseconds if present
         except ValueError:
             continue
 
@@ -351,16 +400,28 @@ def detect_sprint_duration(sprint_data: List[Tuple[str, Dict]]) -> int:
 
     for sprint_name, _ in sprint_data:
         # Check for duration indicators in sprint names
-        if any(re.search(pattern, sprint_name, re.IGNORECASE) for pattern in one_week_patterns):
+        if any(
+            re.search(pattern, sprint_name, re.IGNORECASE)
+            for pattern in one_week_patterns
+        ):
             logger.info("Detected 1-week sprints from sprint names")
             return 7
-        elif any(re.search(pattern, sprint_name, re.IGNORECASE) for pattern in two_week_patterns):
+        elif any(
+            re.search(pattern, sprint_name, re.IGNORECASE)
+            for pattern in two_week_patterns
+        ):
             logger.info("Detected 2-week sprints from sprint names")
             return 14
-        elif any(re.search(pattern, sprint_name, re.IGNORECASE) for pattern in three_week_patterns):
+        elif any(
+            re.search(pattern, sprint_name, re.IGNORECASE)
+            for pattern in three_week_patterns
+        ):
             logger.info("Detected 3-week sprints from sprint names")
             return 21
-        elif any(re.search(pattern, sprint_name, re.IGNORECASE) for pattern in four_week_patterns):
+        elif any(
+            re.search(pattern, sprint_name, re.IGNORECASE)
+            for pattern in four_week_patterns
+        ):
             logger.info("Detected 4-week sprints from sprint names")
             return 28
 

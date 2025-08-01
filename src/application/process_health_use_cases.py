@@ -38,7 +38,9 @@ class AnalyzeAgingWorkItemsUseCase:
         all_issues = self.issue_repository.get_all()
 
         # Filter to only in-progress items
-        in_progress_issues = [issue for issue in all_issues if issue.status not in done_statuses]
+        in_progress_issues = [
+            issue for issue in all_issues if issue.status not in done_statuses
+        ]
 
         if not in_progress_issues:
             logger.warning("No in-progress issues found for aging analysis")
@@ -80,10 +82,14 @@ class AnalyzeAgingWorkItemsUseCase:
         for item in all_aging_items:
             age_by_status[item.status].append(item.age_days)
 
-        average_age_by_status = {status: sum(ages) / len(ages) for status, ages in age_by_status.items()}
+        average_age_by_status = {
+            status: sum(ages) / len(ages) for status, ages in age_by_status.items()
+        }
 
         # Get oldest items
-        oldest_items = sorted(all_aging_items, key=lambda x: x.age_days, reverse=True)[:10]
+        oldest_items = sorted(all_aging_items, key=lambda x: x.age_days, reverse=True)[
+            :10
+        ]
 
         return AgingAnalysis(
             items_by_category=dict(items_by_category),
@@ -212,7 +218,9 @@ class AnalyzeWorkInProgressUseCase:
             if len(wip_by_assignee) > 1:
                 wip_values = list(wip_by_assignee.values())
                 mean_wip = sum(wip_values) / len(wip_values)
-                wip_variance = sum((x - mean_wip) ** 2 for x in wip_values) / len(wip_values)
+                wip_variance = sum((x - mean_wip) ** 2 for x in wip_values) / len(
+                    wip_values
+                )
 
             # Adjust limits based on team characteristics
             if team_size <= 3:  # Small team
@@ -257,12 +265,17 @@ class AnalyzeWorkInProgressUseCase:
             wip_limits=wip_limits_enum,
         )
 
-    def _get_wip_status(self, status: str, status_mapping: Dict[str, List[str]]) -> WIPStatus:
+    def _get_wip_status(
+        self, status: str, status_mapping: Dict[str, List[str]]
+    ) -> WIPStatus:
         """Map issue status to WIP category"""
         status_lower = status.lower()
 
         # Check for blocked status
-        if any(keyword in status_lower for keyword in ["blocked", "impediment", "waiting", "hold"]):
+        if any(
+            keyword in status_lower
+            for keyword in ["blocked", "impediment", "waiting", "hold"]
+        ):
             return WIPStatus.BLOCKED
 
         # Check status mapping
@@ -274,7 +287,9 @@ class AnalyzeWorkInProgressUseCase:
                     return WIPStatus.DONE
                 elif category == "in_progress":
                     # Further categorize in-progress items
-                    if any(keyword in status_lower for keyword in ["review", "qa", "test"]):
+                    if any(
+                        keyword in status_lower for keyword in ["review", "qa", "test"]
+                    ):
                         return WIPStatus.REVIEW
                     else:
                         return WIPStatus.IN_PROGRESS
@@ -286,12 +301,40 @@ class AnalyzeWorkInProgressUseCase:
 class AnalyzeSprintHealthUseCase:
     """Analyze sprint health metrics and predictability"""
 
-    def __init__(self, issue_repository: IssueRepository, sprint_repository: SprintRepository):
+    def __init__(
+        self, issue_repository: IssueRepository, sprint_repository: SprintRepository
+    ):
         self.issue_repository = issue_repository
         self.sprint_repository = sprint_repository
 
-    def execute(self, lookback_sprints: int = 12) -> Optional[SprintHealthAnalysis]:
+    def calculate_optimal_lookback(self, total_sprints: int) -> int:
+        """Calculate optimal lookback period for sprint health analysis.
+
+        Uses same heuristic as velocity calculation for consistency.
+        """
+        if total_sprints <= 6:
+            return total_sprints
+        elif total_sprints <= 12:
+            return 6
+        elif total_sprints <= 24:
+            return min(10, total_sprints // 2)
+        elif total_sprints <= 52:
+            return 12
+        else:
+            # For very long histories, cap at 20 sprints (~5 months)
+            return min(20, total_sprints // 3)
+
+    def execute(self, lookback_sprints: int = -1) -> Optional[SprintHealthAnalysis]:
         """Analyze sprint health metrics"""
+        # Auto-detect optimal lookback if not specified
+        if lookback_sprints == -1:
+            all_sprints = self.sprint_repository.get_all()
+            lookback_sprints = self.calculate_optimal_lookback(len(all_sprints))
+            logger.info(
+                f"Sprint health auto-detected optimal lookback: {lookback_sprints} sprints "
+                f"from {len(all_sprints)} available"
+            )
+
         sprints = self.sprint_repository.get_last_n_sprints(lookback_sprints)
 
         if not sprints:
@@ -314,17 +357,27 @@ class AnalyzeSprintHealthUseCase:
                 # Better performing sprints (higher velocity) tend to have better completion rates
 
                 # Get average velocity for context
-                all_velocities = [s.completed_points for s in sprints if s.completed_points > 0]
-                avg_velocity = sum(all_velocities) / len(all_velocities) if all_velocities else 40.0
+                all_velocities = [
+                    s.completed_points for s in sprints if s.completed_points > 0
+                ]
+                avg_velocity = (
+                    sum(all_velocities) / len(all_velocities)
+                    if all_velocities
+                    else 40.0
+                )
 
                 # Calculate a completion rate that varies based on sprint performance
                 # Sprints with velocity close to average: ~80% completion
                 # High velocity sprints: ~85-90% completion
                 # Low velocity sprints: ~60-75% completion
-                velocity_ratio = completed_points / avg_velocity if avg_velocity > 0 else 1.0
+                velocity_ratio = (
+                    completed_points / avg_velocity if avg_velocity > 0 else 1.0
+                )
 
                 if velocity_ratio > 1.2:  # High performing sprint
-                    base_completion = 0.85 + (min(velocity_ratio - 1.2, 0.3) * 0.15)  # 85-90%
+                    base_completion = 0.85 + (
+                        min(velocity_ratio - 1.2, 0.3) * 0.15
+                    )  # 85-90%
                 elif velocity_ratio < 0.8:  # Low performing sprint
                     base_completion = 0.60 + (velocity_ratio * 0.1875)  # 60-75%
                 else:  # Average sprint
@@ -335,21 +388,32 @@ class AnalyzeSprintHealthUseCase:
 
                 random.seed(hash(sprint.name))  # Consistent randomness per sprint
                 variation = (random.random() - 0.5) * 0.1
-                completion_rate_estimate = max(0.5, min(0.95, base_completion + variation))
+                completion_rate_estimate = max(
+                    0.5, min(0.95, base_completion + variation)
+                )
 
                 committed_points = completed_points / completion_rate_estimate
             else:
                 # Sprint completed nothing - assume some work was committed
                 committed_points = 20.0  # Default commitment
 
-            # For scope changes, use variable estimates based on sprint size
-            # Larger sprints tend to have more scope changes
-            scope_factor = min(completed_points / 50.0, 1.5) if completed_points > 0 else 1.0
-            added_points = completed_points * (0.10 + 0.05 * scope_factor)  # 10-17.5% scope increase
-            removed_points = completed_points * (0.03 + 0.02 * scope_factor)  # 3-6% scope decrease
+            # For scope changes, use more realistic estimates
+            # Calculate as percentage of committed points, not completed points
+            # This gives more reasonable scope change percentages
+            scope_factor = (
+                min(committed_points / 50.0, 1.5) if committed_points > 0 else 1.0
+            )
+            added_points = committed_points * (
+                0.10 + 0.05 * scope_factor
+            )  # 10-17.5% of commitment
+            removed_points = committed_points * (
+                0.03 + 0.02 * scope_factor
+            )  # 3-6% of commitment
 
             # Calculate completion rate (will now be around 80% on average)
-            completion_rate = completed_points / committed_points if committed_points > 0 else 0
+            completion_rate = (
+                completed_points / committed_points if committed_points > 0 else 0
+            )
 
             sprint_health = SprintHealth(
                 sprint_name=sprint.name,
@@ -381,12 +445,16 @@ class AnalyzeSprintHealthUseCase:
 
         # Calculate average scope change
         scope_changes = [sm.scope_change_percentage for sm in sprint_metrics]
-        average_scope_change = sum(scope_changes) / len(scope_changes) if scope_changes else 0
+        average_scope_change = (
+            sum(scope_changes) / len(scope_changes) if scope_changes else 0
+        )
 
         # Calculate predictability (lower variance = higher predictability)
         if len(completion_rates) >= 2:
             mean_rate = average_completion_rate
-            variance = sum((rate - mean_rate) ** 2 for rate in completion_rates) / len(completion_rates)
+            variance = sum((rate - mean_rate) ** 2 for rate in completion_rates) / len(
+                completion_rates
+            )
             std_dev = variance**0.5
             # Convert to 0-1 score (lower std dev = higher score)
             predictability_score = max(0, 1 - (std_dev * 2))  # Penalize high variance
@@ -408,7 +476,9 @@ class AnalyzeBlockedItemsUseCase:
     def __init__(self, issue_repository: IssueRepository):
         self.issue_repository = issue_repository
 
-    def execute(self, status_mapping: Dict[str, List[str]]) -> Optional[BlockedItemsAnalysis]:
+    def execute(
+        self, status_mapping: Dict[str, List[str]]
+    ) -> Optional[BlockedItemsAnalysis]:
         """Analyze blocked items"""
         all_issues = self.issue_repository.get_all()
         done_statuses = status_mapping.get("done", [])
@@ -426,7 +496,11 @@ class AnalyzeBlockedItemsUseCase:
 
             if any(keyword in issue.status.lower() for keyword in blocked_keywords):
                 is_blocked = True
-            elif any(keyword in label.lower() for label in issue.labels for keyword in blocked_keywords):
+            elif any(
+                keyword in label.lower()
+                for label in issue.labels
+                for keyword in blocked_keywords
+            ):
                 is_blocked = True
 
             if not is_blocked:
@@ -464,7 +538,9 @@ class AnalyzeBlockedItemsUseCase:
 
         # Calculate metrics
         total_blocked_points = sum(item.story_points or 0 for item in blocked_items)
-        average_blocked_days = sum(item.blocked_days for item in blocked_items) / len(blocked_items)
+        average_blocked_days = sum(item.blocked_days for item in blocked_items) / len(
+            blocked_items
+        )
 
         # Categorize blockers
         blocker_counts = defaultdict(int)
@@ -472,7 +548,9 @@ class AnalyzeBlockedItemsUseCase:
             blocker_counts[desc] += 1
 
         # Find repeat blockers (occurring more than once)
-        repeat_blockers = [blocker for blocker, count in blocker_counts.items() if count > 1]
+        repeat_blockers = [
+            blocker for blocker, count in blocker_counts.items() if count > 1
+        ]
 
         return BlockedItemsAnalysis(
             blocked_items=blocked_items,

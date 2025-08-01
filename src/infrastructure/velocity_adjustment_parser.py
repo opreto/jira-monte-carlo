@@ -62,7 +62,8 @@ class VelocityAdjustmentParser:
         except Exception as e:
             logger.error(f"Failed to parse velocity change '{value}': {e}")
             raise ValueError(
-                f"Invalid velocity change format '{value}'. " f"Expected: 'sprint:N[-M|+],factor:F[,reason:R]'"
+                f"Invalid velocity change format '{value}'. "
+                f"Expected: 'sprint:N[-M|+],factor:F[,reason:R]'"
             ) from e
 
     def parse_team_change(self, value: str) -> TeamChange:
@@ -101,11 +102,11 @@ class VelocityAdjustmentParser:
                 change_str = parts["change"]
                 # Handle explicit + or - prefix
                 if change_str.startswith("+"):
-                    change = int(change_str[1:])
+                    change = float(change_str[1:])
                 elif change_str.startswith("-"):
-                    change = -int(change_str[1:])
+                    change = -float(change_str[1:])
                 else:
-                    change = int(change_str)
+                    change = float(change_str)
 
                 if change == 0:
                     raise ValueError("Change must be non-zero")
@@ -113,11 +114,11 @@ class VelocityAdjustmentParser:
                 raise ValueError(f"Invalid change: {parts['change']}") from e
 
             # Optional ramp-up (only for additions)
-            ramp_up = 3  # default
+            ramp_up = 3.0  # default
             if "ramp" in parts:
                 try:
-                    ramp_up = int(parts["ramp"])
-                    if ramp_up < 1:
+                    ramp_up = float(parts["ramp"])
+                    if ramp_up < 1.0:
                         raise ValueError("Ramp-up must be at least 1 sprint")
                 except ValueError as e:
                     raise ValueError(f"Invalid ramp: {parts['ramp']}") from e
@@ -143,7 +144,8 @@ class VelocityAdjustmentParser:
         except Exception as e:
             logger.error(f"Failed to parse team change '{value}': {e}")
             raise ValueError(
-                f"Invalid team change format '{value}'. " f"Expected: 'sprint:N,change:±C[,ramp:R][,curve:TYPE]'"
+                f"Invalid team change format '{value}'. "
+                f"Expected: 'sprint:N,change:±C[,ramp:R][,curve:TYPE]'"
             ) from e
 
     def _parse_sprint_range(self, sprint_spec: str) -> tuple[int, Optional[int]]:

@@ -1,0 +1,917 @@
+/* ================================================
+   Sprint Radar - Modern Responsive Design System
+   Container Queries + CSS Grid + Fluid Typography
+   ================================================ */
+
+/* Global box-sizing for predictable layouts */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ================================================
+   1. CSS Custom Properties & Design Tokens
+   ================================================ */
+:root {
+  /* Fluid Space Scale - More generous spacing for larger screens */
+  --space-3xs: clamp(0.25rem, 0.5vi + 0.25rem, 0.5rem);
+  --space-2xs: clamp(0.5rem, 1vi + 0.25rem, 1rem);
+  --space-xs: clamp(0.75rem, 1.5vi + 0.25rem, 1.5rem);
+  --space-s: clamp(1rem, 2vi + 0.5rem, 2rem);
+  --space-m: clamp(1.5rem, 3vi + 0.5rem, 3rem);
+  --space-l: clamp(2rem, 4vi + 1rem, 4rem);
+  --space-xl: clamp(3rem, 6vi + 1rem, 6rem);
+  --space-2xl: clamp(4rem, 8vi + 2rem, 8rem);
+  --space-3xl: clamp(6rem, 12vi + 2rem, 10rem);
+
+  /* Fluid Typography - Optimized for readability */
+  --step--2: clamp(0.69rem, 0.66rem + 0.18vi, 0.80rem);
+  --step--1: clamp(0.83rem, 0.78rem + 0.29vi, 1.00rem);
+  --step-0: clamp(1.00rem, 0.91rem + 0.43vi, 1.25rem);
+  --step-1: clamp(1.20rem, 1.07rem + 0.63vi, 1.56rem);
+  --step-2: clamp(1.44rem, 1.26rem + 0.89vi, 1.95rem);
+  --step-3: clamp(1.73rem, 1.48rem + 1.24vi, 2.44rem);
+  --step-4: clamp(2.07rem, 1.73rem + 1.70vi, 3.05rem);
+  --step-5: clamp(2.49rem, 2.03rem + 2.31vi, 3.82rem);
+
+  /* Container breakpoints for container queries */
+  --container-sm: 384px;
+  --container-md: 640px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+
+  /* Content widths */
+  --content-max: 1440px;
+  --content-wide: 1920px;
+  --content-full: 2560px;
+
+  /* Layout tokens - More generous gaps */
+  --grid-gap: clamp(1.5rem, 3vi + 0.5rem, 3rem);
+  --section-gap: var(--space-xl);
+  --component-gap: var(--space-l);
+  
+  /* Border radius */
+  --radius-s: 0.25rem;
+  --radius-m: 0.5rem;
+  --radius-l: 0.75rem;
+  --radius-xl: 1rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+/* ================================================
+   2. Base Styles & Typography
+   ================================================ */
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-size: var(--step-0);
+  line-height: 1.6;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Fluid Typography */
+h1 {
+  font-size: var(--step-5);
+  line-height: 1.1;
+  margin-block-end: var(--space-m);
+}
+
+h2 {
+  font-size: var(--step-4);
+  line-height: 1.2;
+  margin-block-end: var(--space-m);
+}
+
+h3 {
+  font-size: var(--step-3);
+  line-height: 1.3;
+  margin-block-end: var(--space-s);
+}
+
+h4 {
+  font-size: var(--step-2);
+  line-height: 1.4;
+  margin-block-end: var(--space-s);
+}
+
+h5 {
+  font-size: var(--step-1);
+  line-height: 1.5;
+  margin-block-end: var(--space-xs);
+}
+
+h6 {
+  font-size: var(--step-0);
+  line-height: 1.5;
+  margin-block-end: var(--space-xs);
+}
+
+p {
+  margin-block-end: var(--space-s);
+}
+
+/* ================================================
+   3. Container Query Setup
+   ================================================ */
+
+/* Main content container - Zero margins on mobile, generous on desktop */
+.main-container {
+  container-type: inline-size;
+  container-name: main;
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-block: var(--space-m);
+}
+
+/* Mobile: No side margins */
+@media (max-width: 640px) {
+  .main-container {
+    padding-inline: 0;
+  }
+}
+
+/* Tablet and up: Generous margins */
+@media (min-width: 641px) {
+  .main-container {
+    padding-inline: max(var(--space-l), 5vw);
+    padding-block: var(--space-l);
+  }
+}
+
+/* Desktop: Even more generous margins */
+@media (min-width: 1024px) {
+  .main-container {
+    padding-inline: max(var(--space-xl), 8vw);
+    padding-block: var(--space-xl);
+  }
+}
+
+/* Wide container for full-width sections */
+.wide-container {
+  container-type: inline-size;
+  container-name: wide;
+  width: 100%;
+  max-width: var(--content-wide);
+  margin-inline: auto;
+  padding-inline: clamp(var(--space-m), 5vi, var(--space-2xl));
+}
+
+/* Section containers */
+.section-container {
+  container-type: inline-size;
+  container-name: section;
+  margin-block-end: var(--section-gap);
+}
+
+/* Component containers */
+.component-container {
+  container-type: inline-size;
+  container-name: component;
+}
+
+/* ================================================
+   4. Modern Grid System with Container Queries
+   ================================================ */
+
+/* Base Grid - Intrinsic sizing with auto-fit */
+.grid {
+  display: grid;
+  gap: var(--grid-gap);
+  width: 100%;
+}
+
+/* Auto-responsive grid using min() */
+.grid-auto {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+}
+
+/* Container query-based grid layouts */
+@container (min-width: 640px) {
+  .grid-responsive {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@container (min-width: 1024px) {
+  .grid-responsive {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@container (min-width: 1280px) {
+  .grid-responsive {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Chart grid - Prevent overlapping with proper gaps */
+.chart-grid {
+  container-type: inline-size;
+  container-name: charts;
+  display: grid;
+  grid-template-columns: 1fr;
+  /* Ensure consistent vertical spacing */
+  row-gap: var(--space-l);
+  column-gap: var(--space-m);
+  /* Add section spacing */
+  margin-block: var(--space-xl);
+}
+
+/* Small screens: Single column */
+@media (min-width: 641px) and (max-width: 1023px) {
+  .chart-grid {
+    grid-template-columns: 1fr;
+    padding-inline: var(--space-m);
+  }
+}
+
+/* Medium screens: 2 columns if space allows */
+@media (min-width: 1024px) {
+  .chart-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 500px), 1fr));
+  }
+}
+
+/* Large screens: Up to 3 columns */
+@media (min-width: 1440px) {
+  .chart-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 450px), 1fr));
+  }
+}
+
+/* Metrics grid - Responsive with proper spacing */
+.metrics-grid {
+  display: grid;
+  gap: var(--space-m);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  margin-block: var(--space-l);
+}
+
+/* Mobile: Add horizontal padding */
+@media (max-width: 640px) {
+  .metrics-grid {
+    padding-inline: var(--space-s);
+    gap: var(--space-s);
+  }
+}
+
+/* ================================================
+   5. Chart Container System
+   ================================================ */
+
+/* Individual chart container - Mobile-first spacing */
+.chart-container {
+  container-type: inline-size;
+  container-name: chart;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e5e5e5);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-md);
+  transition: box-shadow 0.2s ease;
+  
+  /* Prevent layout overflow */
+  min-width: 0;
+  overflow: hidden;
+  
+  /* Mobile: Minimal padding */
+  padding: var(--space-s);
+}
+
+/* Tablet and up: More generous padding */
+@media (min-width: 641px) {
+  .chart-container {
+    padding: var(--space-m);
+  }
+}
+
+/* Desktop: Maximum comfort */
+@media (min-width: 1024px) {
+  .chart-container {
+    padding: var(--space-l);
+  }
+}
+
+/* Hover effect for larger screens */
+@media (hover: hover) {
+  .chart-container:hover {
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+/* Chart content wrapper */
+.chart-content {
+  position: relative;
+  width: 100%;
+  /* Intrinsic aspect ratio for charts */
+  aspect-ratio: 16 / 10;
+  min-height: 250px;
+  max-height: 500px;
+  container-type: size;
+}
+
+/* Container query-based chart sizing */
+@container chart (max-width: 400px) {
+  .chart-content {
+    aspect-ratio: 4 / 3;
+    max-height: 300px;
+  }
+  
+  .chart-title {
+    font-size: var(--step-1);
+  }
+}
+
+@container chart (min-width: 600px) {
+  .chart-content {
+    aspect-ratio: 16 / 9;
+    max-height: 400px;
+  }
+}
+
+@container chart (min-width: 900px) {
+  .chart-content {
+    aspect-ratio: 2 / 1;
+    max-height: 450px;
+  }
+}
+
+/* Plotly chart specific */
+.plotly-chart {
+  width: 100%;
+  height: 100%;
+}
+
+/* Chart header styling */
+.chart-header {
+  margin-block-end: var(--space-s);
+}
+
+.chart-title {
+  font-size: var(--step-2);
+  font-weight: 600;
+  color: var(--text-primary, #1a1a1a);
+  margin: 0;
+}
+
+.chart-description {
+  font-size: var(--step--1);
+  color: var(--text-secondary, #666666);
+  margin-block-start: var(--space-xs);
+}
+
+/* ================================================
+   6. Metric Cards with Container Queries
+   ================================================ */
+
+.metric-card {
+  container-type: inline-size;
+  container-name: metric;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e5e5e5);
+  border-radius: var(--radius-l);
+  padding: clamp(var(--space-s), 2vi, var(--space-m));
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.metric-card .value {
+  font-size: var(--step-3);
+  font-weight: 700;
+  color: var(--text-primary, #1a1a1a);
+  line-height: 1;
+}
+
+.metric-card .label {
+  font-size: var(--step--1);
+  color: var(--text-secondary, #666666);
+  margin-block-start: var(--space-2xs);
+}
+
+/* Container query for compact metrics */
+@container metric (max-width: 200px) {
+  .metric-card {
+    padding: var(--space-xs);
+  }
+  
+  .metric-card .value {
+    font-size: var(--step-2);
+  }
+  
+  .metric-card .label {
+    font-size: var(--step--2);
+  }
+}
+
+/* Hover state for non-touch devices */
+@media (hover: hover) {
+  .metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* ================================================
+   7. Responsive Tables with Container Queries
+   ================================================ */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: var(--spacing-responsive-md);
+}
+
+table {
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: var(--spacing-responsive-sm);
+  font-size: var(--font-size-sm);
+}
+
+@media (min-width: 768px) {
+  th, td {
+    padding: var(--spacing-responsive-md);
+    font-size: var(--font-size-base);
+  }
+}
+
+/* Mobile-optimized table */
+@media (max-width: 767px) {
+  .mobile-table {
+    display: block;
+  }
+  
+  .mobile-table thead {
+    display: none;
+  }
+  
+  .mobile-table tbody,
+  .mobile-table tr,
+  .mobile-table td {
+    display: block;
+  }
+  
+  .mobile-table tr {
+    margin-bottom: var(--spacing-responsive-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-responsive-sm);
+  }
+  
+  .mobile-table td {
+    position: relative;
+    padding-left: 40%;
+    text-align: right;
+  }
+  
+  .mobile-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: var(--spacing-responsive-sm);
+    width: 35%;
+    text-align: left;
+    font-weight: bold;
+  }
+}
+
+/* ================================================
+   8. Interactive Elements
+   ================================================ */
+
+/* Touch-optimized targets */
+button,
+.btn,
+.toggle-btn,
+a.btn {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xs) var(--space-s);
+  border-radius: var(--radius-m);
+  font-size: var(--step-0);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Touch-friendly form inputs */
+input,
+select,
+textarea {
+  min-height: 44px;
+  padding: var(--spacing-responsive-sm) var(--spacing-responsive-md);
+  font-size: var(--font-size-base);
+  border-radius: var(--border-radius-md);
+}
+
+/* Prevent zoom on input focus */
+@media (max-width: 767px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* ================================================
+   9. Navigation with Container Queries
+   ================================================ */
+.nav-container {
+  padding: var(--spacing-responsive-sm);
+}
+
+.nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-responsive-sm);
+}
+
+@media (min-width: 768px) {
+  .nav-list {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-responsive-md);
+  }
+}
+
+/* Mobile menu toggle (hamburger) */
+.mobile-menu-toggle {
+  display: block;
+  position: fixed;
+  top: var(--spacing-responsive-md);
+  right: var(--spacing-responsive-md);
+  z-index: 1000;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-md);
+  width: 48px;
+  height: 48px;
+}
+
+@media (min-width: 768px) {
+  .mobile-menu-toggle {
+    display: none;
+  }
+}
+
+/* ================================================
+   10. Page Layout & Sections
+   ================================================ */
+
+/* Main header spacing */
+.header {
+  margin-block-end: var(--space-l);
+  padding-block: var(--space-m);
+  border-bottom: 1px solid var(--border-color, #e5e5e5);
+}
+
+/* Mobile: Compact header */
+@media (max-width: 640px) {
+  .header {
+    padding-inline: var(--space-s);
+    margin-block-end: var(--space-m);
+  }
+}
+
+/* Desktop: Generous header spacing */
+@media (min-width: 641px) {
+  .header {
+    padding-inline: var(--space-m);
+  }
+}
+
+.header-title {
+  margin-block-end: var(--space-s);
+}
+
+/* Content sections */
+.content-section {
+  margin-block-end: var(--section-gap);
+}
+
+/* Report sections */
+.report-section {
+  padding-block: var(--space-l);
+}
+
+.report-section + .report-section {
+  border-top: 1px solid var(--border-color, #e5e5e5);
+}
+
+/* ================================================
+   11. Utility Classes
+   ================================================ */
+
+/* Display utilities */
+.d-none { display: none !important; }
+.d-block { display: block !important; }
+.d-flex { display: flex !important; }
+.d-grid { display: grid !important; }
+
+/* Container query display utilities */
+@container (max-width: 640px) {
+  .cq-sm-none { display: none !important; }
+  .cq-sm-block { display: block !important; }
+}
+
+@container (min-width: 640px) {
+  .cq-md-none { display: none !important; }
+  .cq-md-block { display: block !important; }
+}
+
+@container (min-width: 1024px) {
+  .cq-lg-none { display: none !important; }
+  .cq-lg-block { display: block !important; }
+}
+
+/* Responsive display utilities */
+@media (min-width: 576px) {
+  .d-sm-none { display: none !important; }
+  .d-sm-block { display: block !important; }
+  .d-sm-flex { display: flex !important; }
+  .d-sm-grid { display: grid !important; }
+}
+
+@media (min-width: 768px) {
+  .d-md-none { display: none !important; }
+  .d-md-block { display: block !important; }
+  .d-md-flex { display: flex !important; }
+  .d-md-grid { display: grid !important; }
+}
+
+@media (min-width: 1024px) {
+  .d-lg-none { display: none !important; }
+  .d-lg-block { display: block !important; }
+  .d-lg-flex { display: flex !important; }
+  .d-lg-grid { display: grid !important; }
+}
+
+@media (min-width: 1440px) {
+  .d-xl-none { display: none !important; }
+  .d-xl-block { display: block !important; }
+  .d-xl-flex { display: flex !important; }
+  .d-xl-grid { display: grid !important; }
+}
+
+/* Text alignment utilities */
+.text-start { text-align: left !important; }
+.text-center { text-align: center !important; }
+.text-end { text-align: right !important; }
+
+@media (min-width: 768px) {
+  .text-md-start { text-align: left !important; }
+  .text-md-center { text-align: center !important; }
+  .text-md-end { text-align: right !important; }
+}
+
+/* Spacing utilities (responsive) */
+.p-0 { padding: 0 !important; }
+.p-1 { padding: var(--spacing-responsive-xs) !important; }
+.p-2 { padding: var(--spacing-responsive-sm) !important; }
+.p-3 { padding: var(--spacing-responsive-md) !important; }
+.p-4 { padding: var(--spacing-responsive-lg) !important; }
+.p-5 { padding: var(--spacing-responsive-xl) !important; }
+
+.m-0 { margin: 0 !important; }
+.m-1 { margin: var(--spacing-responsive-xs) !important; }
+.m-2 { margin: var(--spacing-responsive-sm) !important; }
+.m-3 { margin: var(--spacing-responsive-md) !important; }
+.m-4 { margin: var(--spacing-responsive-lg) !important; }
+.m-5 { margin: var(--spacing-responsive-xl) !important; }
+
+/* ================================================
+   12. Print Styles
+   ================================================ */
+@media print {
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+  
+  .container {
+    max-width: 100%;
+    padding: 0;
+  }
+  
+  .no-print,
+  .mobile-menu-toggle,
+  .chart-toggle {
+    display: none !important;
+  }
+  
+  .chart-container {
+    page-break-inside: avoid;
+  }
+}
+
+/* ================================================
+   13. Mobile Chart Styles
+   ================================================ */
+
+/* Mobile chart fixes */
+@media (max-width: 767px) {
+  /* Force hide Plotly modebar on mobile */
+  .modebar,
+  .modebar-container,
+  .modebar-group,
+  .js-plotly-plot .plotly .modebar {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  
+  /* Prevent all chart interactions */
+  .plotly-chart,
+  .js-plotly-plot,
+  .plot-container,
+  .svg-container {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    touch-action: pan-y !important; /* Allow vertical scrolling only */
+    pointer-events: none !important;
+  }
+  
+  /* Allow container to receive scroll events */
+  .chart-container {
+    pointer-events: auto !important;
+    overflow: hidden;
+  }
+  
+  /* Fix title positioning to account for removed controls */
+  .chart-container .chart-title {
+    margin-top: 0;
+    padding-top: var(--space-xs);
+  }
+  
+  /* Add overlay to prevent any touch interactions */
+  .chart-content {
+    position: relative;
+  }
+  
+  .chart-content::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    pointer-events: auto;
+    touch-action: pan-y;
+  }
+}
+
+/* ================================================
+   14. Accessibility Enhancements
+   ================================================ */
+
+/* WCAG AA Contrast Enforcement */
+.chart-title,
+.header-title,
+.insights-title,
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text-primary);
+  /* Ensure minimum contrast ratio of 4.5:1 */
+}
+
+.chart-description,
+.header-subtitle,
+.insights-list li,
+p, span {
+  color: var(--color-text-secondary);
+  /* Ensure minimum contrast ratio of 4.5:1 for normal text */
+}
+
+/* Focus visible for keyboard navigation */
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* High contrast mode improvements */
+@media (prefers-contrast: high) {
+  .chart-title,
+  .header-title {
+    font-weight: 700;
+  }
+  
+  .chart-description,
+  .header-subtitle {
+    font-weight: 500;
+  }
+}
+
+/* Skip to content link */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-primary);
+  color: white;
+  padding: var(--spacing-responsive-sm) var(--spacing-responsive-md);
+  text-decoration: none;
+  border-radius: var(--border-radius-md);
+  z-index: 1001;
+}
+
+.skip-to-content:focus {
+  top: var(--spacing-responsive-sm);
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-primary: #0066cc;
+    --color-background: #ffffff;
+    --color-text-primary: #000000;
+    --border-color: #000000;
+  }
+}
+
+/* Color system with proper defaults */
+:root {
+  /* Light mode colors (default) */
+  --color-background: #ffffff;
+  --color-surface: #f8f9fa;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #666666;
+  --border-color: #e5e5e5;
+  --card-bg: #ffffff;
+  
+  /* Ensure proper contrast */
+  --text-on-light: #1a1a1a;
+  --text-on-dark: #ffffff;
+  --text-muted-on-light: #666666;
+  --text-muted-on-dark: #b0b0b0;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #1a1a1a;
+    --color-surface: #2d2d2d;
+    --color-text-primary: #e0e0e0;
+    --color-text-secondary: #b0b0b0;
+    --border-color: #404040;
+    --card-bg: #2d2d2d;
+    
+    /* Update text colors for dark mode */
+    --text-primary: #e0e0e0;
+    --text-secondary: #b0b0b0;
+  }
+  
+  /* Fix contrast for specific elements */
+  .chart-title,
+  .insights-title,
+  .metric-card .value {
+    color: var(--color-text-primary);
+  }
+  
+  .chart-description,
+  .insights-list li,
+  .metric-card .label,
+  .metric-card .description {
+    color: var(--color-text-secondary);
+  }
+  
+  /* Fix JQL query descriptions */
+  .query-description,
+  .section-description {
+    color: var(--color-text-secondary);
+    background: var(--color-surface);
+    padding: var(--space-xs);
+    border-radius: var(--radius-s);
+  }
+}

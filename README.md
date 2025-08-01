@@ -28,6 +28,9 @@ A high-performance agile project analytics and forecasting platform. Sprint Rada
 - **Plugin Architecture**: Extensible plugin system for custom report enhancements
 - **Clickable Issue Links**: Direct links to Jira issues in HTML reports
 - **Health Score Visualization**: Gauge charts and breakdowns with 0-100% bounded scores
+- **ML-Enhanced Heuristics**: Privacy-preserving machine learning optimizes lookback periods and forecasts based on your team's patterns
+- **React-Based Reports**: Modern React components with smooth chart animations for better user experience
+- **Velocity Scenario Modeling**: Model team changes and velocity adjustments with smooth animated transitions between scenarios
 
 ## Getting Started (Quick Setup for Jira API)
 
@@ -94,6 +97,14 @@ sprint-radar -f jira-api://MYPROJECT -o reports/myproject.html
 # Model vacation impact
 sprint-radar -f jira-api:// \
   --velocity-change "sprint:10,factor:0.7,reason:team vacation week"
+
+# Use React reports with smooth animations
+sprint-radar -f jira-api:// -o reports/forecast.html --use-react
+
+# Model team changes with animated transitions
+sprint-radar -f jira-api:// --use-react \
+  --team-change "sprint:5,change:+2,ramp:3" \
+  --velocity-change "sprint:8+,factor:1.2,reason:team expansion"
 
 # Include process health metrics
 sprint-radar -f jira-api:// --include-process-health
@@ -180,6 +191,12 @@ JIRA_URL=https://yourcompany.atlassian.net
 JIRA_USERNAME=your.email@company.com
 ATLASSIAN_API_TOKEN=your-api-token
 JIRA_PROJECT_KEY=PROJ
+
+# Optional: Dual JQL for separate velocity calculation and forecasting
+# FORECAST_JQL filters backlog items to forecast (e.g., specific labels/epics)
+FORECAST_JQL="statusCategory != Done AND labels = mvp"
+# HISTORY_JQL filters completed work for velocity calculation
+HISTORY_JQL="project = PROJ AND statusCategory = Done AND resolved >= -52w"
 EOF
 
 # Generate report from Jira API (uses JIRA_PROJECT_KEY from .env)
@@ -203,6 +220,57 @@ To get an Atlassian API token:
 2. Click "Create API token"
 3. Give it a descriptive name
 4. Copy the token to your .env file
+
+#### Dual JQL Support (Advanced)
+
+Sprint Radar supports using separate JQL queries for velocity calculation and forecasting. This is useful when you want to:
+- Forecast only specific items (e.g., MVP features, specific epic)
+- Use broader historical data for more accurate velocity calculations
+- Exclude certain types of work from forecasts while including them in velocity
+
+Example:
+```bash
+# In .env file:
+# Forecast only MVP-labeled items
+FORECAST_JQL="statusCategory != Done AND labels = mvp"
+# Calculate velocity from all completed work in the last year
+HISTORY_JQL="project = PROJ AND statusCategory = Done AND resolved >= -52w"
+```
+
+When both queries are configured:
+- **Forecast Query**: Filters the backlog items to be predicted
+- **History Query**: Filters completed work for velocity calculation
+- Both queries are displayed in the generated report for transparency
+
+If only FORECAST_JQL is set, it's used for both purposes (backward compatible).
+
+### Smart Lookback Period Auto-Detection
+
+Sprint Radar now intelligently determines the optimal number of historical sprints to analyze by default. The `--lookback-sprints` option defaults to "auto", which:
+
+- Uses all data when you have ≤6 sprints
+- Selects 6 sprints for teams with 7-12 sprints (standard retrospective period)
+- Uses 8-10 sprints for teams with 13-24 sprints (2-3 months of data)
+- Analyzes 12 sprints for teams with 25-52 sprints (one quarter)
+
+### ML-Enhanced Lookback Optimization
+
+For even better accuracy, enable machine learning optimization with `--enable-ml`:
+
+```bash
+# Enable ML optimization for velocity and sprint health lookback periods
+sprint-radar -f jira-api:// -o forecast.html --enable-ml
+```
+
+This feature:
+- Learns your team's specific patterns over time
+- Optimizes lookback periods separately for velocity and sprint health metrics
+- Provides visual indicators (🧠) showing when ML made decisions
+- Includes explanations in tooltips for transparency
+- Stores models locally with complete project isolation for privacy
+- Caps at 16-20 sprints for very mature teams (maintains relevance)
+
+You can override this by specifying a number: `--lookback-sprints 10`
 
 ### Command Line Options
 
@@ -232,17 +300,21 @@ Status Mapping Options:
 
 Analysis Options:
   --velocity-field TEXT          Velocity metric: story_points, time_estimate, or count (default: story_points)
-  --lookback-sprints INT         Number of sprints to analyze for velocity (default: 6)
+  --lookback-sprints TEXT        Number of sprints to analyze for velocity (default: auto)
   --max-velocity-age INT         Maximum age of velocity data in days (default: 240)
   --outlier-std-devs FLOAT       Standard deviations for outlier detection (default: 2.0)
   --min-velocity FLOAT           Minimum velocity threshold (default: 10.0)
-  --include-process-health       Include process health metrics in the report
+  --include-process-health       Include process health metrics in the report (deprecated)
+  --exclude-process-health       Exclude process health section from the report
+  --enable-ml                    Enable ML optimization for lookback periods
+  --use-react                    Use React-based report generator with smooth animations (experimental)
 
 Velocity Change Prediction (What-If Analysis):
   --velocity-change TEXT         Model velocity changes (format: "sprint:N[-M],factor:F[,reason:R]")
   --team-change TEXT             Model team size changes (format: "sprint:N,change:±C[,ramp:R]")
   
   Sprint ranges: Use N for single sprint, N-M for range, N+ for sprint N onwards (forever)
+  Team changes: C can be fractional (0.5 for part-time), R (ramp) is number of sprints (can be float)
   Multiple changes: Repeat flags for multiple adjustments
 
 Cache Management:
@@ -671,7 +743,15 @@ logging.basicConfig(level=logging.DEBUG)
 
 ### Planned Features
 
-#### Phase 1: Mobile Experience (Priority 1)
+#### Phase 1: Architectural Cleanup (Priority 1)
+- **Python-to-JavaScript Data Pipeline**
+  - Replace brittle kwargs-based data passing between Python reporting layer and React/JS layer
+  - Design a type-safe, versioned data contract between backend and frontend
+  - Implement proper serialization/deserialization with validation
+  - Consider using Protocol Buffers or JSON Schema for data structure definition
+  - Ensure backward compatibility during migration
+
+#### Phase 2: Mobile Experience (Priority 2)
 - **Responsive Design**
   - Implement responsive chart rendering
   - Create mobile-optimized templates
@@ -680,7 +760,7 @@ logging.basicConfig(level=logging.DEBUG)
   - Optimize data transfer for mobile networks
   - Progressive web app (PWA) capabilities
 
-#### Phase 2: Architecture Improvements (Priority 2)
+#### Phase 3: Architecture Improvements (Priority 3)
 - **Performance Optimizations**
   - Parallel CSV processing for multi-file imports
   - Caching for large datasets beyond API responses

@@ -24,6 +24,13 @@ class StyleGenerator:
             self._generate_responsive_navigation(),
             self._generate_responsive_tables(),
         ]
+        
+        # Include responsive.css content
+        from pathlib import Path
+        responsive_css_path = Path(__file__).parent / "static" / "css" / "responsive.css"
+        if responsive_css_path.exists():
+            css_parts.append("/* Modern Responsive Design System */")
+            css_parts.append(responsive_css_path.read_text())
 
         # Add custom CSS if provided
         if self.theme.custom_css:

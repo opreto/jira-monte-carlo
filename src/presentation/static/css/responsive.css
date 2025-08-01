@@ -7,16 +7,16 @@
    1. CSS Custom Properties & Design Tokens
    ================================================ */
 :root {
-  /* Fluid Space Scale - Using clamp() for smooth scaling */
-  --space-3xs: clamp(0.25rem, 0.5vi, 0.375rem);
-  --space-2xs: clamp(0.5rem, 1vi, 0.75rem);
-  --space-xs: clamp(0.75rem, 1.5vi, 1rem);
-  --space-s: clamp(1rem, 2vi, 1.25rem);
-  --space-m: clamp(1.5rem, 3vi, 2rem);
-  --space-l: clamp(2rem, 4vi, 3rem);
-  --space-xl: clamp(3rem, 6vi, 4rem);
-  --space-2xl: clamp(4rem, 8vi, 6rem);
-  --space-3xl: clamp(6rem, 12vi, 8rem);
+  /* Fluid Space Scale - More generous spacing for larger screens */
+  --space-3xs: clamp(0.25rem, 0.5vi + 0.25rem, 0.5rem);
+  --space-2xs: clamp(0.5rem, 1vi + 0.25rem, 1rem);
+  --space-xs: clamp(0.75rem, 1.5vi + 0.25rem, 1.5rem);
+  --space-s: clamp(1rem, 2vi + 0.5rem, 2rem);
+  --space-m: clamp(1.5rem, 3vi + 0.5rem, 3rem);
+  --space-l: clamp(2rem, 4vi + 1rem, 4rem);
+  --space-xl: clamp(3rem, 6vi + 1rem, 6rem);
+  --space-2xl: clamp(4rem, 8vi + 2rem, 8rem);
+  --space-3xl: clamp(6rem, 12vi + 2rem, 10rem);
 
   /* Fluid Typography - Optimized for readability */
   --step--2: clamp(0.69rem, 0.66rem + 0.18vi, 0.80rem);
@@ -40,10 +40,10 @@
   --content-wide: 1920px;
   --content-full: 2560px;
 
-  /* Layout tokens */
-  --grid-gap: clamp(1rem, 2vi, 2rem);
-  --section-gap: var(--space-l);
-  --component-gap: var(--space-m);
+  /* Layout tokens - More generous gaps */
+  --grid-gap: clamp(1.5rem, 3vi + 0.5rem, 3rem);
+  --section-gap: var(--space-xl);
+  --component-gap: var(--space-l);
   
   /* Border radius */
   --radius-s: 0.25rem;
@@ -117,14 +117,15 @@ p {
    3. Container Query Setup
    ================================================ */
 
-/* Main content container */
+/* Main content container - Better margins on larger screens */
 .main-container {
   container-type: inline-size;
   container-name: main;
   width: 100%;
   max-width: var(--content-max);
   margin-inline: auto;
-  padding-inline: var(--space-m);
+  padding-inline: clamp(var(--space-m), 5vi, var(--space-2xl));
+  padding-block: var(--space-l);
 }
 
 /* Wide container for full-width sections */
@@ -134,7 +135,7 @@ p {
   width: 100%;
   max-width: var(--content-wide);
   margin-inline: auto;
-  padding-inline: var(--space-m);
+  padding-inline: clamp(var(--space-m), 5vi, var(--space-2xl));
 }
 
 /* Section containers */
@@ -185,13 +186,14 @@ p {
   }
 }
 
-/* Chart grid with container queries */
+/* Chart grid with container queries - Better spacing */
 .chart-grid {
   container-type: inline-size;
   container-name: charts;
   display: grid;
-  gap: var(--component-gap);
+  gap: var(--grid-gap);
   grid-template-columns: 1fr;
+  margin-block: var(--section-gap);
 }
 
 @container charts (min-width: 768px) {
@@ -206,30 +208,39 @@ p {
   }
 }
 
-/* Metrics grid with auto-fit */
+/* Metrics grid with auto-fit - Better spacing */
 .metrics-grid {
   display: grid;
-  gap: var(--space-s);
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: var(--grid-gap);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  margin-block: var(--section-gap);
 }
 
 /* ================================================
    5. Chart Container System
    ================================================ */
 
-/* Individual chart container */
+/* Individual chart container - Enhanced spacing and visual hierarchy */
 .chart-container {
   container-type: inline-size;
   container-name: chart;
   background: var(--card-bg, #ffffff);
   border: 1px solid var(--border-color, #e5e5e5);
-  border-radius: var(--radius-m);
-  padding: var(--space-m);
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-l);
+  padding: clamp(var(--space-m), 3vi, var(--space-l));
+  box-shadow: var(--shadow-md);
+  transition: box-shadow 0.2s ease;
   
   /* Prevent layout overflow */
   min-width: 0;
   overflow: hidden;
+}
+
+/* Hover effect for larger screens */
+@media (hover: hover) {
+  .chart-container:hover {
+    box-shadow: var(--shadow-lg);
+  }
 }
 
 /* Chart content wrapper */
@@ -302,8 +313,8 @@ p {
   container-name: metric;
   background: var(--card-bg, #ffffff);
   border: 1px solid var(--border-color, #e5e5e5);
-  border-radius: var(--radius-m);
-  padding: var(--space-s);
+  border-radius: var(--radius-l);
+  padding: clamp(var(--space-s), 2vi, var(--space-m));
   box-shadow: var(--shadow-sm);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -496,7 +507,36 @@ textarea {
 }
 
 /* ================================================
-   10. Utility Classes
+   10. Page Layout & Sections
+   ================================================ */
+
+/* Main header spacing */
+.header {
+  margin-block-end: var(--section-gap);
+  padding-block-end: var(--space-m);
+  border-bottom: 1px solid var(--border-color, #e5e5e5);
+}
+
+.header-title {
+  margin-block-end: var(--space-s);
+}
+
+/* Content sections */
+.content-section {
+  margin-block-end: var(--section-gap);
+}
+
+/* Report sections */
+.report-section {
+  padding-block: var(--space-l);
+}
+
+.report-section + .report-section {
+  border-top: 1px solid var(--border-color, #e5e5e5);
+}
+
+/* ================================================
+   11. Utility Classes
    ================================================ */
 
 /* Display utilities */
@@ -577,7 +617,7 @@ textarea {
 .m-5 { margin: var(--spacing-responsive-xl) !important; }
 
 /* ================================================
-   11. Print Styles
+   12. Print Styles
    ================================================ */
 @media print {
   body {
@@ -602,7 +642,7 @@ textarea {
 }
 
 /* ================================================
-   12. Accessibility Enhancements
+   13. Accessibility Enhancements
    ================================================ */
 
 /* Focus visible for keyboard navigation */

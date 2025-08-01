@@ -1,0 +1,32 @@
+{
+  "name": "@sprint-radar/storybook",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "clean": "rm -rf node_modules storybook-static"
+  },
+  "dependencies": {
+    "@sprint-radar/design-tokens": "*",
+    "@sprint-radar/ui": "*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwindcss": "^4.1.11",
+    "@tailwindcss/postcss": "^4.1.11",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.1"
+  },
+  "devDependencies": {
+    "@storybook/addon-essentials": "^8.5.0",
+    "@storybook/addon-interactions": "^8.5.0",
+    "@storybook/addon-links": "^8.5.0",
+    "@storybook/blocks": "^8.5.0",
+    "@storybook/react-vite": "^8.5.0",
+    "@storybook/test": "^8.5.0",
+    "@vitejs/plugin-react": "^4.4.2",
+    "storybook": "^8.5.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7"
+  }
+}

@@ -134,13 +134,13 @@ class ResponsiveChartConfig:
         Returns:
             CSS height value
         """
-        # Default heights by chart type
+        # Default heights by chart type - Compact design
         heights = {
-            "bar": {"mobile": "50vh", "tablet": "45vh", "desktop": "40vh", "4k": "35vh"},
-            "line": {"mobile": "40vh", "tablet": "40vh", "desktop": "35vh", "4k": "30vh"},
-            "scatter": {"mobile": "50vh", "tablet": "45vh", "desktop": "40vh", "4k": "35vh"},
-            "pie": {"mobile": "40vh", "tablet": "40vh", "desktop": "35vh", "4k": "30vh"},
-            "gauge": {"mobile": "30vh", "tablet": "30vh", "desktop": "30vh", "4k": "25vh"},
+            "bar": {"mobile": "40vh", "tablet": "35vh", "desktop": "30vh", "4k": "25vh"},
+            "line": {"mobile": "35vh", "tablet": "30vh", "desktop": "25vh", "4k": "20vh"},
+            "scatter": {"mobile": "40vh", "tablet": "35vh", "desktop": "30vh", "4k": "25vh"},
+            "pie": {"mobile": "35vh", "tablet": "30vh", "desktop": "25vh", "4k": "20vh"},
+            "gauge": {"mobile": "25vh", "tablet": "25vh", "desktop": "20vh", "4k": "20vh"},
         }
 
         chart_heights = heights.get(chart_type, heights["bar"])
@@ -156,4 +156,4 @@ class ResponsiveChartConfig:
                 return chart_heights["desktop"]
 
         # Return a responsive height that works for all viewports
-        return "clamp(300px, 40vh, 600px)"
+        return "clamp(250px, 30vh, 500px)"

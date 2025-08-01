@@ -60,13 +60,24 @@ class StyleGenerator:
     --font-size-3xl: clamp(30px, 5vw, 48px);
 }
 
-/* Responsive Spacing */
+/* Responsive Spacing - More Compact */
 :root {
-    --spacing-responsive-xs: clamp(0.25rem, 1vw, 0.5rem);
-    --spacing-responsive-sm: clamp(0.5rem, 2vw, 1rem);
-    --spacing-responsive-md: clamp(1rem, 3vw, 1.5rem);
-    --spacing-responsive-lg: clamp(1.5rem, 4vw, 2rem);
-    --spacing-responsive-xl: clamp(2rem, 5vw, 3rem);
+    --spacing-responsive-xs: clamp(0.125rem, 0.5vw, 0.25rem);
+    --spacing-responsive-sm: clamp(0.25rem, 1vw, 0.5rem);
+    --spacing-responsive-md: clamp(0.5rem, 1.5vw, 0.75rem);
+    --spacing-responsive-lg: clamp(0.75rem, 2vw, 1rem);
+    --spacing-responsive-xl: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+/* Further reduce spacing on large screens */
+@media (min-width: 1920px) {
+    :root {
+        --spacing-responsive-xs: 0.25rem;
+        --spacing-responsive-sm: 0.375rem;
+        --spacing-responsive-md: 0.5rem;
+        --spacing-responsive-lg: 0.75rem;
+        --spacing-responsive-xl: 1rem;
+    }
 }
 
 /* Container System */
@@ -263,9 +274,9 @@ p {{
 .header {
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
     color: white;
-    padding: var(--spacing-xl) var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-md);
     border-radius: var(--border-radius-lg);
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
     box-shadow: var(--shadow-lg);
 }
 
@@ -282,8 +293,8 @@ p {{
 /* Responsive Metrics Grid */
 .metrics-grid {
     display: grid;
-    gap: var(--spacing-responsive-md);
-    margin-bottom: var(--spacing-responsive-xl);
+    gap: var(--spacing-responsive-sm);
+    margin-bottom: var(--spacing-responsive-md);
     grid-template-columns: 1fr;
 }
 
@@ -296,7 +307,7 @@ p {{
 @media (min-width: 768px) {
     .metrics-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: var(--spacing-responsive-lg);
+        gap: var(--spacing-responsive-md);
     }
 }
 
@@ -415,15 +426,22 @@ a:hover {
     background: var(--color-surface);
     border-radius: var(--border-radius-md);
     box-shadow: var(--shadow-md);
-    padding: var(--spacing-responsive-md);
-    margin-bottom: var(--spacing-responsive-lg);
+    padding: var(--spacing-responsive-sm);
+    margin-bottom: var(--spacing-responsive-md);
 }
 
-/* Reduce vertical spacing on large displays */
+/* Further reduce spacing on tablets and up */
+@media (min-width: 768px) {
+    .chart-container {
+        padding: var(--spacing-responsive-md);
+    }
+}
+
+/* Minimal spacing on large displays */
 @media (min-width: 1920px) {
     .chart-container {
-        margin-bottom: var(--spacing-responsive-md);
-        padding: var(--spacing-responsive-sm) var(--spacing-responsive-md);
+        margin-bottom: var(--spacing-responsive-sm);
+        padding: var(--spacing-responsive-sm);
     }
 }
 
@@ -437,38 +455,34 @@ a:hover {
     gap: var(--spacing-responsive-sm);
 }
 
-/* Responsive chart heights */
+/* Responsive chart heights - Compact design */
 .chart-container > div[id] {
-    min-height: 300px;
-    height: 50vh;
-    max-height: 500px;
+    min-height: 250px;
+    height: 40vh;
+    max-height: 400px;
 }
 
 @media (min-width: 768px) {
-    .chart-container {
-        padding: var(--spacing-responsive-lg);
-    }
-    
     .chart-container > div[id] {
-        min-height: 350px;
-        height: 45vh;
-        max-height: 550px;
+        min-height: 300px;
+        height: 35vh;
+        max-height: 450px;
     }
 }
 
 @media (min-width: 1440px) {
     .chart-container > div[id] {
-        min-height: 400px;
-        height: 40vh;
-        max-height: 600px;
+        min-height: 300px;
+        height: 30vh;
+        max-height: 500px;
     }
 }
 
 @media (min-width: 1920px) {
     .chart-container > div[id] {
-        min-height: 400px;
-        height: 35vh;
-        max-height: 650px;
+        min-height: 300px;
+        height: 25vh;
+        max-height: 500px;
     }
 }
 

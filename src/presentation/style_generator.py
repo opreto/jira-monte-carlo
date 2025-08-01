@@ -419,6 +419,14 @@ a:hover {
     margin-bottom: var(--spacing-responsive-lg);
 }
 
+/* Reduce vertical spacing on large displays */
+@media (min-width: 1920px) {
+    .chart-container {
+        margin-bottom: var(--spacing-responsive-md);
+        padding: var(--spacing-responsive-sm) var(--spacing-responsive-md);
+    }
+}
+
 .chart-container h2 {
     margin: 0 0 var(--spacing-responsive-md) 0;
     color: var(--color-text-primary);
@@ -433,7 +441,7 @@ a:hover {
 .chart-container > div[id] {
     min-height: 300px;
     height: 50vh;
-    max-height: 600px;
+    max-height: 500px;
 }
 
 @media (min-width: 768px) {
@@ -442,25 +450,25 @@ a:hover {
     }
     
     .chart-container > div[id] {
-        min-height: 400px;
-        height: 60vh;
-        max-height: 700px;
+        min-height: 350px;
+        height: 45vh;
+        max-height: 550px;
     }
 }
 
 @media (min-width: 1440px) {
     .chart-container > div[id] {
-        min-height: 500px;
-        height: 70vh;
-        max-height: 800px;
+        min-height: 400px;
+        height: 40vh;
+        max-height: 600px;
     }
 }
 
 @media (min-width: 1920px) {
     .chart-container > div[id] {
-        min-height: 600px;
-        height: 60vh;
-        max-height: 1000px;
+        min-height: 400px;
+        height: 35vh;
+        max-height: 650px;
     }
 }
 

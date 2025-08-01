@@ -22,7 +22,7 @@ class ChartComponent(Component):
         {% endif %}
     </div>
     <div class="chart-content">
-        <div id="{{ chart_id }}" class="plotly-chart" style="height: clamp(300px, 60vh, 800px);"></div>
+        <div id="{{ chart_id }}" class="plotly-chart" style="height: clamp(300px, 40vh, 600px);"></div>
     </div>
     {% if insights %}
     <div class="chart-insights">

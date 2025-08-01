@@ -3,6 +3,13 @@
    Container Queries + CSS Grid + Fluid Typography
    ================================================ */
 
+/* Global box-sizing for predictable layouts */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 /* ================================================
    1. CSS Custom Properties & Design Tokens
    ================================================ */
@@ -117,15 +124,37 @@ p {
    3. Container Query Setup
    ================================================ */
 
-/* Main content container - Better margins on larger screens */
+/* Main content container - Zero margins on mobile, generous on desktop */
 .main-container {
   container-type: inline-size;
   container-name: main;
   width: 100%;
   max-width: var(--content-max);
   margin-inline: auto;
-  padding-inline: clamp(var(--space-m), 5vi, var(--space-2xl));
-  padding-block: var(--space-l);
+  padding-block: var(--space-m);
+}
+
+/* Mobile: No side margins */
+@media (max-width: 640px) {
+  .main-container {
+    padding-inline: 0;
+  }
+}
+
+/* Tablet and up: Generous margins */
+@media (min-width: 641px) {
+  .main-container {
+    padding-inline: max(var(--space-l), 5vw);
+    padding-block: var(--space-l);
+  }
+}
+
+/* Desktop: Even more generous margins */
+@media (min-width: 1024px) {
+  .main-container {
+    padding-inline: max(var(--space-xl), 8vw);
+    padding-block: var(--space-xl);
+  }
 }
 
 /* Wide container for full-width sections */
@@ -186,54 +215,91 @@ p {
   }
 }
 
-/* Chart grid with container queries - Better spacing */
+/* Chart grid - Prevent overlapping with proper gaps */
 .chart-grid {
   container-type: inline-size;
   container-name: charts;
   display: grid;
-  gap: var(--grid-gap);
   grid-template-columns: 1fr;
-  margin-block: var(--section-gap);
+  /* Ensure consistent vertical spacing */
+  row-gap: var(--space-l);
+  column-gap: var(--space-m);
+  /* Add section spacing */
+  margin-block: var(--space-xl);
 }
 
-@container charts (min-width: 768px) {
+/* Small screens: Single column */
+@media (min-width: 641px) and (max-width: 1023px) {
   .chart-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
+    padding-inline: var(--space-m);
   }
 }
 
-@container charts (min-width: 1200px) {
+/* Medium screens: 2 columns if space allows */
+@media (min-width: 1024px) {
   .chart-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 500px), 1fr));
   }
 }
 
-/* Metrics grid with auto-fit - Better spacing */
+/* Large screens: Up to 3 columns */
+@media (min-width: 1440px) {
+  .chart-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 450px), 1fr));
+  }
+}
+
+/* Metrics grid - Responsive with proper spacing */
 .metrics-grid {
   display: grid;
-  gap: var(--grid-gap);
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
-  margin-block: var(--section-gap);
+  gap: var(--space-m);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  margin-block: var(--space-l);
+}
+
+/* Mobile: Add horizontal padding */
+@media (max-width: 640px) {
+  .metrics-grid {
+    padding-inline: var(--space-s);
+    gap: var(--space-s);
+  }
 }
 
 /* ================================================
    5. Chart Container System
    ================================================ */
 
-/* Individual chart container - Enhanced spacing and visual hierarchy */
+/* Individual chart container - Mobile-first spacing */
 .chart-container {
   container-type: inline-size;
   container-name: chart;
   background: var(--card-bg, #ffffff);
   border: 1px solid var(--border-color, #e5e5e5);
   border-radius: var(--radius-l);
-  padding: clamp(var(--space-m), 3vi, var(--space-l));
   box-shadow: var(--shadow-md);
   transition: box-shadow 0.2s ease;
   
   /* Prevent layout overflow */
   min-width: 0;
   overflow: hidden;
+  
+  /* Mobile: Minimal padding */
+  padding: var(--space-s);
+}
+
+/* Tablet and up: More generous padding */
+@media (min-width: 641px) {
+  .chart-container {
+    padding: var(--space-m);
+  }
+}
+
+/* Desktop: Maximum comfort */
+@media (min-width: 1024px) {
+  .chart-container {
+    padding: var(--space-l);
+  }
 }
 
 /* Hover effect for larger screens */
@@ -512,9 +578,24 @@ textarea {
 
 /* Main header spacing */
 .header {
-  margin-block-end: var(--section-gap);
-  padding-block-end: var(--space-m);
+  margin-block-end: var(--space-l);
+  padding-block: var(--space-m);
   border-bottom: 1px solid var(--border-color, #e5e5e5);
+}
+
+/* Mobile: Compact header */
+@media (max-width: 640px) {
+  .header {
+    padding-inline: var(--space-s);
+    margin-block-end: var(--space-m);
+  }
+}
+
+/* Desktop: Generous header spacing */
+@media (min-width: 641px) {
+  .header {
+    padding-inline: var(--space-m);
+  }
 }
 
 .header-title {

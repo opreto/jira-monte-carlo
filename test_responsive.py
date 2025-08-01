@@ -10,7 +10,7 @@ def generate_test_report():
     
     # Generate report with adjusted scenario
     cmd = [
-        sys.executable, "-m", "montecarlo",
+        sys.executable, "-m", "src.presentation.cli",
         "report",
         "-f", "jira-api://",
         "-o", "reports/test_responsive.html"

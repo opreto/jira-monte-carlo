@@ -191,3 +191,79 @@ To continue development:
 4. Visit http://localhost:6006 for Storybook
 
 The Python backend remains unchanged and can be run separately.
+
+## Design System Philosophy
+
+For detailed design system philosophy, brand guidelines, and visual patterns, see [packages/design-tokens/DESIGN_SYSTEM.md](packages/design-tokens/DESIGN_SYSTEM.md).
+
+## SSR Best Practices
+
+### Component Export Pattern
+
+All components MUST use `React.forwardRef` to ensure proper bundling and SSR compatibility:
+
+```typescript
+// ✅ CORRECT - This pattern ensures components are included in the bundle
+const MyComponent = React.forwardRef<HTMLDivElement, MyComponentProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <div ref={ref} className={cn('base-styles', className)} {...props}>
+        {/* Component content */}
+      </div>
+    )
+  }
+)
+MyComponent.displayName = 'MyComponent'
+
+export { MyComponent }
+```
+
+```typescript
+// ❌ INCORRECT - This pattern may cause components to be tree-shaken
+export const MyComponent: React.FC<MyComponentProps> = ({ ...props }) => {
+  return <div {...props} />
+}
+```
+
+### Key Requirements for SSR
+
+1. **Use `React.forwardRef`**: This ensures proper ref forwarding and prevents tree-shaking issues during build
+2. **Set `displayName`**: Required for debugging and React DevTools
+3. **Export with destructuring**: Use `export { ComponentName }` pattern
+4. **Extend HTML attributes**: Components should extend appropriate HTML element attributes
+5. **Use proper imports**: Import React as `import * as React from 'react'`
+
+### SSR Rendering Pipeline
+
+The report builder uses `renderToStaticMarkup` from React DOM Server. Components must:
+
+1. Be pure and deterministic (no side effects during render)
+2. Not rely on browser-specific APIs during initial render
+3. Use CSS classes that work server-side (Tailwind CSS)
+4. Properly handle hydration without mismatches
+
+### Testing SSR Compatibility
+
+To verify a component works with SSR:
+
+1. Build the UI library: `npm run build`
+2. Check that the component appears in `dist/index.js`
+3. Verify TypeScript definitions are in `dist/index.d.ts`
+4. Test that the component renders correctly in SSR context
+5. Ensure no hydration errors in the browser console
+
+### Common SSR Issues and Solutions
+
+1. **Component not in bundle**: Convert from `React.FC` to `React.forwardRef`
+2. **Hydration mismatches**: Ensure deterministic rendering, avoid random values
+3. **Missing styles**: Verify Tailwind classes are included in CSS output
+4. **Runtime errors**: Check for browser API usage (window, document) during SSR
+
+### Build Configuration
+
+The UI library uses tsup with the following configuration:
+- Entry: `src/index.tsx`
+- Formats: CommonJS and ESM
+- External dependencies: React and React DOM
+- TypeScript declarations: Generated automatically
+- Clean build: Removes previous dist before building

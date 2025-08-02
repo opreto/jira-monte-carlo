@@ -186,20 +186,6 @@ class ReactReportGenerator:
                 process_health_dict["wip_analysis"] = process_health.wip_analysis
             if hasattr(process_health, "sprint_health"):
                 process_health_dict["sprint_health"] = process_health.sprint_health
-                # Debug logging for sprint health
-                if process_health.sprint_health:
-                    import sys
-
-                    print(
-                        f"Sprint health exists with {len(process_health.sprint_health.sprint_metrics)} metrics",
-                        file=sys.stderr,
-                    )
-                    print(
-                        f"Predictability score: {process_health.sprint_health.predictability_score}",
-                        file=sys.stderr,
-                    )
-                else:
-                    print("Sprint health is None", file=sys.stderr)
             if hasattr(process_health, "blocked_items"):
                 process_health_dict["blocked_items"] = process_health.blocked_items
         else:
@@ -298,7 +284,8 @@ class ReactReportGenerator:
         # Default to adjusted view to match the combined_scenario_data default
         if baseline_charts and adjusted_charts:
             # Use adjusted charts as the default view
-            initial_charts = adjusted_charts
+            # Merge with health charts from charts_data (velocity trend, aging, etc.)
+            initial_charts = {**charts_data, **adjusted_charts}
         else:
             # Fall back to regular charts if no scenario charts
             initial_charts = charts_data
@@ -339,9 +326,10 @@ class ReactReportGenerator:
 
             # Add scenario-specific charts if available
             if baseline_charts and adjusted_charts:
+                # Merge health charts with scenario-specific charts
                 report_data["scenarioCharts"] = {
-                    "baseline": baseline_charts,
-                    "adjusted": adjusted_charts,
+                    "baseline": {**charts_data, **baseline_charts},
+                    "adjusted": {**charts_data, **adjusted_charts},
                 }
 
         return report_data

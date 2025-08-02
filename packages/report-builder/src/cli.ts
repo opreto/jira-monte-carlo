@@ -1,10 +1,5 @@
 #!/usr/bin/env node
 
-// Polyfill for browser globals in Node.js environment
-if (typeof self === 'undefined') {
-  global.self = global as any
-}
-
 import { Command } from 'commander'
 import fs from 'fs'
 import path from 'path'

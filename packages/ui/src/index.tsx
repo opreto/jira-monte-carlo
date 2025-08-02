@@ -9,7 +9,10 @@ export * from './primitives/Select'
 // Component exports
 export * from './components/Card'
 export * from './components/Table'
-export * from './components/Chart'
+// Only export SSR-safe Chart components to avoid Plotly issues in Node.js
+export { ChartSSR } from './components/Chart/ChartSSR'
+export { chartColors, chartLayouts } from './components/Chart/constants'
+export type { ChartSSRProps } from './components/Chart/ChartSSR'
 export * from './components/Layout'
 export * from './components/MetricCard'
 export * from './components/StickyHeader'

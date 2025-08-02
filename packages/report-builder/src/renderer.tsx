@@ -1,8 +1,3 @@
-// Polyfill for browser globals
-if (typeof self === 'undefined') {
-  global.self = global as any
-}
-
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { EnhancedSprintReport as SprintReport } from './templates/EnhancedSprintReport'
@@ -36,6 +31,12 @@ ${css}
     </style>
     <script src="https://cdn.plot.ly/plotly-3.0.3.min.js"></script>
     <style>
+        /* Sticky header styles for SSR compatibility */
+        .sticky {
+            position: -webkit-sticky !important;
+            position: sticky !important;
+        }
+        
         /* Additional print styles */
         @media print {
             @page {
@@ -278,9 +279,10 @@ ${css}
                 return;
             }
             
-            // Use the normalized data directly - backend already handles padding
-            const sprints = data.probability_distribution.map(d => d.sprint);
-            const probabilities = data.probability_distribution.map(d => d.probability);
+            // Filter out zero probabilities to avoid empty bars
+            const filteredData = data.probability_distribution.filter(d => d.probability > 0);
+            const sprints = filteredData.map(d => d.sprint);
+            const probabilities = filteredData.map(d => d.probability);
             
             console.log('UpdateProbabilityChart for', scenario);
             console.log('Sprints:', sprints);

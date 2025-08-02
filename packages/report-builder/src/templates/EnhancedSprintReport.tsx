@@ -21,7 +21,7 @@ import {
   Icons,
   colors
 } from '../components/DesignSystem'
-import { StickyHeader } from '@montecarlo/ui'
+import { StickyHeader } from '@sprint-radar/ui'
 
 
 // Process Health Component
@@ -249,11 +249,10 @@ export const EnhancedSprintReport: React.FC<SprintReportProps> = ({ data }) => {
       {/* Sticky Scenario Panel */}
       {combinedScenarioData && (
         <StickyHeader
-          className="bg-white"
-          stickyClassName="shadow-lg border-b border-gray-200"
+          className="bg-white border-b border-gray-200 shadow-sm"
           offsetTop={0}
+          zIndex={100}
         >
-          <div className="bg-white border-b border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
@@ -297,7 +296,6 @@ export const EnhancedSprintReport: React.FC<SprintReportProps> = ({ data }) => {
                 </div>
               </div>
             </div>
-          </div>
         </StickyHeader>
       )}
 

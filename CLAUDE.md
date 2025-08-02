@@ -14,6 +14,27 @@ This is a high-performance agile project analytics tool for enterprise forecasti
 ## Development Workflow
 
 - Your workflow for each development task should be: plan -> design failing tests -> implement -> flesh out tests -> lint -> ensure the entire test suit passes -> update documentation as appropriate -> commit/push.
+- When starting work on a new feature, refactor, architectural change, etc, do your work in a new, short-lived branch. As soon as that work completes, merge that branch into the main branch (we follow Trunk Based Development).
+
+## React Component SSR Guidelines
+
+CRITICAL: All React components MUST use `React.forwardRef` pattern for SSR compatibility:
+
+```typescript
+// ALWAYS use this pattern for components
+import * as React from 'react'
+
+const ComponentName = React.forwardRef<HTMLDivElement, ComponentProps>(
+  ({ className, ...props }, ref) => {
+    return <div ref={ref} className={cn('base-styles', className)} {...props} />
+  }
+)
+ComponentName.displayName = 'ComponentName'
+
+export { ComponentName }
+```
+
+NEVER use `React.FC` as it causes tree-shaking issues with tsup build tool.
 
 ## CLI Guidelines
 

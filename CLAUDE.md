@@ -44,3 +44,7 @@ NEVER use `React.FC` as it causes tree-shaking issues with tsup build tool.
 ## Project Guidelines
 
 - When planning new work, ensure you understand the documentation in the ./README.md and ARCHITECTURE.md so you don't deviate from our mission or architectural guidelines.
+
+## Dependency Management
+
+- Whenever installing new dependencies in the supply chain, ensure you properly .gitignore any artifacts that don't belong in the repo, like `node_modules`, etc.

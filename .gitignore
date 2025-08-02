@@ -51,6 +51,7 @@ apps/*/storybook-static/
 # Project specific
 *.html
 !docs/*.html
+reports/debug-full-report.json
 
 # Proprietary CSV files
 *.csv

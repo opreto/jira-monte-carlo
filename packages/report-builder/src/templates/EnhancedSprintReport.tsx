@@ -25,7 +25,7 @@ import { StickyHeader } from '@sprint-radar/ui'
 
 
 // Process Health Component
-const ProcessHealthBreakdown = ({ healthMetrics }: { healthMetrics: any }) => {
+const ProcessHealthBreakdown = ({ healthMetrics, jira_url }: { healthMetrics: any, jira_url?: string }) => {
   if (!healthMetrics.health_score_breakdown || healthMetrics.health_score_breakdown.length === 0) {
     return (
       <div className="bg-orange-50 rounded-lg p-4 mb-4">
@@ -115,7 +115,18 @@ const ProcessHealthBreakdown = ({ healthMetrics }: { healthMetrics: any }) => {
                       {component.detail_items.slice(0, 10).map((item: any, i: number) => (
                         <TableRow key={i}>
                           <TableCell>
-                            <span className="text-teal-600 font-medium">{item.key}</span>
+                            {jira_url ? (
+                              <a 
+                                href={`${jira_url}/browse/${item.key}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-teal-600 font-medium hover:text-teal-700 underline"
+                              >
+                                {item.key}
+                              </a>
+                            ) : (
+                              <span className="text-teal-600 font-medium">{item.key}</span>
+                            )}
                           </TableCell>
                           <TableCell>
                             {item.summary.length > 50 ? item.summary.substring(0, 50) + '...' : item.summary}
@@ -177,6 +188,7 @@ export const EnhancedSprintReport: React.FC<SprintReportProps> = ({ data }) => {
     processHealth,
     sprints,
     jql_query,
+    jira_url,
     velocity_field,
     model_info,
     num_simulations,
@@ -671,7 +683,7 @@ export const EnhancedSprintReport: React.FC<SprintReportProps> = ({ data }) => {
               )}
 
               {/* Process Health Breakdown */}
-              <ProcessHealthBreakdown healthMetrics={processHealth} />
+              <ProcessHealthBreakdown healthMetrics={processHealth} jira_url={jira_url} />
             </CardContent>
           </Card>
         </section>

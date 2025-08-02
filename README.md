@@ -734,8 +734,10 @@ logging.basicConfig(level=logging.DEBUG)
 - ✅ Velocity change prediction system (LADR-0004)
 - ✅ Plugin architecture with registry
 - ✅ Themeable reports (Opreto and generic themes)
-- ✅ Clickable issue links in reports
 - ✅ Health score visualization with gauges
+- ✅ ML-powered lookback optimization with confidence scores
+- ✅ React-based report generation with smooth animations
+- ✅ Clickable issue links in health breakdown reports
 
 ### In Progress
 - 🚧 Additional analytics for scrum masters
@@ -769,6 +771,12 @@ logging.basicConfig(level=logging.DEBUG)
   - Complete DI container implementation
   - Remove remaining static dependencies
   - Improve testability with better mocking
+- **Cross-Platform Issue Link Service**
+  - Abstract issue URL construction into a dedicated service
+  - Support multiple project management platforms (Jira, Linear, GitHub Issues, etc.)
+  - Configurable URL patterns per platform
+  - Auto-detect platform from issue key format
+  - Enable deep linking to issues across different tools
 
 #### Phase 3: Work Classification System (Priority 3)
 - **Opreto Work Type Methodology**

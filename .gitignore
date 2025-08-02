@@ -1,6 +1,7 @@
 # Node
 node_modules/
 packages/*/node_modules/
+apps/*/node_modules/
 
 # Python
 __pycache__/
@@ -44,6 +45,8 @@ build/
 dist/
 *.egg-info/
 .eggs/
+storybook-static/
+apps/*/storybook-static/
 
 # Project specific
 *.html

@@ -21,6 +21,7 @@ import {
   Icons,
   colors
 } from '../components/DesignSystem'
+import { StickyHeader } from '@montecarlo/ui'
 
 
 // Process Health Component
@@ -233,55 +234,7 @@ export const EnhancedSprintReport: React.FC<SprintReportProps> = ({ data }) => {
     <div className="min-h-screen bg-gray-50">
       <style dangerouslySetInnerHTML={{ __html: fontStyles }} />
       
-      {/* Sticky Scenario Panel */}
-      {combinedScenarioData && (
-        <div className="sticky top-0 z-50 bg-white shadow-lg border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <h3 className="text-lg font-semibold font-sans text-gray-900 flex items-center">
-                  <span className="mr-2">{Icons.chart}</span>
-                  Velocity Scenario Analysis
-                </h3>
-                <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1" id="scenario-switcher">
-                  <button
-                    data-scenario="baseline"
-                    className={`scenario-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                      currentScenario === 'baseline'
-                        ? 'bg-white text-teal-700 shadow-sm active'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    Baseline
-                  </button>
-                  <button
-                    data-scenario="adjusted"
-                    className={`scenario-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                      currentScenario === 'adjusted'
-                        ? 'bg-white text-teal-700 shadow-sm active'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    Adjusted
-                  </button>
-                </div>
-              </div>
-              
-              <div className="text-sm text-gray-600">
-                <div className="scenario-description" data-scenario="adjusted" style={{ display: currentScenario === 'adjusted' ? 'block' : 'none' }}>
-                  <span className="font-medium">Scenario:</span> {combinedScenarioData.scenario.description}
-                  <br />
-                  <span className="font-medium">Impact:</span> {combinedScenarioData.scenario.comparison}
-                </div>
-                <div className="scenario-description" data-scenario="baseline" style={{ display: currentScenario === 'baseline' ? 'block' : 'none' }}>
-                  <span className="text-gray-500">Baseline forecast without velocity adjustments</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      
+      {/* Header */}
       <Header>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <h1 className="text-4xl md:text-5xl font-display text-white mb-2">
@@ -292,6 +245,61 @@ export const EnhancedSprintReport: React.FC<SprintReportProps> = ({ data }) => {
           </p>
         </div>
       </Header>
+
+      {/* Sticky Scenario Panel */}
+      {combinedScenarioData && (
+        <StickyHeader
+          className="bg-white"
+          stickyClassName="shadow-lg border-b border-gray-200"
+          offsetTop={0}
+        >
+          <div className="bg-white border-b border-gray-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <h3 className="text-lg font-semibold font-sans text-gray-900 flex items-center">
+                    <span className="mr-2">{Icons.chart}</span>
+                    Velocity Scenario Analysis
+                  </h3>
+                  <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1" id="scenario-switcher">
+                    <button
+                      data-scenario="baseline"
+                      className={`scenario-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                        currentScenario === 'baseline'
+                          ? 'bg-white text-teal-700 shadow-sm active'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      Baseline
+                    </button>
+                    <button
+                      data-scenario="adjusted"
+                      className={`scenario-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                        currentScenario === 'adjusted'
+                          ? 'bg-white text-teal-700 shadow-sm active'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      Adjusted
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="text-sm text-gray-600">
+                  <div className="scenario-description" data-scenario="adjusted" style={{ display: currentScenario === 'adjusted' ? 'block' : 'none' }}>
+                    <span className="font-medium">Scenario:</span> {combinedScenarioData.scenario.description}
+                    <br />
+                    <span className="font-medium">Impact:</span> {combinedScenarioData.scenario.comparison}
+                  </div>
+                  <div className="scenario-description" data-scenario="baseline" style={{ display: currentScenario === 'baseline' ? 'block' : 'none' }}>
+                    <span className="text-gray-500">Baseline forecast without velocity adjustments</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </StickyHeader>
+      )}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

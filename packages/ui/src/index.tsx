@@ -12,6 +12,7 @@ export * from './components/Table'
 export * from './components/Chart'
 export * from './components/Layout'
 export * from './components/MetricCard'
+export * from './components/StickyHeader'
 
 // Template exports
 export * from './templates'

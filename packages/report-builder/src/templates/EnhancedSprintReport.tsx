@@ -550,9 +550,9 @@ export const EnhancedSprintReport: React.FC<SprintReportProps> = ({ data }) => {
             <h2 className="text-3xl font-display text-gray-900 mb-6 border-b-2 border-teal-100 pb-2">Sprint Completion Trend</h2>
             <Card elevated>
               <CardContent className="relative overflow-visible">
-                <div className="absolute top-4 right-4 z-20">
-                  <MLTooltip content={
-                    ml_decisions?.decisions?.find(d => d.decision_type === 'sprint_health_lookback') ? (
+                {ml_decisions?.decisions?.find(d => d.decision_type === 'sprint_health_lookback') && (
+                  <div className="absolute top-4 right-4 z-20">
+                    <MLTooltip content={
                       <div>
                         <div className="font-semibold mb-2">ML Model: {ml_decisions.decisions.find(d => d.decision_type === 'sprint_health_lookback').model_name}</div>
                         <div className="mb-2"><strong>Decision:</strong> Using {ml_decisions.decisions.find(d => d.decision_type === 'sprint_health_lookback').value} sprints lookback</div>
@@ -560,15 +560,13 @@ export const EnhancedSprintReport: React.FC<SprintReportProps> = ({ data }) => {
                           <div><strong>Confidence:</strong> {(ml_decisions.decisions.find(d => d.decision_type === 'sprint_health_lookback').confidence * 100).toFixed(0)}%</div>
                         )}
                       </div>
-                    ) : (
-                      "ML Analysis: Sprint completion trends are analyzed using pattern recognition to identify systemic issues. Consistent under-delivery may indicate overcommitment, while high variance suggests estimation problems."
-                    )
-                  }>
-                    <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center cursor-help hover:bg-purple-200 transition-colors">
-                      {Icons.mlInsight}
-                    </div>
-                  </MLTooltip>
-                </div>
+                    }>
+                      <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center cursor-help hover:bg-purple-200 transition-colors">
+                        {Icons.mlInsight}
+                      </div>
+                    </MLTooltip>
+                  </div>
+                )}
                 <Chart
                   data={charts.sprint_completion_trend.data}
                   layout={charts.sprint_completion_trend.layout}
@@ -587,9 +585,9 @@ export const EnhancedSprintReport: React.FC<SprintReportProps> = ({ data }) => {
             <h2 className="text-3xl font-display text-gray-900 mb-6 border-b-2 border-teal-100 pb-2">Sprint Scope Changes</h2>
             <Card elevated>
               <CardContent className="relative overflow-visible">
-                <div className="absolute top-4 right-4 z-20">
-                  <MLTooltip content={
-                    ml_decisions?.decisions?.find(d => d.decision_type === 'sprint_health_lookback') ? (
+                {ml_decisions?.decisions?.find(d => d.decision_type === 'sprint_health_lookback') && (
+                  <div className="absolute top-4 right-4 z-20">
+                    <MLTooltip content={
                       <div>
                         <div className="font-semibold mb-2">ML Model: {ml_decisions.decisions.find(d => d.decision_type === 'sprint_health_lookback').model_name}</div>
                         <div className="mb-2"><strong>Decision:</strong> Using {ml_decisions.decisions.find(d => d.decision_type === 'sprint_health_lookback').value} sprints lookback</div>
@@ -597,15 +595,13 @@ export const EnhancedSprintReport: React.FC<SprintReportProps> = ({ data }) => {
                           <div><strong>Confidence:</strong> {(ml_decisions.decisions.find(d => d.decision_type === 'sprint_health_lookback').confidence * 100).toFixed(0)}%</div>
                         )}
                       </div>
-                    ) : (
-                      "ML Analysis: Scope changes are tracked to identify patterns. Frequent mid-sprint additions suggest poor planning or external pressures. The trend line shows if scope management is improving or deteriorating."
-                    )
-                  }>
-                    <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center cursor-help hover:bg-purple-200 transition-colors">
-                      {Icons.mlInsight}
-                    </div>
-                  </MLTooltip>
-                </div>
+                    }>
+                      <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center cursor-help hover:bg-purple-200 transition-colors">
+                        {Icons.mlInsight}
+                      </div>
+                    </MLTooltip>
+                  </div>
+                )}
                 <Chart
                   data={charts.sprint_scope_changes.data}
                   layout={charts.sprint_scope_changes.layout}

@@ -488,9 +488,13 @@ def main(
             )
             return
 
+    # Auto-enable ML if we're generating charts that can benefit from it
+    # (velocity_trend and sprint health charts both use ML lookback optimization)
+    auto_enable_ml = not exclude_process_health  # Process health includes sprint health charts
+    
     # Determine project ID for ML features
     project_id = None
-    if enable_ml:
+    if enable_ml or auto_enable_ml:
         # Try to get project ID based on data source
         if str(csv_path).startswith("jira-api:"):
             # Using Jira API
@@ -524,16 +528,18 @@ def main(
                 )
 
         if not project_id:
-            console.print(
-                "[yellow]ML features disabled - project ID could not be determined[/yellow]"
-            )
+            if enable_ml:  # Only show warning if user explicitly requested ML
+                console.print(
+                    "[yellow]ML features disabled - project ID could not be determined[/yellow]"
+                )
             enable_ml = False
+            auto_enable_ml = False
 
     # Calculate velocity
     console.print("\n[yellow]Calculating historical velocity...[/yellow]")
 
     ml_decisions = None
-    if enable_ml and project_id:
+    if (enable_ml or auto_enable_ml) and project_id:
         velocity_use_case = MLEnhancedVelocityUseCase(
             issue_repo, sprint_repo, project_key=project_id, enable_ml=True
         )
@@ -871,7 +877,7 @@ def main(
 
             # Use ML-enhanced sprint health if ML is enabled
             sprint_health_ml_decisions = None
-            if enable_ml and project_id:
+            if (enable_ml or auto_enable_ml) and project_id:
                 ml_sprint_health_use_case = MLEnhancedSprintHealthUseCase(
                     issue_repo, sprint_repo, project_key=project_id, enable_ml=True
                 )
@@ -897,7 +903,7 @@ def main(
                 wip_analysis = wip_use_case.execute(status_mapping, parsed_wip_limits)
 
             if reporting_capabilities.is_available(ReportType.SPRINT_HEALTH):
-                if enable_ml and project_id:
+                if (enable_ml or auto_enable_ml) and project_id:
                     sprint_health, sprint_health_ml_decisions = (
                         ml_sprint_health_use_case.execute(lookback_sprints_value)
                     )
